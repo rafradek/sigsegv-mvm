@@ -19,8 +19,6 @@ namespace Mod::MvM::Upgrade_Disallow
 	ConVar cvar_burn_time("sig_mvm_upgrade_allow_burn_time", "1", FCVAR_NOTIFY,
 		"Should burn time be enabled");
 
-	extern ConVar sig_sniper_charge_uncap;
-
 	DETOUR_DECL_MEMBER_CALL_CONVENTION(__gcc_regcall, void, CUpgrades_PlayerPurchasingUpgrade, CTFPlayer *player, int itemslot, int upgradeslot, bool sell, bool free, bool b3)
 	{
 		if (!b3) {
@@ -66,30 +64,9 @@ namespace Mod::MvM::Upgrade_Disallow
 					gamehelpers->TextMsg(ENTINDEX(player), TEXTMSG_DEST_CENTER, TranslateText(player, "Burn time bonus upgrade is broken. Buy another upgrade"));
 					return;
 				}
-				else if (!sig_sniper_charge_uncap.GetBool() && strcmp(upgradename,"SRifle Charge rate increased") == 0 &&
-					(strcmp(TFGameRules()->GetCustomUpgradesFile(), "") == 0 || strcmp(TFGameRules()->GetCustomUpgradesFile(), "scripts/items/mvm_upgrades.txt") == 0)) {
-
-					CTFWeaponBase* weapon = rtti_cast<CTFWeaponBase*>(player->GetWeapon(itemslot));
-
-					int rifleType = 0;
-					CALL_ATTRIB_HOOK_INT_ON_OTHER(weapon, rifleType, set_weapon_mode);
-
-					if (weapon != nullptr && weapon->GetWeaponID() == TF_WEAPON_SNIPER_RIFLE && rifleType == 1) {
-						
-						float upgrade = 1.0f;
-						CALL_ATTRIB_HOOK_FLOAT_ON_OTHER(weapon, upgrade, mult_sniper_charge_per_sec);
-					
-						DevMsg("upgrade %f\n",upgrade);
-						if (upgrade >= 0.99f && upgrade <= 1.01f) {
-							gamehelpers->TextMsg(ENTINDEX(player), TEXTMSG_DEST_CENTER, TranslateText(player, "4th charge rate bonus upgrade does not work on Sydney Sleeper. Buy another upgrade"));
-							return;
-						}
-					}
-				}
 				else if (strcmp(upgradename,"engy sentry fire rate increased") == 0 &&
-					(strcmp(TFGameRules()->GetCustomUpgradesFile(), "") == 0 || strcmp(TFGameRules()->GetCustomUpgradesFile(), "scripts/items/mvm_upgrades.txt") == 0)) {
+					(strcmp(TFGameRules()->GetCustomUpgradesFile(), "") == 0 || strcmp(TFGameRules()->GetCustomUpgradesFile(), "scripts/items/mvm_upgrades.txt") == 0)){
 					//CTFWeaponBase* weapon = rtti_cast<CTFWeaponBase*>(player->GetWeapon(itemslot));
-
 					float upgrade = 1.0f;
 					CALL_ATTRIB_HOOK_FLOAT_ON_OTHER(player, upgrade, mult_sentry_firerate);
 					
