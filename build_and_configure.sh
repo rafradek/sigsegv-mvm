@@ -11,6 +11,7 @@ apt update
 
 apt install -y autoconf automake libtool pip python3-venv nasm libiberty-dev libiberty-dev:i386 libelf-dev:i386 libboost-dev:i386 libbsd-dev:i386 libunwind-dev:i386 lib32z1-dev libc6-dev-i386 linux-libc-dev:i386 g++-multilib
 
+# Function to clone or pull a repository
 _INSTALL_DIR="/home/wsluser"
 mkdir -p $_INSTALL_DIR/sigsegv-mvm
 
