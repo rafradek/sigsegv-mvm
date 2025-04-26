@@ -122,6 +122,7 @@ echo exit
 ) > "SetupSigsegvAfterBoot.bat"
 
 (
+echo @echo off
 echo wsl -d ubuntu -u root bash -c "echo nameserver 8.8.8.8 > /etc/resolv.conf"
 echo wsl -d ubuntu -u root bash -c "echo generateResolveConf=false >> /etc/wsl.conf"
 echo wsl -d ubuntu -u gameserver cd /var/steamcmd; ./steamcmd.sh +force_install_dir ../tf2server +login anonymous +app_update 232250 +quit
@@ -129,6 +130,7 @@ echo wsl -d ubuntu -u gameserver /var/tf2server/srcds_run +maxplayers 32 +map mv
 ) > "Run Server.bat"
 
 (
+echo @echo off
 echo wsl -d ubuntu -u root bash -c "echo nameserver 8.8.8.8 > /etc/resolv.conf"
 echo wsl -d ubuntu -u root bash -c "echo generateResolveConf=false >> /etc/wsl.conf"
 echo echo Installing Metamod
@@ -141,18 +143,22 @@ echo echo Update complete
 ) > "Update Server.bat"
 
 (
+echo @echo off
 echo wsl -d ubuntu -u gameserver cd /var/tf2server/tf; explorer.exe . 
 ) > "Browse Files.bat"
 
-
-echo choice /C YN /M "Do you want to delete the linux VM and all server files?A"> "Delete Server.bat"
-echo if errorlevel 2 (>> "Delete Server.bat"
-echo Server files are not deleted>> "Delete Server.bat"
-echo ) else (>> "Delete Server.bat"
-echo wsl --unregister ubuntu>> "Delete Server.bat"
-echo cd ..>> "Delete Server.bat"
-echo rmdir /q /s TF2Server>> "Delete Server.bat"
-echo )>> "Delete Server.bat"
+(
+    echo @echo off
+    echo choice /C YN /M "Do you want to delete the linux VM and all server files?"
+    echo if errorlevel 2 ^(
+        echo echo Server files are not deleted
+    echo ^) else ^(
+        echo wsl --unregister ubuntu
+        echo cd ..
+        echo pause
+        echo rmdir /q /s TF2Server
+    echo ^)
+) > "Delete Server.bat"
 
 if not exist "%windir%\System32\bash.exe" (
     wsl --install -d ubuntu
