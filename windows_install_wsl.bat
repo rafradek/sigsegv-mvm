@@ -1,5 +1,6 @@
 @echo off
 setlocal enabledelayedexpansion
+title Sigmod WSL installer
 rem Escape character for color codes
 for /F %%a in ('echo prompt $E ^| cmd') do set "ESC=%%a"
 
@@ -28,6 +29,17 @@ if not errorlevel 1 (
 		exit
 	)
 )
+rem apparently you must install wsl to the default windows drive???
+rem there are some powershell hacks to manually get the distro
+rem :setubuntudrive
+rem choice /C YN /M "Install linux to your current drive? No will install to the default location"
+rem if errorlevel 1 (
+rem     echo "[wsl2]" > %USERPROFILE%\.wslconfig
+rem     echo memory=2GB >> %USERPROFILE%\.wslconfig
+rem     echo "[automount]" >> %USERPROFILE%\.wslconfig
+rem     echo root = "%CD:~0,3%\\" >> %USERPROFILE%\.wslconfig
+rem )
+rem exit /b
 
 set "current_path=%~dp0"
 echo %current_path% | findstr /i "onedrive" > nul
@@ -41,7 +53,7 @@ if not errorlevel 1 (
     echo -----------------------------------------------------
     echo !ESC![0m
     
-    choice /C YN /M "Continue anyway? (Y/N)"
+    choice /C YN /M "Continue anyway? This may cause issues with the installation"
     if errorlevel 2 exit
     echo.
 )
@@ -63,10 +75,12 @@ if exist TF2Server (
                 wsl rm -rf /var/tf2server
                 wsl rm -rf /var/steamcmd
                 rmdir /q /s TF2Server
+                echo !ESC![0m
             )
         )
     )
 )
+
 mkdir TF2Server > nul 2>&1
 cd TF2Server
 
@@ -203,7 +217,19 @@ rem create batch scripts
         echo pause
         echo rmdir /q /s TF2Server
     echo ^)
-) > "Delete Server.bat"
+) > "Delete Everything.bat"
+
+(
+    echo @echo off
+    echo choise /C YN /M "Do you want to delete server files and keep the linux VM?"
+    echo if errorlevel 2 ^(
+        echo echo Server files are not deleted
+    echo ^) else ^(
+        echo wsl rm -rf /var/tf2server
+        echo wsl rm -rf /var/steamcmd
+        echo pause
+    echo ^)
+) > "Delete Server Files.bat"
 
 if not exist "%windir%\System32\bash.exe" (
     echo !ESC![92m
@@ -211,7 +237,7 @@ if not exist "%windir%\System32\bash.exe" (
     echo Installing WSL...
     echo -----------------
     echo !ESC![0m
-    wsl --install -d ubuntu
+    wsl --install -d Ubuntu-22.04 --root
     echo [wsl2] > %USERPROFILE%/.wslconfig
     echo memory=2GB >> %USERPROFILE%/.wslconfig
 
