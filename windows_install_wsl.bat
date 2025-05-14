@@ -75,8 +75,6 @@ rem create batch scripts
     echo @echo off
     echo cd /d "%%~dp0"
     echo wsl --set-default-version 2
-    echo wsl -d ubuntu -u root bash -c "echo nameserver 8.8.8.8 > /etc/resolv.conf"
-    @REM echo wsl -d ubuntu -u root bash -c "echo generateResolveConf=false >> /etc/wsl.conf"
 
     echo echo !ESC![92m
     echo echo -----------------
@@ -90,9 +88,17 @@ rem create batch scripts
     echo echo Installing packages
     echo echo -------------------
     echo echo !ESC![0m
+    rem WSL likes to set its own DNS servers that don't always work
+    echo wsl -d ubuntu -u root bash -c "echo nameserver 8.8.8.8 > /etc/resolv.conf"
+    echo wsl -d ubuntu -u root bash -c "echo generateResolveConf=false >> /etc/wsl.conf"
     echo wsl -d ubuntu -u root dpkg --add-architecture i386
-    echo wsl -d ubuntu -u root apt-get update
-    echo wsl -d ubuntu -u root apt install -y python3-venv gcc g++-multilib lbzip2 unzip wget cpufrequtils lib32z1 libncurses6 lib32tinfo6 libbz2-1.0 libcurl4-gnutls-dev lib32stdc++6 libstdc++6:i386 libncurses6:i386 libbz2-1.0:i386 lib32gcc-s1 libc6-i386 libstdc++6 libcurl4-gnutls-dev:i386
+    rem for libncurses5
+    echo wsl -d ubuntu -u root bash -c "mkdir -p /etc/apt/sources.list.d"
+    echo wsl -d ubuntu -u root bash -c "echo 'deb http://security.ubuntu.com/ubuntu focal-security main universe' > /etc/apt/sources.list.d/ubuntu-focal-sources.list"
+    echo wsl -d ubuntu -u root apt update
+    echo wsl -d ubuntu -u root apt install -y python3-venv gcc g++-multilib lbzip2 unzip wget cpufrequtils lib32z1 libncurses5 lib32tinfo6 libbz2-1.0 libcurl4-gnutls-dev lib32stdc++6 libstdc++6:i386 libncurses5:i386 libbz2-1.0:i386 lib32gcc-s1 libc6-i386 libstdc++6 
+    rem do we need 32-bit libcurl for anything? this conflicts with the 64-bit version
+    echo wsl -d ubuntu -u root apt install -y libcurl4-gnutls-dev:i386
     echo wsl -d ubuntu -u root ufw disable
 
     echo echo !ESC![92m
@@ -112,8 +118,8 @@ rem create batch scripts
     echo echo ----------------------------
     echo echo Installing Metamod/Sourcemod
     echo echo ----------------------------
-    echo wsl -d ubuntu -u gameserver cd /var/tf2server; curl https://mms.alliedmods.net/mmsdrop/1.11/`curl https://mms.alliedmods.net/mmsdrop/1.11/mmsource-latest-linux` -o metamod.tar.gz; tar -xf metamod.tar.gz -C ../tf2server/tf;
-    echo wsl -d ubuntu -u gameserver cd /var/tf2server; curl https://sm.alliedmods.net/smdrop/1.11/`curl https://sm.alliedmods.net/smdrop/1.11/sourcemod-latest-linux` -o sourcemod.tar.gz; tar -xf sourcemod.tar.gz -C ../tf2server/tf;
+    echo wsl -d ubuntu -u gameserver cd /var/tf2server; curl https://mms.alliedmods.net/mmsdrop/1.12/`curl https://mms.alliedmods.net/mmsdrop/1.12/mmsource-latest-linux` -o metamod.tar.gz; tar -xf metamod.tar.gz -C ../tf2server/tf;
+    echo wsl -d ubuntu -u gameserver cd /var/tf2server; curl https://sm.alliedmods.net/smdrop/1.12/`curl https://sm.alliedmods.net/smdrop/1.12/sourcemod-latest-linux` -o sourcemod.tar.gz; tar -xf sourcemod.tar.gz -C ../tf2server/tf;
 
     echo echo !ESC![93m
     echo echo --------------------------------
@@ -127,7 +133,7 @@ rem create batch scripts
     @REM echo echo ----------------------
     @REM echo echo.
     @REM echo wsl -d ubuntu -u root rm -rf /var/accelerator; mkdir -p /var/accelerator; cd /var/accelerator; git clone https://github.com/asherkin/accelerator.git .; chmod -R 755 /var/accelerator;
-    @REM echo wsl -d ubuntu -u root cd /var/accelerator; git clone https://github.com/alliedmodders/ambuild.git --depth 1;git clone https://github.com/alliedmodders/metamod-source.git --depth 1 -b 1.11-dev; git clone --recursive https://github.com/alliedmodders/sourcemod.git --depth 1 -b 1.11-dev; chmod -R 755 /var/accelerator
+    @REM echo wsl -d ubuntu -u root cd /var/accelerator; git clone https://github.com/alliedmodders/ambuild.git --depth 1;git clone https://github.com/alliedmodders/metamod-source.git --depth 1 -b 1.12-dev; git clone --recursive https://github.com/alliedmodders/sourcemod.git --depth 1 -b 1.12-dev; chmod -R 755 /var/accelerator
     @REM echo wsl -d ubuntu -u root mkdir -p ~/.venvs; python3 -m venv ~/.venvs/ambuild; chmod -R 755 ~/.venvs; cd /var/accelerator; ~/.venvs/ambuild/bin/pip install /var/accelerator/ambuild
     @REM echo wsl -d ubuntu -u root chmod +x /var/accelerator/configure.py
     @REM @REM echo wsl -d ubuntu -u root mkdir -p /var/accelerator/build/release; cd /var/accelerator/build/release; CC=gcc CXX=g++ ~/.venvs/ambuild/bin/python /var/accelerator/configure.py --targets=x86 --mms-path=/var/ambuild/metamod-source --sm-path=/var/ambuild/sourcemod
