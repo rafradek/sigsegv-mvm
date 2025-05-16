@@ -5323,7 +5323,6 @@ namespace Mod::Attr::Custom_Attributes
 			}
 			auto find = respawnTimesForId.find(player->GetSteamID());
 			if (find != respawnTimesForId.end() && find->second > gpGlobals->curtime) {
-				Msg("time now this\n");
 				return find->second;
 			}
 		}
@@ -5338,7 +5337,6 @@ namespace Mod::Attr::Custom_Attributes
 			
 			auto find = respawnTimesForId.find(player->GetSteamID());
 			if (find != respawnTimesForId.end() && find->second > gpGlobals->curtime) {
-				Msg("time now this\n");
 				return false;
 			}
 		}
@@ -5352,7 +5350,6 @@ namespace Mod::Attr::Custom_Attributes
 			
 			auto find = respawnTimesForId.find(player->GetSteamID());
 			if (find != respawnTimesForId.end() && find->second > gpGlobals->curtime) {
-				Msg("time now this\n");
 				return false;
 			}
 		}

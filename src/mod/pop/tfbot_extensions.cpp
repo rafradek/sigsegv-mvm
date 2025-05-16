@@ -2138,11 +2138,15 @@ namespace Mod::Pop::TFBot_Extensions
 				if (team == nullptr) {
 					team = TFTeamMgr()->GetTeam(TEAM_UNASSIGNED);
 				}
+				team->SetTeamNumber(team->GetTeamNumber());
+				
+				if (proj->GetOwnerEntity() == player) {
+					proj->SetOwnerEntity(team);
+				}
 				if (rtti_cast<CBaseGrenade *>(proj) != nullptr && rtti_cast<CBaseGrenade *>(proj)->GetThrower() == player) {
 					rtti_cast<CBaseGrenade *>(proj)->SetThrower(team);
 				}
-				if (proj->GetOwnerEntity() == player) {
-					proj->SetOwnerEntity(team);
+				else if (rtti_cast<IScorer *>(proj) != nullptr && rtti_cast<IScorer *>(proj)->GetScorer() == player) {
 					if (rtti_cast<CTFProjectile_Rocket *>(proj) != nullptr)
 						rtti_cast<CTFProjectile_Rocket *>(proj)->SetScorer(team);
 					else if (rtti_cast<CTFBaseProjectile *>(proj) != nullptr)
@@ -2156,6 +2160,7 @@ namespace Mod::Pop::TFBot_Extensions
 				}
 			}
 		}
+		
 		DETOUR_MEMBER_CALL();
 	}
 	
