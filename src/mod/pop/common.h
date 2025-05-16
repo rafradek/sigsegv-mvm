@@ -66,6 +66,7 @@ struct AddCond
     float delay    =  0.0f;
     int health_below = 0;
     int health_above = 0;
+    bool if_left_spawn = false;
 };
 
 enum PeriodicTaskType 
@@ -113,7 +114,7 @@ struct DelayedAddCond
     float duration;
     int health_below = 0;
     int health_above = 0;
-    
+    bool if_left_spawn = false;
 };
 
 class PeriodicTask
@@ -128,6 +129,7 @@ public:
     bool if_no_target = false;
     float if_range_target_min = 0.0f;
     float if_range_target_max = -1.0f;
+    bool if_left_spawn = false;
 
     int health_below = 0;
     int health_above = 0;

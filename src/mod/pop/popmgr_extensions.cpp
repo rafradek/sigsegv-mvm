@@ -1072,6 +1072,8 @@ namespace Mod::Pop::PopMgr_Extensions
 		std::vector<InputInfoTemplate> m_missionUnloadOutput;
 	};
 	PopState state{};
+
+	std::unordered_set<std::string> import_mission_names;
 	
 	bool ExtendedUpgradesNoUndo(){ // this is very maintainable yes
 		return Mod::Pop::PopMgr_Extensions::state.m_bExtendedUpgradesNoUndo;
@@ -6543,7 +6545,15 @@ namespace Mod::Pop::PopMgr_Extensions
 	{
 		SCOPED_INCREMENT(rc_KeyValues_LoadFromBuffer);
 		lastMergedKeyValues = nullptr;
-		return DETOUR_MEMBER_CALL(resourceName, buf, pFileSystem, pPathID);
+		auto ret = DETOUR_MEMBER_CALL(resourceName, buf, pFileSystem, pPathID);
+		if (reading_popfile && rc_KeyValues_LoadFromBuffer == 1) {
+			CUtlBuffer buf2(0, 0, CUtlBuffer::TEXT_BUFFER);
+			for (auto &popfile : import_mission_names) {
+				buf2.PutString(CFmtStr("#base %s\n", popfile.c_str()));
+			}
+			DETOUR_MEMBER_CALL(resourceName, buf2, pFileSystem, pPathID);
+		}
+		return ret;
 	}
 
 	RefCount rc_CPopulationManager_IsValidPopfile;
@@ -7137,6 +7147,7 @@ namespace Mod::Pop::PopMgr_Extensions
 		
 		return result;
 	}
+
     StaticFuncThunk<void, int> ft_SetupMaxPlayers("SetupMaxPlayers");
 	
 	class CMod : public IMod, public IModCallbackListener, public IFrameUpdatePostEntityThinkListener
@@ -7647,6 +7658,35 @@ namespace Mod::Pop::PopMgr_Extensions
 	ModCommandClient sig_missionitems("sig_missionitems", [](CCommandPlayer *player, const CCommand& args){
 		DisplayExtraLoadoutItemsClass(player, player->GetPlayerClass()->GetClassIndex(), false);
 	}, &s_Mod);
+
+	ModCommandAdmin sig_pop_import_add("sig_pop_import_add", [](CCommandPlayer *player, const CCommand& args){
+		if (args.ArgC() != 1) {
+			ModCommandResponse("[sig_mission_import_add] Usage: <popfile>\n");
+			return;
+		}
+		if (!import_mission_names.contains(args[1])) {
+			import_mission_names.insert(args[1]);
+			ModCommandResponse("[sig_mission_import_remove] Added %s\n", args[1]);
+		}
+	}, &s_Mod, "add a popfile to be parsed as if it was added with #base keyword");
+
+	ModCommandAdmin sig_mission_import_remove("sig_pop_import_remove", [](CCommandPlayer *player, const CCommand& args){
+		if (args.ArgC() != 1) {
+			ModCommandResponse("[sig_mission_import_remove] Usage: <popfile>\n");
+			return;
+		}
+		else if (import_mission_names.contains(args[1])) {
+			import_mission_names.erase(args[1]);
+			ModCommandResponse("[sig_mission_import_remove] Removed %s\n", args[1]);
+		}
+	}, &s_Mod, "remove a popfile from parse list");
+
+	ModCommandAdmin sig_mission_import_removeall("sig_pop_import_removeall", [](CCommandPlayer *player, const CCommand& args){
+		for (auto &popfile : import_mission_names) {
+			ModCommandResponse("[sig_mission_import_remove] Removed %s\n", popfile.c_str());
+		}
+		import_mission_names.clear();
+	}, &s_Mod, "remove all popfiles from parse list");
 	
 	ConVar cvar_enable("sig_pop_popmgr_extensions", "0", FCVAR_NOTIFY,
 		"Mod: enable extended KV in CPopulationManager::Parse",

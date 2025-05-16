@@ -63,7 +63,7 @@ bool AreItemsSimilar(const CEconItemView *item_view, bool compare_by_log_name, c
 {
     return (compare_by_log_name 
         && FStrEq(base_name.c_str(), item_view->GetItemDefinition()->GetKeyValues()->GetString("base_item_name"))
-        && ((!base_name.empty() && item_view->m_iItemDefinitionIndex != 772 /* Baby Face's Blaster*/) 
+        && ((!base_name.empty() && item_view->m_iItemDefinitionIndex != 772 /* Baby Face's Blaster*/ && item_view->m_iItemDefinitionIndex != 1103 /*Back Scatter*/)
         || FStrEq(log_name.c_str(), item_view->GetItemDefinition()->GetKeyValues()->GetString("item_logname"))))
         || ((item_view->m_iItemDefinitionIndex == 212 || item_view->m_iItemDefinitionIndex == 947 || item_view->m_iItemDefinitionIndex == 297) && base_defindex == 30) // Invis
         || ((item_view->m_iItemDefinitionIndex == 737) && base_defindex == 25) // Build PDA
@@ -746,7 +746,6 @@ CON_COMMAND(sig_gen_rand, "")
 std::vector<int> g_ItemDefForSkinNum;
 void LoadItemDefsForSkinIndex() 
 {
-    TIME_SCOPE2(f);
     CEconItemView *view = CEconItemView::Create();
     for(int i = 0; i < UINT16_MAX; i++) {
         view->Init(i);

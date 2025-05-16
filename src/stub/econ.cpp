@@ -262,6 +262,7 @@ MemberFuncThunk<const CEconItemView *, CTFItemDefinition *>               CEconI
 MemberFuncThunk<const CEconItemView *, CEconItem *>                       CEconItemView::ft_GetSOCData   ("CEconItemView::GetSOCData");
 MemberFuncThunk<const CEconItemView *, const char *, int, int>            CEconItemView::ft_GetPlayerDisplayModel("CEconItemView::GetPlayerDisplayModel");
 MemberFuncThunk<const CEconItemView *, int, int, bool>                    CEconItemView::ft_GetSkin      ("CEconItemView::GetSkin");
+MemberFuncThunk<const CEconItemView *, int>                               CEconItemView::ft_GetStyle     ("CEconItemView::GetStyle");
 
 MemberVFuncThunk<const CEconItemView *, int> CEconItemView::vt_GetItemDefIndex(TypeName<CEconItemView>(), "CEconItemView::GetItemDefIndex");
 

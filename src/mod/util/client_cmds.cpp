@@ -1595,29 +1595,6 @@ namespace Mod::Util::Client_Cmds
 			vehicle->m_flMinimumSpeedToEnterExit = 100;
 		}
 	}
-
-	void CC_WTest(CCommandPlayer *player, const CCommand& args)
-	{
-		const char *model = "models/player/pyro.mdl";
-		CTFWeaponBase *wearable = static_cast<CTFWeaponBase *>(CreateItemByName(nullptr, "TF_WEAPON_ROCKETLAUNCHER"));
-		if (wearable != nullptr) {
-			DispatchSpawn(wearable);
-			wearable->m_bValidatedAttachedEntity = true;
-			int model_index = CBaseEntity::PrecacheModel(model);
-			wearable->RemoveEffects(EF_NODRAW);
-			wearable->SetAbsOrigin(player->GetAbsOrigin() + Vector(0,0,100));
-			// wearable->SetModel(model);
-			// wearable->SetModelIndex(model_index);
-			// //wearable->SetAbsOrigin(player->GetAbsOrigin() + Vector(0,0,100));
-			// wearable->RemoveEffects(EF_NODRAW);
-			// //wearable->SetOwner(bot);
-			// wearable->m_iViewModelIndex = model_index;
-			// wearable->m_iWorldModelIndex = model_index;
-			// for (int j = 0; j < MAX_VISION_MODES; ++j) {
-			// 	wearable->SetModelIndexOverride(j, model_index);
-			// }
-		}
-	}
 	
 	void CC_PlayScene(CCommandPlayer *player, const CCommand& args)
 	{
@@ -1972,7 +1949,6 @@ namespace Mod::Util::Client_Cmds
 	ClientCmdsCommand sig_expression("sig_expression", CC_Expression, &s_Mod);
 	ClientCmdsCommand sig_expression_functions("sig_expression_functions", CC_Expression_Func, &s_Mod);
 	ClientCmdsCommand sig_expression_vars("sig_expression_vars", CC_Expression_Vars, &s_Mod);
-	ClientCmdsCommand sig_wtest("sig_wtest", CC_WTest, &s_Mod);
 	ModCommandDebug sig_cpu_usage("sig_cpu_usage", CC_Cpu_Usage, &s_Mod);
 	
 	/* by way of incredibly annoying persistent requests from Hell-met,

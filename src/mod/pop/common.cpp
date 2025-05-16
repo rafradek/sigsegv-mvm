@@ -76,6 +76,14 @@ int GetResponseFor(const char *text) {
     return -1;
 }
 
+bool IsInNavSpawnArea(CTFPlayer *player) {
+    CTFNavArea *area = static_cast<CTFNavArea *>(player->GetLastKnownArea());
+    if (area != nullptr) {
+        return area->HasTFAttributes(player->GetTeamNumber() == TF_TEAM_RED ? RED_SPAWN_ROOM : BLUE_SPAWN_ROOM);
+    }
+    return false;
+}
+
 void UpdateDelayedAddConds(std::vector<DelayedAddCond> &delayed_addconds)
 {
     for (auto it = delayed_addconds.begin(); it != delayed_addconds.end(); ) {
@@ -86,7 +94,7 @@ void UpdateDelayedAddConds(std::vector<DelayedAddCond> &delayed_addconds)
             continue;
         }
         
-        if (gpGlobals->curtime >= info.when && (info.health_below == 0 || info.bot->GetHealth() <= info.health_below)) {
+        if (gpGlobals->curtime >= info.when && (info.health_below == 0 || info.bot->GetHealth() <= info.health_below) && !(info.if_left_spawn && IsInNavSpawnArea(info.bot))) {
             info.bot->m_Shared->AddCond(info.cond, info.duration);
             
             it = delayed_addconds.erase(it);
@@ -706,6 +714,7 @@ void UpdatePeriodicTasks(std::vector<PeriodicTaskImpl> &pending_periodic_tasks, 
             const CKnownEntity *threat;
             if ((pending_task.health_above > 0 && bot->GetHealth() <= pending_task.health_above) || (
                     pending_task.if_target && ((threat = bot->GetVisionInterface()->GetPrimaryKnownThreat(true)) == nullptr || threat->GetEntity() == nullptr ))
+                    || (pending_task.if_left_spawn && IsInNavSpawnArea(bot))
                     || (pending_task.if_no_target && ((threat = bot->GetVisionInterface()->GetPrimaryKnownThreat(true)) != nullptr && threat->GetEntity() != nullptr ))
                     || (pending_task.if_range_target_min > 0 && ((threat = bot->GetVisionInterface()->GetPrimaryKnownThreat(true)) == nullptr || threat->GetEntity() == nullptr || threat->GetEntity()->GetAbsOrigin().DistTo(bot->GetAbsOrigin()) < pending_task.if_range_target_min ))
                     || (pending_task.if_range_target_max != -1 && ((threat = bot->GetVisionInterface()->GetPrimaryKnownThreat(true)) == nullptr || threat->GetEntity() == nullptr || threat->GetEntity()->GetAbsOrigin().DistTo(bot->GetAbsOrigin()) > pending_task.if_range_target_max))) {
@@ -725,9 +734,7 @@ void UpdatePeriodicTasks(std::vector<PeriodicTaskImpl> &pending_periodic_tasks, 
                 it = pending_periodic_tasks.begin();
                 continue;
             }
-
-            //info.Execute(pending_task.bot);
-            DevMsg("Periodic task executed %f, %f\n", pending_task.delay,gpGlobals->curtime);
+            
             if (--pending_task_impl.repeatsLeft == 0) {
                 it =  pending_periodic_tasks.erase(it);
                 continue;
@@ -790,6 +797,8 @@ void Parse_AddCond(std::vector<AddCond> &addconds, KeyValues *kv)
             addcond.health_below = subkey->GetInt();
         } else if (FStrEq(name, "IfHealthAbove")) {
             addcond.health_above = subkey->GetInt();
+        } else if (FStrEq(name, "IfLeftSpawn")) {
+            addcond.if_left_spawn = subkey->GetBool();
         }
             else {
             Warning("Unknown key \'%s\' in AddCond block.\n", name);
@@ -872,6 +881,9 @@ bool Parse_PeriodicTask(std::vector<std::shared_ptr<PeriodicTask>> &periodic_tas
         }
         else if (FStrEq(name, "IfHealthAbove")) {
             task.health_above=subkey->GetInt();
+        }
+        else if (FStrEq(name, "IfLeftSpawn")) {
+            task.if_left_spawn = subkey->GetBool();
         }
         else {
             task.Parse(subkey);
@@ -988,7 +1000,8 @@ void ApplyAddCond(CTFBot *bot, std::vector<AddCond> &addconds, std::vector<Delay
                 addcond.cond,
                 addcond.duration,
                 addcond.health_below,
-                addcond.health_above
+                addcond.health_above,
+                addcond.if_left_spawn
             });
         }
     }

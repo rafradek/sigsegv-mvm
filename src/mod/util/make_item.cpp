@@ -299,7 +299,6 @@ namespace Mod::Util::Make_Item
 			ModCommandResponse("[%s] Created item \"%s\" with 0 attributes and gave it to player \"%s\".\n\n", cmd_name, item_view->GetStaticData()->GetName(), recipient->GetPlayerName());
 		}
 		
-		
 	}
 	
 	void CC_Give_Common(CCommandPlayer *player, const CCommand& args, const char *cmd_name, CSteamID steamid, bool no_remove)

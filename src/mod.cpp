@@ -304,7 +304,8 @@ void CModManager::Load()
 
 	for (auto mod : AutoList<IMod>::List()) {
 		mod->InvokeLoad();
-		
+	}
+	for (auto mod : AutoList<IMod>::List()) {
 		if (mod->EnableByDefault()) {
 			mod->Toggle(true);
 		}

@@ -391,6 +391,7 @@ public:
 	void IterateAttributes(IEconItemAttributeIterator *iter) const                                    {        ft_IterateAttributes     (this, iter); }
 	const char *GetPlayerDisplayModel(int classindex, int team) const                                      { return ft_GetPlayerDisplayModel(this, classindex, team); }
 	int GetSkin(int team, bool viewmodel) const                                                       { return ft_GetSkin(this, team, viewmodel); }
+	int GetStyle() const                                                                              { return ft_GetStyle(this); }
 
 	DECL_DATAMAP(item_definition_index_t, m_iItemDefinitionIndex);
 	DECL_DATAMAP(int,            m_iEntityQuality);
@@ -415,6 +416,7 @@ private:
 	static MemberFuncThunk<const CEconItemView *, CEconItem *>                       ft_GetSOCData;
 	static MemberFuncThunk<const CEconItemView *, const char *, int, int>            ft_GetPlayerDisplayModel;
 	static MemberFuncThunk<const CEconItemView *, int, int, bool>                    ft_GetSkin;
+	static MemberFuncThunk<const CEconItemView *, int>                               ft_GetStyle;
 
 	static inline MemberFuncThunk<const CEconItemView *, void, IEconItemAttributeIterator *>         ft_IterateAttributes     { "CEconItemView::IterateAttributes"      };
 	

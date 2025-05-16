@@ -3382,7 +3382,6 @@
 				"UTIL_SetOrigin" "_Z14UTIL_SetOriginP11CBaseEntityRK6Vectorb"
 				"UTIL_TraceEntity [IHandleEntity]" "_Z16UTIL_TraceEntityP11CBaseEntityRK6VectorS3_jPK13IHandleEntityiP10CGameTrace"
 
-				"CEconItemSchema::Reset" "_ZN15CEconItemSchema5ResetEv"
 
 				"CEconItemView::GetAnimationSlot" "_ZNK13CEconItemView16GetAnimationSlotEv"
 				"CEconItemView::GetSkin" "_ZNK13CEconItemView7GetSkinEib"

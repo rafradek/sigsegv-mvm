@@ -101,6 +101,22 @@ namespace Util::Lua
         }
     }
 
+    int SafeCall(lua_State *l, int numargs, int numret)
+    {
+        try {
+            int err = lua_pcall(l, numargs, numret, 0);
+            if (err) {
+                const char *errstr = lua_tostring(l, -1);
+                SendWarningConsoleMessageToAdmins("%s\n", errstr);
+            }
+            return err;
+        }
+        catch (std::exception &e) {
+            SendWarningConsoleMessageToAdmins("%s\n", e.what());
+            return -1;
+        }
+    }
+
     int LPrint(lua_State *l)
     {
         std::string str = "";
@@ -3918,12 +3934,7 @@ namespace Util::Lua
                 SendWarningConsoleMessageToAdmins("%s\n", errbuf);
             }
             else if (execute) {
-                err = lua_pcall(l, 0, LUA_MULTRET, 0);
-                
-                if (err) {
-                    const char *errbuf = lua_tostring(l, -1);
-                    SendWarningConsoleMessageToAdmins("%s\n", errbuf);
-                }
+                SafeCall(l, 0, LUA_MULTRET);
             }
         }
         lua_settop(l,0);
@@ -3966,12 +3977,7 @@ namespace Util::Lua
                 SendWarningConsoleMessageToAdmins("%s\n", errbuf);
             }
             else if (execute) {
-                err = lua_pcall(l, 0, LUA_MULTRET, 0);
-                
-                if (err) {
-                    const char *errbuf = lua_tostring(l, -1);
-                    SendWarningConsoleMessageToAdmins("%s\n", errbuf);
-                }
+                SafeCall(l, 0, LUA_MULTRET);
             }
         }
         else {
@@ -4005,11 +4011,7 @@ namespace Util::Lua
         SwitchState();
         {
             lua_getglobal(l, str);
-            int err = lua_pcall(l, numargs, 0, 0);
-            if (err) {
-                const char *errstr = lua_tostring(l, -1);
-                SendWarningConsoleMessageToAdmins("%s\n", errstr);
-            }
+            SafeCall(l, numargs, 0);
         }
         stackDump(l);
         lua_settop(l,0);
@@ -4027,11 +4029,7 @@ namespace Util::Lua
         timer.Start();
         SwitchState();
 
-        int err = lua_pcall(l, numargs, numret, 0);
-        if (err) {
-            const char *errstr = lua_tostring(l, -1);
-            SendWarningConsoleMessageToAdmins("%s\n", errstr);
-        }
+        int err = SafeCall(l, numargs, numret);
 
         timer.End();
         script_exec_time += timer.GetDuration().GetSeconds();

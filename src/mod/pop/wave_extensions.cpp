@@ -175,6 +175,9 @@ namespace Mod::Pop::Wave_Extensions
 		if (!TFGameRules()->IsMannVsMachineMode())
 			return nullptr;
 
+		if (g_pPopulationManager == nullptr)
+			return nullptr;
+
 		CWave *wave = g_pPopulationManager->GetCurrentWave();
 		if (wave == nullptr)
 			return nullptr;

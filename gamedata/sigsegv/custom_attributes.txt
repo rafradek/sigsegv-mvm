@@ -3738,4 +3738,134 @@
         "hidden"	"1"
         "effect_type"	"positive"
     }
+    "4694"
+    {
+        "name"	"chain explosion"
+        "attribute_class"	"chain_explosion"
+        "description_string"	"Can be detonated by another explosive"
+        "description_format"	"value_is_additive"
+        "hidden"	"0"
+        "effect_type"	"positive"
+        "stored_as_integer"	"0"
+    }
+    "4695"
+    {
+        "name"	"proximity bomb"
+        "attribute_class"	"proximity_bomb"
+        "description_string"	"Detonates on proximity with enemies"
+        "description_format"	"value_is_additive"
+        "hidden"	"0"
+        "effect_type"	"positive"
+        "stored_as_integer"	"0"
+    }
+    "4696"
+    {
+        "name"	"projectile radius damage"
+        "attribute_class"	"projectile_radius_damage"
+        "description_string"	"Deals %d damage to enemies in radius"
+        "description_format"	"value_is_additive"
+        "hidden"	"0"
+        "effect_type"	"positive"
+        "stored_as_integer"	"0"
+    }
+    "4697"
+    {
+        "name"	"projectile radius damage time"
+        "attribute_class"	"projectile_radius_damage_time"
+        "description_string"	""
+        "description_format"	"value_is_additive"
+        "hidden"	"1"
+        "effect_type"	"positive"
+        "stored_as_integer"	"0"
+    }
+    "4698"
+    {
+        "name"	"projectile radius damage radius"
+        "attribute_class"	"projectile_radius_damage_radius"
+        "description_string"	""
+        "description_format"	"value_is_additive"
+        "hidden"	"1"
+        "effect_type"	"positive"
+        "stored_as_integer"	"0"
+    }
+    "4699"
+    {
+        "name"	"projectile radius damage hit limit"
+        "attribute_class"	"projectile_radius_damage_hit_limit"
+        "description_string"	""
+        "description_format"	"value_is_additive"
+        "hidden"	"1"
+        "effect_type"	"positive"
+        "stored_as_integer"	"0"
+    }
+    "4700"
+    {
+        "name"	"projectile radius knockback"
+        "attribute_class"	"projectile_radius_knockback"
+        "description_string"	""
+        "description_format"	"value_is_additive"
+        "hidden"	"1"
+        "effect_type"	"positive"
+        "stored_as_integer"	"0"
+    }
+    "4701"
+    {
+        "name"	"projectile radius knockback time"
+        "attribute_class"	"projectile_radius_knockback_time"
+        "description_string"	""
+        "description_format"	"value_is_additive"
+        "hidden"	"1"
+        "effect_type"	"positive"
+        "stored_as_integer"	"0"
+    }
+    "4702"
+    {
+        "name"	"projectile radius knockback radius"
+        "attribute_class"	"projectile_radius_knockback_radius"
+        "description_string"	""
+        "description_format"	"value_is_additive"
+        "hidden"	"1"
+        "effect_type"	"positive"
+        "stored_as_integer"	"0"
+    }
+    "4703"
+    {
+        "name"	"projectile radius knockback up"
+        "attribute_class"	"projectile_radius_knockback_up"
+        "description_string"	""
+        "description_format"	"value_is_additive"
+        "hidden"	"1"
+        "effect_type"	"positive"
+        "stored_as_integer"	"0"
+    }
+    "4704"
+    {
+        "name"	"projectile radius knockback side"
+        "attribute_class"	"projectile_radius_knockback_side"
+        "description_string"	""
+        "description_format"	"value_is_additive"
+        "hidden"	"1"
+        "effect_type"	"positive"
+        "stored_as_integer"	"0"
+    }
+    "4705"
+    {
+        "name"	"projectile radius knockback forward"
+        "attribute_class"	"projectile_radius_knockback_forward"
+        "description_string"	""
+        "description_format"	"value_is_additive"
+        "hidden"	"1"
+        "effect_type"	"positive"
+        "stored_as_integer"	"0"
+    }
+    "4706"
+    {
+        "name"	"projectile radius knockback hit limit"
+        "attribute_class"	"projectile_radius_knockback_hit_limit"
+        "description_string"	""
+        "description_format"	"value_is_additive"
+        "hidden"	"1"
+        "effect_type"	"positive"
+        "stored_as_integer"	"0"
+    }
 }
