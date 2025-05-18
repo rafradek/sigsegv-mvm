@@ -2134,29 +2134,32 @@ namespace Mod::Pop::TFBot_Extensions
 			auto player = reinterpret_cast<CTFPlayer *>(this);
 			for (int i = 0; i < IBaseProjectileAutoList::AutoList().Count(); ++i) {
 				auto proj = rtti_scast<CBaseProjectile *>(IBaseProjectileAutoList::AutoList()[i]);
-				auto team = TFTeamMgr()->GetTeam(proj->GetTeamNumber());
-				if (team == nullptr) {
-					team = TFTeamMgr()->GetTeam(TEAM_UNASSIGNED);
-				}
-				team->SetTeamNumber(team->GetTeamNumber());
 				
 				if (proj->GetOwnerEntity() == player) {
+					auto team = TFTeamMgr()->GetTeam(proj->GetTeamNumber());
+					if (team == nullptr) {
+						team = TFTeamMgr()->GetTeam(TEAM_UNASSIGNED);
+					}
+					team->SetTeamNumber(team->GetTeamNumber());
 					proj->SetOwnerEntity(team);
 				}
-				if (rtti_cast<CBaseGrenade *>(proj) != nullptr && rtti_cast<CBaseGrenade *>(proj)->GetThrower() == player) {
-					rtti_cast<CBaseGrenade *>(proj)->SetThrower(team);
+				CBaseGrenade *grenade = rtti_cast<CBaseGrenade *>(proj);
+				if (grenade != nullptr) {
+					if (grenade->GetThrower() == player) {
+						grenade->SetThrower(player);
+					}
 				}
 				else if (rtti_cast<IScorer *>(proj) != nullptr && rtti_cast<IScorer *>(proj)->GetScorer() == player) {
 					if (rtti_cast<CTFProjectile_Rocket *>(proj) != nullptr)
-						rtti_cast<CTFProjectile_Rocket *>(proj)->SetScorer(team);
+						rtti_cast<CTFProjectile_Rocket *>(proj)->SetScorer(nullptr);
 					else if (rtti_cast<CTFBaseProjectile *>(proj) != nullptr)
-						rtti_cast<CTFBaseProjectile *>(proj)->SetScorer(team);
+						rtti_cast<CTFBaseProjectile *>(proj)->SetScorer(nullptr);
 					else if (rtti_cast<CTFProjectile_Arrow *>(proj) != nullptr)
-						rtti_cast<CTFProjectile_Arrow *>(proj)->SetScorer(team);
+						rtti_cast<CTFProjectile_Arrow *>(proj)->SetScorer(nullptr);
 					else if (rtti_cast<CTFProjectile_Flare *>(proj) != nullptr)
-						rtti_cast<CTFProjectile_Flare *>(proj)->SetScorer(team);
+						rtti_cast<CTFProjectile_Flare *>(proj)->SetScorer(nullptr);
 					else if (rtti_cast<CTFProjectile_EnergyBall *>(proj) != nullptr)
-						rtti_cast<CTFProjectile_EnergyBall *>(proj)->SetScorer(team);
+						rtti_cast<CTFProjectile_EnergyBall *>(proj)->SetScorer(nullptr);
 				}
 			}
 		}

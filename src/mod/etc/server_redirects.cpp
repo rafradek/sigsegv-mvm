@@ -14,8 +14,8 @@
 #include "util/misc.h"
 #include "util/iterate.h"
 #include "tier1/CommandBuffer.h"
-#include "sdktf2/steam/steam_gameserver.h"
-#include "sdktf2/steam/isteamgameserver.h"
+#include <steam/steam_gameserver.h>
+#include <steam/isteamgameserver.h>
 #include <fmt/format.h>
 
 namespace Mod::Etc::Server_Redirects
@@ -65,6 +65,9 @@ namespace Mod::Etc::Server_Redirects
 		virtual const char		*GetName( void ) const { return "net_Message"; }	// returns network message name, eg "svc_serverinfo"
 		virtual INetChannel		*GetNetChannel( void ) const { return nullptr;}
 		virtual const char		*ToString( void ) const { return ""; } // returns a human readable string about message content
+		virtual bool	BIncomingMessageForProcessing( double dblNetTime, int numBytes ) { return true; }
+
+		virtual size_t GetSize() const { return 0; }
 
 		std::string dest;
 	};

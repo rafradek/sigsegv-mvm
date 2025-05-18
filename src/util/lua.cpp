@@ -549,7 +549,7 @@ namespace Util::Lua
     inline CBaseEntity *LEntityFindByIndex(int index)
     {
         if (index > 2048)
-            return EHANDLE::FromIndex(index);
+            return EHANDLE::UnsafeFromIndex(index);
         else
             return UTIL_EntityByIndex(index);
     }

@@ -101,7 +101,8 @@ void variant_t::Set(fieldtype_t type, void *data) {
 		fieldType = FIELD_CUSTOM;
 		return;
 	}
-	ft_VariantSet(this, type, data); }
+	ft_VariantSet(this, type, data);
+}
 
 static MemberFuncThunk<variant_t*, void, void *> ft_VariantSetOther("variant_t::SetOther");
 void variant_t::SetOther(void *data) { 
@@ -111,7 +112,8 @@ void variant_t::SetOther(void *data) {
 		return;
 	}
 
-	ft_VariantSetOther(this, data); }
+	ft_VariantSetOther(this, data);
+}
 
 void variant_t::SetEntity( CBaseEntity *val ) 
 { 
@@ -142,7 +144,7 @@ bool variant_t::Convert(fieldtype_t newType) {
 					
 					CBaseEntity *ent = nullptr;
 					if ( iszVal != NULL_STRING ) {
-						ent = CHandle<CBaseEntity>::FromIndex(iVal);
+						ent = CHandle<CBaseEntity>::UnsafeFromIndex(iVal);
 					}
 					SetEntity(ent);
 					fieldType = newType;
@@ -257,6 +259,13 @@ bool variant_t::Convert(fieldtype_t newType) {
 	}
 	return false;
 }
+
+#ifdef SE_IS_TF2
+void CTakeDamageInfo::SetCritType(CTakeDamageInfo::ECritType type) 
+{ 
+	this->m_eCritType = type;
+}
+#endif
 
 static StaticFuncThunk<void, float *, const char *> ft_UTIL_StringToVector("UTIL_StringToVector");
 void UTIL_StringToVector(float *base, const char *string) {ft_UTIL_StringToVector(base, string); }

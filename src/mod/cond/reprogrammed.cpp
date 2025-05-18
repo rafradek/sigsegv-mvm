@@ -1046,7 +1046,7 @@ namespace Mod::Cond::Reprogrammed
 			CBasePlayer *bot = team_spec->GetPlayer(i);
 			if (bot != nullptr && bot->IsBot() && bot->IsAlive()) {
 				
-				spec_players.push_back(bot->GetRefEHandle());
+				spec_players.push_back(CHandle<CTFPlayer>::UnsafeFromBaseHandle(bot->GetRefEHandle()));
 				team_spec->m_aPlayers->FindAndRemove(bot);
 				i--;
 				if (team_spec->m_hLeader == bot) {

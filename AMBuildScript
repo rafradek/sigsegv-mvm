@@ -130,12 +130,18 @@ class ExtensionConfig(object):
     SdkHelpers.find_sdk_path = self.findSdkPath
     SdkHelpers.findSdks(builder, self.all_targets, sdk_list)
 
-    if 'css' in SdkHelpers.sdks and 'sdk2013' in SdkHelpers.sdks:
-      with open(os.path.join(builder.sourcePath, 'css.json'), 'rt') as fp:
+    if 'tf2' in SdkHelpers.sdks and 'sdk2013' in SdkHelpers.sdks:
+      with open(os.path.join(builder.sourcePath, 'sdk2013.json'), 'rt') as fp:
         sdk = json.load(fp)
-        builder.AddConfigureFile(os.path.join(builder.sourcePath, 'css.json'))
-        SdkHelpers.sdks['css'] = sdk
-        SdkHelpers.sdks['css']['path'] = SdkHelpers.sdks['sdk2013']['path']
+        builder.AddConfigureFile(os.path.join(builder.sourcePath, 'sdk2013.json'))
+        SdkHelpers.sdks['sdk2013'] = sdk
+        SdkHelpers.sdks['sdk2013']['path'] = SdkHelpers.sdks['tf2']['path']
+    
+    # if 'sdk2013' in SdkHelpers.sdks:
+    #   with open(os.path.join(builder.sourcePath, 'sdk2013.json'), 'rt') as fp:
+    #     sdk = json.load(fp)
+    #     builder.AddConfigureFile(os.path.join(builder.sourcePath, 'sdk2013.json'))
+    #    SdkHelpers.sdks['sdk2013']
 
     self.sdks = SdkHelpers.sdks
     self.sdk_manifests = SdkHelpers.sdk_manifests
@@ -253,7 +259,6 @@ class ExtensionConfig(object):
     cxx.defines += ['HAVE_STDINT_H']
     cxx.defines += ['HAVE_STRING_H']
     cxx.defines += ['GNUC']
-    cxx.defines += ['PLATFORM_X86']
     cxx.defines += ['FMT_HEADER_ONLY']
     cxx.defines += ['LUAJIT_ENABLE_LUA52COMPAT']
     cxx.defines += ['VERSION_SAFE_STEAM_API_INTERFACES']
@@ -362,7 +367,7 @@ class ExtensionConfig(object):
     #  cxx.cflags    += ['-march=sandybridge']
     #  cxx.cflags    += ['-mtune=native']
     #  cxx.cflags    += ['-flto=auto']
-      cxx.cflags    += ['-fno-builtin']
+    #  cxx.cflags    += ['-fno-builtin']
       
       cxx.linkflags += ['-Wl,-O2']
     #  cxx.linkflags += ['-Wl,-flto=auto']

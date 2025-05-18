@@ -329,19 +329,15 @@ class IVideoRecorder;
 #define RAD_TELEMETRY_DISABLED
 #undef   NO_STRING_T
 #undef WEAK_STRING_T
-#ifdef SE_IS_TF2
+
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wdangling-else"
 #include <platform.h>
+#pragma GCC diagnostic pop
 #include <const.h>
 #include <interface.h>
 #include <commonmacros.h>
 #include <basetypes.h>
-#else
-#include "sdk2013/platform.h"
-#include <const.h>
-#include <interface.h>
-#include "sdk2013/commonmacros.h"
-#include "sdk2013/basetypes.h"
-#endif
 
 WARN_IGNORE__ADDRESS()
 #include <dbg.h>
@@ -349,24 +345,18 @@ WARN_RESTORE()
 #undef COMPILE_TIME_ASSERT
 #define COMPILE_TIME_ASSERT(pred) static_assert(pred)
 
-#ifdef SE_IS_TF2
 #include <Color.h>
-#include "sdktf2/threadtools.h"
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wvolatile"
+#include <threadtools.h>
+#pragma GCC diagnostic pop
 #include <vector2d.h>
 #include <vector.h>
 #include <vector4d.h>
 #include <mathlib.h>
-#else
-#include "sdk2013/Color.h"
-#include "sdk2013/threadtools.h"
-#include "sdk2013/vector2d.h"
-#include "sdk2013/vector.h"
-#include "sdk2013/vector4d.h"
-#include "sdk2013/mathlib.h"
-#endif
 
 #include <basehandle.h>
-#include "sdk2013/string_t.h"
+#include <string_t.h>
 
 #include <annotations.h>
 
@@ -394,8 +384,7 @@ WARN_RESTORE()
 #include <ehandle.h>
 #include <datamap.h>
 #include <predictioncopy.h>
-#include "sdk2013/takedamageinfo.h"
-//#include <takedamageinfo.h>
+#include <takedamageinfo.h>
 #include <iserverentity.h>
 WARN_IGNORE__ADDRESS()
 WARN_IGNORE__NONNULL_COMPARE()
@@ -407,6 +396,7 @@ WARN_RESTORE()
 #include <ivdebugoverlay.h>
 #include "sdk2013/debugoverlay_shared.h"
 #include <dt_send.h>
+#include <steam/steamclientpublic.h>
 #include <util_shared.h>
 #undef EntityFromEntityHandle
 #include "sdk2013/ientityhandle.h"
@@ -416,7 +406,8 @@ WARN_RESTORE()
 #include <npcevent.h>
 #include <bitbuf.h>
 #include <eiface.h>
-#include "sdk2013/imaterialsystem_V081.h"
+#include "sdk2013/utlsymbol.h"
+#include <materialsystem/imaterialsystem.h>
 #include <materialsystem/imaterial.h>
 #include <toolframework/itoolentity.h>
 #include <datamap.h>
@@ -435,7 +426,6 @@ WARN_RESTORE()
 WARN_IGNORE__REORDER()
 #include <bitmap/imageformat.h>
 WARN_RESTORE()
-//#include <materialsystem/imaterialsystem.h>
 #include <particle_parse.h>
 #include <effect_dispatch_data.h>
 #include <SoundEmitterSystem/isoundemittersystembase.h>
@@ -450,7 +440,6 @@ WARN_IGNORE__REORDER()
 WARN_RESTORE()
 #include <ivmodelrender.h>
 #include <vcollide_parse.h>
-#include <steam/steamclientpublic.h>
 #include <netadr.h>
 WARN_IGNORE__NULL_DEREFERENCE()
 #include <iclientrenderable.h>
@@ -479,11 +468,7 @@ WARN_RESTORE()
 #include <model_types.h>
 #include <idedicatedexports.h>
 #include <icommandline.h>
-#ifdef SE_IS_TF2
-#include "sdk2013/iserver.h"
-#else
 #include <iserver.h>
-#endif
 #include <iclient.h>
 #include <datacache/imdlcache.h>
 #include <datacache/idatacache.h>
@@ -534,22 +519,9 @@ WARN_RESTORE()
 #define LINUX 1
 #endif
 
-#ifdef SE_IS_TF2
-#else
-static_assert(_SIGSEGV_SDK2013_OVERRIDE__PUBLIC_TIER0_PLATFORM_H);
-static_assert(_SIGSEGV_SDK2013_OVERRIDE__PUBLIC_TIER0_COMMONMACROS_H);
-static_assert(_SIGSEGV_SDK2013_OVERRIDE__PUBLIC_TIER0_BASETYPES_H);
-static_assert(_SIGSEGV_SDK2013_OVERRIDE__PUBLIC_COLOR_H);
-static_assert(_SIGSEGV_SDK2013_OVERRIDE__PUBLIC_MATHLIB_VECTOR2D_H);
-static_assert(_SIGSEGV_SDK2013_OVERRIDE__PUBLIC_MATHLIB_VECTOR_H);
-static_assert(_SIGSEGV_SDK2013_OVERRIDE__PUBLIC_MATHLIB_VECTOR4D_H);
-static_assert(_SIGSEGV_SDK2013_OVERRIDE__PUBLIC_MATHLIB_MATHLIB_H);
-#endif
 static_assert(_SIGSEGV_SDK2013_OVERRIDE__PUBLIC_TIER1_CONVAR_H);
 static_assert(_SIGSEGV_SDK2013_OVERRIDE__PUBLIC_TIER1_CONVAR_H);
 static_assert(_SIGSEGV_SDK2013_OVERRIDE__GAME_SHARED_DEBUGOVERLAY_SHARED_H);
-static_assert(_SIGSEGV_SDK2013_OVERRIDE__PUBLIC_MATERIALSYSTEM_IMATERIALSYSTEM_H);
-static_assert(_SIGSEGV_SDK2013_OVERRIDE__PUBLIC_STRING_T_H);
 static_assert(_SIGSEGV_SDK2013_OVERRIDE__PUBLIC_VARIANT_T_H);
 
 

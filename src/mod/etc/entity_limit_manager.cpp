@@ -81,7 +81,7 @@ namespace Mod::Etc::Entity_Limit_Manager
 	{
         auto shared = reinterpret_cast<CTFPlayerShared *>(this);
         disguise_weapon_player = shared->GetOuter();
-        EHANDLE prevDisguiseWeapon = shared->m_hDisguiseWeapon.Get();
+        CHandle<CTFWeaponBase> prevDisguiseWeapon = shared->m_hDisguiseWeapon.Get();
         DETOUR_MEMBER_CALL(forcePrimary);
         if (prevDisguiseWeapon != shared->m_hDisguiseWeapon && prevDisguiseWeapon != nullptr) {
             prevDisguiseWeapon->Remove();
