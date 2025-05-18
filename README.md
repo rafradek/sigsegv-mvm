@@ -28,7 +28,7 @@ Download a package (optimize-only, no-mvm, or full) from releases and extract it
 
 # How to build
 
-This extension requires gcc 13 to build. For TF2, special modified hl2sdk-tf2 is used from https://github.com/rafradek/hl2sdk-tf2
+This extension requires gcc 13 to build
 
 Ubuntu 20.04 docker image with gcc 13 and other dependencies already installed (skip to step 3): rafradek/ubuntu2004dev:latest 
 
