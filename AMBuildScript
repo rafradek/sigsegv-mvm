@@ -136,12 +136,6 @@ class ExtensionConfig(object):
         builder.AddConfigureFile(os.path.join(builder.sourcePath, 'sdk2013.json'))
         SdkHelpers.sdks['sdk2013'] = sdk
         SdkHelpers.sdks['sdk2013']['path'] = SdkHelpers.sdks['tf2']['path']
-    
-    # if 'sdk2013' in SdkHelpers.sdks:
-    #   with open(os.path.join(builder.sourcePath, 'sdk2013.json'), 'rt') as fp:
-    #     sdk = json.load(fp)
-    #     builder.AddConfigureFile(os.path.join(builder.sourcePath, 'sdk2013.json'))
-    #    SdkHelpers.sdks['sdk2013']
 
     self.sdks = SdkHelpers.sdks
     self.sdk_manifests = SdkHelpers.sdk_manifests
