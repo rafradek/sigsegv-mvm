@@ -457,6 +457,7 @@ public:
 	void ClientCommand(CCommand& command)                        {        ft_ClientCommand                    (this, command); }
 	void StartBuildingObjectOfType(int iType, int iMode)         {        ft_StartBuildingObjectOfType        (this, iType, iMode); }
 	bool HasTheFlag(ETFFlagType *p1 = nullptr, int i1 = 0) const { return ft_HasTheFlag                       (this, p1, i1); }
+	void DropFlag(bool bSilent = false)                          {        ft_DropFlag                         (this, bSilent); }
 	int GetAutoTeam(int team)                                    { return ft_GetAutoTeam                      (this, team); }
 	float MedicGetChargeLevel(CTFWeaponBase **medigun = nullptr) { return ft_MedicGetChargeLevel              (this, medigun); }
 	float TeamFortress_CalculateMaxSpeed(bool b1 = false)        { return ft_TeamFortress_CalculateMaxSpeed   (this, b1); }
@@ -591,6 +592,7 @@ private:
 	static MemberFuncThunk<      CTFPlayer *, void, CCommand&                 > ft_ClientCommand;
 	static MemberFuncThunk<      CTFPlayer *, void, int, int                  > ft_StartBuildingObjectOfType;
 	static MemberFuncThunk<const CTFPlayer *, bool, ETFFlagType *, int        > ft_HasTheFlag;
+	static MemberFuncThunk<      CTFPlayer *, void, bool                      > ft_DropFlag;
 	static MemberFuncThunk<      CTFPlayer *, int, int                        > ft_GetAutoTeam;
 	static MemberFuncThunk<      CTFPlayer *, float, CTFWeaponBase **         > ft_MedicGetChargeLevel;
 	static MemberFuncThunk<      CTFPlayer *, float, bool                     > ft_TeamFortress_CalculateMaxSpeed;

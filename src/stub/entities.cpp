@@ -4,6 +4,7 @@ IMPL_DATAMAP(bool,             CAmbientGeneric, m_fActive);
 IMPL_DATAMAP(string_t,         CAmbientGeneric, m_iszSound);
 
 IMPL_DATAMAP(int, CPathTrack, m_eOrientationType);
+IMPL_DATAMAP(CBaseEntityOutput, CPathTrack, m_OnPass);
 
 IMPL_DATAMAP(string_t,             CEnvEntityMaker, m_iszTemplate);
 IMPL_DATAMAP(QAngle,               CEnvEntityMaker,   m_angPostSpawnDirection);
@@ -108,6 +109,15 @@ IMPL_SENDPROP(float, CSpriteTrail, m_flLifeTime, CSpriteTrail);
 IMPL_DATAMAP (bool, CParticleSystem, m_bStartActive);
 IMPL_DATAMAP (string_t, CParticleSystem, m_iszEffectName);
 IMPL_SENDPROP(CHandle<CBaseEntity>[63], CParticleSystem, m_hControlPointEnts, CParticleSystem);
+
+IMPL_SENDPROP(char[260], CPointWorldText, m_szText, CPointWorldText);
+IMPL_SENDPROP(int, CPointWorldText, m_colTextColor, CPointWorldText);
+IMPL_SENDPROP(float, CPointWorldText, m_flTextSize, CPointWorldText);
+IMPL_SENDPROP(float, CPointWorldText, m_flTextSpacingX, CPointWorldText);
+IMPL_SENDPROP(float, CPointWorldText, m_flTextSpacingY, CPointWorldText);
+IMPL_SENDPROP(int, CPointWorldText, m_nOrientation, CPointWorldText);
+IMPL_SENDPROP(int, CPointWorldText, m_nFont, CPointWorldText);
+IMPL_SENDPROP(bool, CPointWorldText, m_bRainbow, CPointWorldText);
 
 MemberVFuncThunk<CBaseServerVehicle *, void, bool, bool> CBaseServerVehicle::vt_HandleEntryExitFinish(TypeName<CBaseServerVehicle>(), "CBaseServerVehicle::HandleEntryExitFinish");
 MemberVFuncThunk<CBaseServerVehicle *, void, CBasePlayer *, CUserCmd *,  void *, void *> CBaseServerVehicle::vt_SetupMove(TypeName<CBaseServerVehicle>(), "CBaseServerVehicle::SetupMove");

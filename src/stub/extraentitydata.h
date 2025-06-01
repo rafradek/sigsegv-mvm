@@ -47,7 +47,7 @@ struct CustomOutput
 class ExtraEntityData
 {
 public:
-    ExtraEntityData(CBaseEntity *entity) {}
+    ExtraEntityData(CBaseEntity *entity) : entity(entity) {}
 
     virtual ~ExtraEntityData() {
         for (auto module : modules) {
@@ -93,10 +93,23 @@ public:
         return custom_outputs;
     }
 
+    // Sets entity's extra entity data pointer to timed overlay
+    void SetEntityTimedOverlay() {
+        entity->m_extraEntityData = timed_overlay;
+    }
+
+    // Restores entity's extra entity data pointer to this 
+    void RestoreExtraEntityData() {
+        timed_overlay = entity->m_extraEntityData;
+        entity->m_extraEntityData = this;
+    }
+
 private:
     std::vector<std::pair<const char *, EntityModule *>> modules;
     std::vector<CustomVariable> custom_variables;
     std::vector<CustomOutput> custom_outputs;
+    ExtraEntityData *timed_overlay = nullptr;
+    CBaseEntity *entity;
 };
 
 class ExtraEntityDataWithAttributes : public ExtraEntityData

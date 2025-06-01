@@ -2354,8 +2354,6 @@ namespace Mod::Etc::Mapentity_Additions
             MOD_ADD_DETOUR_MEMBER(CFlagDetectionZone_EntityIsFlagCarrier, "CFlagDetectionZone::EntityIsFlagCarrier");
             MOD_ADD_DETOUR_MEMBER(CBaseEntity_Activate, "CBaseEntity::Activate");
             
-            
-
             // Execute -1 delay events immediately
             MOD_ADD_DETOUR_MEMBER(CEventQueue_AddEvent_CBaseEntity, "CEventQueue::AddEvent [CBaseEntity]");
             MOD_ADD_DETOUR_MEMBER(CEventQueue_AddEvent, "CEventQueue::AddEvent");

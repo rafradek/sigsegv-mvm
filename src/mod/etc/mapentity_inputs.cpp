@@ -1663,6 +1663,24 @@ namespace Mod::Etc::Mapentity_Additions
             auto duration = vi::from_str<float>(v[1]);
             auto startfov = vi::from_str<int>(v[2]);
             player->SetFOV(player, fov.value_or(0), duration.value_or(0.0f), startfov.value_or(0));
+        }},
+        {"PickupFlag"sv, false, [](CBaseEntity *ent, const char *szInputName, CBaseEntity *pActivator, CBaseEntity *pCaller, variant_t &Value){
+            CBaseEntity *target = FindTargetFromVariant(Value, ent, pActivator, pCaller);
+            if (target != nullptr && rtti_cast<CCaptureFlag *>(target) != nullptr) {
+                CTFBot *bot = ToTFBot(ent);
+                CTFBot::AttributeType restoreFlags;
+                if (bot != nullptr) {
+                    restoreFlags = bot->m_nBotAttrs;
+                    bot->m_nBotAttrs = bot->m_nBotAttrs & (~CTFBot::ATTR_IGNORE_FLAG);
+                }
+                rtti_cast<CCaptureFlag *>(target)->PickUp(ToTFPlayer(ent), true);
+                if (bot != nullptr) {
+                    bot->m_nBotAttrs = restoreFlags;
+                }
+            }
+        }},
+        {"DropFlag"sv, false, [](CBaseEntity *ent, const char *szInputName, CBaseEntity *pActivator, CBaseEntity *pCaller, variant_t &Value){
+            ToTFPlayer(ent)->DropFlag();
         }}
     });
 
@@ -2404,6 +2422,20 @@ namespace Mod::Etc::Mapentity_Additions
         {"SetSolid"sv, false, [](CBaseEntity *ent, const char *szInputName, CBaseEntity *pActivator, CBaseEntity *pCaller, variant_t &Value){
             Value.Convert(FIELD_INTEGER);
             ent->CollisionProp()->SetSolid((SolidType_t)Value.Int());
+        }},
+        {"Explode"sv, false, [](CBaseEntity *ent, const char *szInputName, CBaseEntity *pActivator, CBaseEntity *pCaller, variant_t &Value){
+            
+            auto rocket = rtti_cast<CTFBaseRocket *>(ent);
+            auto grenade = rocket != nullptr ? nullptr : rtti_cast<CTFWeaponBaseGrenadeProj *>(ent);
+			trace_t tr;
+			Vector vecSpot = ent->GetAbsOrigin();
+			UTIL_TraceLine(vecSpot, vecSpot + Vector (0, 0, -32), MASK_SHOT_HULL, ent, COLLISION_GROUP_NONE, &tr);
+            if (rocket != nullptr) {
+                rocket->Explode(&tr, GetWorldEntity());
+            }
+            else if (grenade != nullptr) {
+                grenade->Explode(&tr, grenade->GetDamageType());
+            }
         }}
     });
     

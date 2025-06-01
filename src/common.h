@@ -358,7 +358,7 @@ WARN_RESTORE()
 #include <basehandle.h>
 #include <string_t.h>
 
-#include <annotations.h>
+//#include <annotations.h>
 
 WARN_IGNORE__CLASS_MEMACCESS()
 #include <utlmemory.h>

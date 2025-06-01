@@ -123,7 +123,7 @@ inline void ForEachTFPlayer(const FUNCTOR& func)
 	using T = CTFPlayer;
 	
 	for (int i = 1; i <= gpGlobals->maxClients; ++i) {
-		T *player = ToTFPlayer(UTIL_PlayerByIndex(i));
+		T *player = ToTFPlayer(reinterpret_cast<CBasePlayer *>(INDEXENT(i)->GetUnknown()));
 		if (player == nullptr) continue;
 		
 		if (!CALL_FUNCTOR(T *)(func, player)) break;
@@ -178,7 +178,7 @@ inline void ForEachTFBot(const FUNCTOR& func)
 	using T = CTFBot;
 	
 	for (int i = 1; i <= gpGlobals->maxClients; ++i) {
-		T *bot = ToTFBot(UTIL_PlayerByIndex(i));
+		T *bot = ToTFBot(reinterpret_cast<CBasePlayer *>(INDEXENT(i)->GetUnknown()));
 		if (bot == nullptr) continue;
 		
 		if (!CALL_FUNCTOR(T *)(func, bot)) break;

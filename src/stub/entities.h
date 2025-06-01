@@ -22,6 +22,7 @@ public:
 	CPathTrack *GetNext() { return ft_GetNext(this); }
 	
 	DECL_DATAMAP(int, m_eOrientationType);
+	DECL_DATAMAP(CBaseEntityOutput, m_OnPass);
 	
 private:
 	static MemberFuncThunk<CPathTrack *, CPathTrack *> ft_GetNext;
@@ -295,6 +296,18 @@ private:
 	static StaticFuncThunk<CBeam *, const char *, float> ft_BeamCreate;
 };
 
+class CPointWorldText : public CBaseEntity
+{
+public:
+	DECL_SENDPROP_RW(char[260], m_szText);
+	DECL_SENDPROP(int, m_colTextColor);
+	DECL_SENDPROP(float, m_flTextSize);
+	DECL_SENDPROP(float, m_flTextSpacingX);
+	DECL_SENDPROP(float, m_flTextSpacingY);
+	DECL_SENDPROP(int, m_nOrientation);
+	DECL_SENDPROP(int, m_nFont);
+	DECL_SENDPROP(bool, m_bRainbow);
+};
 
 // 20151007a
 

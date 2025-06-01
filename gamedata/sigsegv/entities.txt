@@ -185,6 +185,7 @@
 				}
 				
 				"~CBaseEntity [D2]" "_ZN11CBaseEntityD2Ev"
+				"CBaseEntity::AddTimedOverlay" "_ZN11CBaseEntity15AddTimedOverlayEPKci"
 				"CBaseEntity::SetOwnerEntity" "_ZN11CBaseEntity14SetOwnerEntityEPS_"
 				"CBaseEntity::ThinkSet" 				"_ZN11CBaseEntity8ThinkSetEMS_FvvEfPKc"
 				"CBaseEntity::GetMaxHealth" "_ZNK11CBaseEntity12GetMaxHealthEv"
@@ -233,6 +234,7 @@
 				"CBaseEntity::IsBSPModel" "_ZNK11CBaseEntity10IsBSPModelEv"
 				"CBaseEntity::ShouldCollide" "_ZNK11CBaseEntity13ShouldCollideEii"
 				"CBaseEntity::DrawDebugGeometryOverlays" "_ZN11CBaseEntity25DrawDebugGeometryOverlaysEv"
+				"CBaseEntity::DrawTimedOverlays" "_ZN11CBaseEntity17DrawTimedOverlaysEv"
 				"CBaseEntity::ChangeTeam" "_ZN11CBaseEntity10ChangeTeamEi"
 				"CBaseEntity::SetModelIndexOverride" "_ZN11CBaseEntity21SetModelIndexOverrideEii"
 				"CBaseEntity::SetModelIndex" "_ZN11CBaseEntity13SetModelIndexEi"

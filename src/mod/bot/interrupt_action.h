@@ -106,6 +106,8 @@ private:
     bool m_bWaitUntilDone = false;
     float m_fDistanceSq = 0.0f;
 
+    float m_fFinalNavAreaReachTime = 0.0f;
+
     bool m_bKillLook = false;
     bool m_bAlwaysLook = false;
     std::string m_strOnDoneAttributes = "";
@@ -117,7 +119,9 @@ private:
     CTFBotMoveTo *m_pNext = nullptr;
 };
 
-template<class Actor>
+CBaseEntity *SelectTargetByName(CBaseCombatCharacter *actor, const char *name);
+
+template <class Actor>
 inline CTFBotMoveTo<Actor> *CreateInterruptAction(Actor *actor, const char *cmd) {
     auto interrupt_action = new CTFBotMoveTo<Actor>();
     interrupt_action->Init(actor, cmd);

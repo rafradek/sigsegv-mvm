@@ -168,6 +168,16 @@
 				"g_nFakeIP" "g_nFakeIP"
 				"g_arFakePorts" "g_arFakePorts"
 			}
+			"addrs_group"
+			{
+				"[common]"
+				{
+					type "sym"
+					lib  "dedicated"
+				}
+				"g_threadid" "_ZL10g_threadid"
+			}
+			
 		}
 	}
 }

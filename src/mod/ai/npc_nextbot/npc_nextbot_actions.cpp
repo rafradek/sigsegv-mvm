@@ -15,6 +15,7 @@
 #include "util/value_override.h"
 #include "mod/ai/npc_nextbot/npc_nextbot_actions.h"
 #include "mod/bot/interrupt_action.h"
+#include "mod/bot/guard_action.h"
 #include "stub/usermessages_sv.h"
 #include "stub/particles.h"
 #include "stub/objects.h"
@@ -307,6 +308,9 @@ namespace Mod::AI::NPC_Nextbot
         }
         else if (str == PStr<"mobber">()) {
             return new MyNextbotEntityMobber();
+        }
+        else if (str == PStr<"followpath">()) {
+            return new CTFBotGuardAction<MyNextbotEntity>();
         }
         return nullptr;
     }

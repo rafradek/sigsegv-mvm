@@ -38,7 +38,7 @@ namespace Mod::Etc::Detector
         {"r_drawothermodels", {1,1}},
         {"snd_show", {0,0}},
         {"snd_visualize", {0,0}},
-        {"fog_enable", {1,1}},
+        {"fog_override", {0,0}},
         {"cl_thirdperson", {0, 0}},
         {"r_portalsopenall", {0, 0}},
         {"host_timescale", {1,1}},
@@ -66,6 +66,7 @@ namespace Mod::Etc::Detector
     }
 
     ConVar *developer;
+    ConVar *sv_cheats;
 
     ConVar cvar_bckt_tolerance("sig_etc_detector_bckt_tolerance", "0", FCVAR_NOTIFY, "Tolerance");
 
@@ -85,6 +86,8 @@ namespace Mod::Etc::Detector
 
     void Notify(const std::string &shortReason, const std::string &description, const std::string &params, int tick, const std::vector<ForwardData> &data, CTFPlayer *player, IClient *client) {
         if (client == nullptr || client->IsFakeClient()) return;
+        if (sv_cheats->GetBool()) return;
+        
         if (developer->GetBool()) {
             Msg("%s - %s - %s\n", shortReason.c_str(), description.c_str(), params.c_str());
             if (player != nullptr) {
@@ -1129,6 +1132,7 @@ namespace Mod::Etc::Detector
         virtual bool OnLoad() override
 		{
             developer = icvar->FindVar("developer");
+            sv_cheats = icvar->FindVar("sv_cheats");
 			notify_forward = forwards->CreateForward("SIG_DetectNotify", ET_Hook, 7, NULL, Param_Cell, Param_String, Param_String, Param_String, Param_Cell, Param_Array, Param_Cell);
 			should_draw_forward = forwards->CreateForward("SIG_ShouldDrawDetections", ET_Hook, 4, NULL, Param_Cell, Param_Cell, Param_Cell, Param_Cell);
             backtrack_ticks = TimeToTicks(0.2);

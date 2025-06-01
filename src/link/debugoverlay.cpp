@@ -1,7 +1,6 @@
 #include "link/link.h"
 
 
-#if 0
 namespace NDebugOverlay
 {
 	static StaticFuncThunk<void, const Vector&, const Vector&, const Vector&, int, int, int, int, float>                               ft_Box                       ("NDebugOverlay::Box");
@@ -63,4 +62,3 @@ namespace NDebugOverlay
 	void Circle(const Vector& position, const Vector& xAxis, const Vector& yAxis, float radius, int r, int g, int b, int a, bool bNoDepthTest, float flDuration)      { ft_Circle_axes(position, xAxis, yAxis, radius, r, g, b, a, bNoDepthTest, flDuration); }
 	void Sphere(const Vector& position, const QAngle& angles, float radius, int r, int g, int b, int a, bool bNoDepthTest, float flDuration)                          { ft_Sphere_ang(position, angles, radius, r, g, b, a, bNoDepthTest, flDuration); }
 }
-#endif

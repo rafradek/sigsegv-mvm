@@ -3,6 +3,7 @@
 
 #include "stub/strings.h"
 #include "stub/misc.h"
+#include "util/translation.h"
 
 const char *GetItemName(const CEconItemView *view);
 const char *GetItemName(const CEconItemView *view, bool &is_custom);
@@ -147,10 +148,10 @@ public:
         static char buf[128];
         auto item_def = GetItemSchema()->GetItemDefinitionByName(m_strClassname.c_str());
         if (strnicmp(m_strClassname.c_str(), "tf_weapon_", strlen("tf_weapon_")) == 0) {
-            strcpy(buf, FormatTextForPlayerSM(player, 2, "%t", "Weapon type:", item_def != nullptr ? GetItemNameForDisplay(item_def->m_iItemDefIndex, player) : m_strClassname.c_str() + strlen("tf_weapon_")));
+            strcpy(buf, TranslateText(player, "Weapon type:", item_def != nullptr ? GetItemNameForDisplay(item_def->m_iItemDefIndex, player) : m_strClassname.c_str() + strlen("tf_weapon_")));
         }
         else {
-            strcpy(buf, FormatTextForPlayerSM(player, 2, "%t", "Item type:", item_def != nullptr ? GetItemNameForDisplay(item_def->m_iItemDefIndex, player) : m_strClassname.c_str()));
+            strcpy(buf, TranslateText(player, "Item type:", item_def != nullptr ? GetItemNameForDisplay(item_def->m_iItemDefIndex, player) : m_strClassname.c_str()));
         }
         V_StrSubst(buf,"_", " ", buf, 128);
         
@@ -273,7 +274,7 @@ public:
     {
         static char buf[64];
         if (m_iSlot >= 0) {
-            strcpy(buf, FormatTextForPlayerSM(player, 2, "%t %t", "Weapon in slot:", loadoutStrings[m_iSlot]));
+            snprintf(buf, sizeof(buf), "%s %s", TranslateText(player, "Weapon in slot:"), TranslateText(player, loadoutStrings[m_iSlot]));
         }
         else {
             return "Null";

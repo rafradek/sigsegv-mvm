@@ -39,6 +39,7 @@
 				"NDebugOverlay::HorzArrow"                  "_ZN13NDebugOverlay9HorzArrowERK6VectorS2_fiiiibf"
 				"NDebugOverlay::Line"                       "_ZN13NDebugOverlay4LineERK6VectorS2_iiibf"
 				"NDebugOverlay::ScreenText"                 "_ZN13NDebugOverlay10ScreenTextEffPKciiiif"
+				"NDebugOverlay::ScreenTextLine"                 "_ZN13NDebugOverlay14ScreenTextLineEffiPKciiiif"
 				"NDebugOverlay::Sphere"                     "_ZN13NDebugOverlay6SphereERK6Vectorfiiibf"
 				"NDebugOverlay::Sphere_ang"                 "_ZN13NDebugOverlay6SphereERK6VectorRK6QAnglefiiiibf"
 				"NDebugOverlay::SweptBox"                   "_ZN13NDebugOverlay8SweptBoxERK6VectorS2_S2_S2_RK6QAngleiiiif"

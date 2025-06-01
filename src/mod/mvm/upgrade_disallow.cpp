@@ -7,6 +7,7 @@
 #include "stub/gamerules.h"
 #include "mod/mvm/extended_upgrades.h"
 #include "stub/misc.h"
+#include "util/translation.h"
 
 namespace Mod::MvM::Upgrade_Disallow
 {

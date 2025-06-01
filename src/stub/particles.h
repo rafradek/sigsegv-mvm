@@ -109,6 +109,14 @@ inline void TE_BeamPoints(IRecipientFilter& filter, float delay,
 	ft_TE_BeamPoints(filter, delay, start, end, modelindex, haloindex, startframe, framerate, life, width, endWidth, fadeLength, amplitude, r, g, b, a, speed);
 }
 
+static StaticFuncThunk<void, IRecipientFilter&, float, const Vector&, float, float, int, int, int, int, float, float, int, float, int, int, int, int, int, int> ft_TE_BeamRingPoint("TE_BeamRingPoint");
+inline void TE_BeamRingPoint(IRecipientFilter& filter, float delay,
+	const Vector& center, float start_radius, float end_radius, int modelindex, int haloindex, int startframe, int framerate,
+	float life, float width, int spread, float amplitude, int r, int g, int b, int a, int speed, int flags = 0)
+{
+	ft_TE_BeamRingPoint(filter, delay, center, start_radius, end_radius, modelindex, haloindex, startframe, framerate, life, width, spread, amplitude, r, g, b, a, speed, flags);
+}
+
 void TE_BeamPointsForDebug(const Vector &start, const Vector &end, float life, int r = 255, int g = 255, int b = 255, int a = 255, float width = 4.0f, CBasePlayer *target = nullptr);
 
 void TE_BBoxForDebug(const Vector &start, const Vector &end, float life, int r = 255, int g = 255, int b = 255, int a = 255, float width = 4.0f, CBasePlayer *target = nullptr);

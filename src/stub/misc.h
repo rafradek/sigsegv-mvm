@@ -98,15 +98,6 @@ void PrintToChatAll(const char *str);
 
 void PrintToChat(const char *str, CBasePlayer *player);
 
-// Format text to internal buffer, uses SourceMod formatting for %t support. Parameters must be pointers, not direct values. If format fails, fmt pointer is returned instead.
-const char *FormatTextForPlayerSM(CBasePlayer *player, int paramCount, const char *fmt, ...);
-
-// Translates text for given player
-const char *TranslateText(CBasePlayer *player, const char *name, int paramCount = 0, ...);
-
-void PrintToChatSM(CBasePlayer *player, int paramCount, const char *fmt, ...);
-void PrintToChatAllSM(int paramCount, const char *fmt, ...);
-
 struct EventQueuePrioritizedEvent_t
 {
 	float m_flFireTime;

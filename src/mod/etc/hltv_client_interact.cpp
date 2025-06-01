@@ -3,6 +3,7 @@
 #include "stub/server.h"
 #include "util/clientmsg.h"
 #include "util/misc.h"
+#include "util/translation.h"
 #include "mod/common/commands.h"
 
 namespace Mod::Etc::HLTV_Client_Interact
@@ -68,7 +69,7 @@ namespace Mod::Etc::HLTV_Client_Interact
 	{
         auto client = reinterpret_cast<CHLTVClient *>(this);
         if (sig_etc_hltv_notify_clients.GetBool() && client->m_nSignonState >= 5) {
-            PrintToChatAllSM(2, "%t\n", "Source TV spectator disconnected", client->GetClientName());
+            PrintToChatAllSM("%t\n", "Source TV spectator disconnected", client->GetClientName());
         }
         VHOOK_CALL(reason);
     }
@@ -80,7 +81,7 @@ namespace Mod::Etc::HLTV_Client_Interact
         VHOOK_CALL();
         timersys->CreateTimer(&timer_connect, 3.0f, client, 0);
         if (sig_etc_hltv_notify_clients.GetBool()) {
-            PrintToChatAllSM(2, "%t\n", "Source TV spectator joined", client->GetClientName());
+            PrintToChatAllSM("%t\n", "Source TV spectator joined", client->GetClientName());
         }
 
     }
@@ -101,7 +102,8 @@ namespace Mod::Etc::HLTV_Client_Interact
 	CMod s_Mod;
     
     ModCommand sig_tvspectators("sig_tvspectators", [](CCommandPlayer *player, const CCommand& args){
-		std::string str(FormatTextForPlayerSM(player, 1, "%t\n", "sig_tvspectators"));
+		std::string str = TranslateText(player, "sig_tvspectators");
+        str += "\n";
         for (int i = 0; i < hltv->GetClientCount(); i++) {
             IClient *cl = hltv->GetClient(i);
             str += cl->GetClientName();

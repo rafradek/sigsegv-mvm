@@ -64,7 +64,6 @@
 					// alt: "mission_sentry_buster"
 				}
 				
-				
 				"CBulletPenetrateEnum::EnumEntity"
 				{
 					type   "func knownvtidx"
@@ -3301,6 +3300,18 @@
 					type "sym"
 					sym  "_ZN11CBaseServer8RunFrameEv"
 				}
+				"editline_threadproc"
+				{
+					lib "dedicated"
+					type "sym"
+					sym  "_ZL19editline_threadprocPv"
+				}
+				"TE_BeamRingPoint"
+				{
+					lib "server"
+					type "sym"
+					sym  "_Z16TE_BeamRingPointR16IRecipientFilterfRK6Vectorffiiiiffifiiiiii"
+				}
 			}
 			"addrs_group"
 			{
@@ -3457,6 +3468,7 @@
 				"CTFPlayerShared::SetItemChargeMeter [clone]" "_ZN15CTFPlayerShared18SetItemChargeMeterE19loadout_positions_tf\\.part\\..*"
 				"CTFPlayer::ItemsMatch [clone]" "_ZN9CTFPlayer10ItemsMatchEP19TFPlayerClassData_tP13CEconItemViewS3_P13CTFWeaponBase\\.part\\..*"
 				"CTFRadiusDamageInfo::ApplyToEntity [clone]" "_ZN19CTFRadiusDamageInfo13ApplyToEntityEP11CBaseEntity\\.part\\..*"
+				"CFuncNavCost::IsApplicableTo [clone]" "_ZNK12CFuncNavCost14IsApplicableToEP20CBaseCombatCharacter\\.part\\..*"
 				
 				"CBasePlayer::GetInVehicle [clone]" "_ZN11CBasePlayer12GetInVehicleEP14IServerVehiclei\\.part\\..*"
 			}

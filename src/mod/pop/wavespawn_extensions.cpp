@@ -9,6 +9,7 @@
 #include "stub/misc.h"
 #include "util/iterate.h"
 #include "util/clientmsg.h"
+#include "mod/bot/guard_action.h"
 
 namespace Mod::Pop::Wave_Extensions
 {
@@ -97,6 +98,8 @@ namespace Mod::Pop::WaveSpawn_Extensions
 					sscanf(subkey->GetString(),"%f %f %f", &m_Origin.x, &m_Origin.y, &m_Origin.z);
 				} else if (FStrEq(name, "StickToGround")) {
 					m_fStickToGround = subkey->GetFloat();
+				} else if (FStrEq(name, "Path")) {
+					m_Path = Parse_GuardPath(subkey);
 				} else if (FStrEq(name, "SpawnAtEntity")) {
 					m_SpawnAtEntity = subkey->GetString();
 				} else if (FStrEq(name, "Health")) {
@@ -142,6 +145,9 @@ namespace Mod::Pop::WaveSpawn_Extensions
 				npc->SetCustomVariable(key.c_str(), value);
 				npc->KeyValue(key.c_str(), value.String());
 			}
+			if (m_Path != nullptr) {
+				npc->GetOrCreateEntityModule<GuardPathModule>("guardpath")->m_Path = m_Path;
+			}
 
 			for (auto it1 = m_Attachements.begin(); it1 != m_Attachements.end(); ++it1) {
 				it1->SpawnTemplate(npc);
@@ -175,6 +181,7 @@ namespace Mod::Pop::WaveSpawn_Extensions
 		float m_fStickToGround = 0.0f;
 		Vector m_SpreadRadius;
 		Vector m_Origin;
+		std::shared_ptr<GuardPath> m_Path;
 		std::string m_SpawnAtEntity = "";
 		std::unordered_multimap<std::string,variant_t, CaseInsensitiveHash, CaseInsensitiveCompare> m_EntityKeys;
 	};

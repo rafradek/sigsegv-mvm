@@ -452,6 +452,7 @@ public:
 	DECL_DATAMAP(CBaseEntityOutput,      m_OnUser3);
 	DECL_DATAMAP(CBaseEntityOutput,      m_OnUser4);
 	DECL_DATAMAP(char,       m_takedamage);
+	// Extra entity data writes on m_pTimedOverlay. Use ExtraEntityData::SetEntityTimedOverlay and ExtraEntityData::RestoreExtraEntityData to temponary restore timed overlay pointer
 	DECL_RELATIVE(ExtraEntityData *, m_extraEntityData);
 	DECL_RELATIVE(IHasAttributes *, m_pAttributes);
 	DECL_DATAMAP(unsigned char, m_nWaterLevel);

@@ -166,10 +166,14 @@ public:
 	bool IsStolen()         { return (this->m_nFlagStatus == TF_FLAGINFO_STOLEN); }
 	bool IsDisabled() const { return this->m_bDisabled; }
 	void SetDisabled(bool disabled)      { this->m_bDisabled = disabled; }
+
+	void PickUp(CTFPlayer *player, bool invisible) { ft_PickUp(this, player, invisible); }
 	
 private:
 	DECL_SENDPROP(bool, m_bDisabled);
 	DECL_SENDPROP(int,  m_nFlagStatus);
+	
+	static MemberFuncThunk<CCaptureFlag *, void, CTFPlayer*, bool> ft_PickUp;
 };
 
 

@@ -318,6 +318,7 @@ MemberFuncThunk<      CTFPlayer *, void, int, bool                 > CTFPlayer::
 MemberFuncThunk<      CTFPlayer *, void, CCommand&                 > CTFPlayer::ft_ClientCommand                    ("CTFPlayer::ClientCommand");
 MemberFuncThunk<      CTFPlayer *, void, int, int                  > CTFPlayer::ft_StartBuildingObjectOfType        ("CTFPlayer::StartBuildingObjectOfType");
 MemberFuncThunk<const CTFPlayer *, bool, ETFFlagType *, int        > CTFPlayer::ft_HasTheFlag                       ("CTFPlayer::HasTheFlag");
+MemberFuncThunk<      CTFPlayer *, void, bool                      > CTFPlayer::ft_DropFlag                         ("CTFPlayer::DropFlag");
 MemberFuncThunk<      CTFPlayer *, int, int                        > CTFPlayer::ft_GetAutoTeam                      ("CTFPlayer::GetAutoTeam");
 MemberFuncThunk<      CTFPlayer *, float, CTFWeaponBase **         > CTFPlayer::ft_MedicGetChargeLevel              ("CTFPlayer::MedicGetChargeLevel");
 MemberFuncThunk<      CTFPlayer *, float, bool                     > CTFPlayer::ft_TeamFortress_CalculateMaxSpeed   ("CTFPlayer::TeamFortress_CalculateMaxSpeed");

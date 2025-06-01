@@ -40,7 +40,7 @@ public:
 
     virtual bool CanPlayerCall(CCommandPlayer *player)
     {
-        return player == nullptr || PlayerIsSMAdminOrBot(player);
+        return player == nullptr || PlayerCanCallAdminCommand(player, name);
     }
 };
 
@@ -62,7 +62,7 @@ public:
 
     virtual bool CanPlayerCall(CCommandPlayer *player)
     {
-        return player != nullptr && PlayerIsSMAdminOrBot(player);
+        return player != nullptr && PlayerCanCallAdminCommand(player, name);
     }
 };
 
@@ -74,7 +74,18 @@ public:
 
     virtual bool CanPlayerCall(CCommandPlayer *player)
     {
-        return player == nullptr || (PlayerIsSMAdminOrBot(player) || sig_allow_user_debug_commands.GetBool());
+        return player == nullptr || (PlayerCanCallAdminCommand(player, name) || sig_allow_user_debug_commands.GetBool());
+    }
+};
+
+class ModCommandClientDebug : public ModCommand
+{
+public:
+    ModCommandClientDebug(const char *name, ModCommandCallbackFn callback, IMod *mod = nullptr, const char *helpString = "", int flags = 0) : ModCommand(name, callback, mod, helpString, flags) {}
+
+    virtual bool CanPlayerCall(CCommandPlayer *player)
+    {
+        return player != nullptr && (PlayerCanCallAdminCommand(player, name) || sig_allow_user_debug_commands.GetBool());
     }
 };
 

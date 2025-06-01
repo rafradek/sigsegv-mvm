@@ -95,6 +95,8 @@ MemberVFuncThunk<const CTFItem *, int> CTFItem::vt_GetItemID(TypeName<CTFItem>()
 IMPL_SENDPROP(bool, CCaptureFlag, m_bDisabled,   CCaptureFlag);
 IMPL_SENDPROP(int,  CCaptureFlag, m_nFlagStatus, CCaptureFlag);
 
+MemberFuncThunk<CCaptureFlag *, void, CTFPlayer*, bool> CCaptureFlag::ft_PickUp("CCaptureFlag::PickUp");
+
 
 GlobalThunk<CUtlVector<ICaptureFlagAutoList *>> ICaptureFlagAutoList::m_ICaptureFlagAutoListAutoList("ICaptureFlagAutoList::m_ICaptureFlagAutoListAutoList");
 

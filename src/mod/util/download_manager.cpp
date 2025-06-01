@@ -12,6 +12,7 @@
 #include "mod/etc/sendprop_override.h"
 #include "mod/common/commands.h"
 #include "mod/pop/popmgr_extensions.h"
+#include "util/translation.h"
 
 #include <regex>
 //#include <filesystem>
@@ -856,7 +857,7 @@ namespace Mod::Util::Download_Manager
 			scanner.AddFileIfCustom(StringStartsWith(upgradeFile, "download/") ? upgradeFile + strlen("download/") : upgradeFile);
 
 		if (scanner.missingfilemention && admin != nullptr) {
-			PrintToChatSM(admin, 1, "%t\n", "Missing files");
+			PrintToChatSM(admin, "%t\n", "Missing files");
 		}
 		popfiles_to_forced_update.clear();
 
@@ -1370,9 +1371,9 @@ namespace Mod::Util::Download_Manager
 			auto &info = download_infos[player->entindex()];
 			
 			if (!info.lateDlEnabled && !info.lateDlUploadInfoSend) {
-				auto text = FormatTextForPlayerSM(player, 1, "%t\n", "Late DL sv_allowupload notify");
-				PrintToChat(text, player);
-				ClientMsg(player, "%s", text);
+				auto text = TranslateText(player, "Late DL sv_allowupload notify");
+				PrintToChat(CFmtStr("%s\n",text), player);
+				ClientMsg(player, "%s\n", text);
 				info.lateDlUploadInfoSend = true;
 			}
 		}

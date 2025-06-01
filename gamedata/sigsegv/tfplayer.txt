@@ -1105,6 +1105,11 @@
 					type "sym"
 					sym  "_ZN9CTFPlayer9StopTauntEb"
 				}
+				"CTFPlayer::DropFlag"
+				{
+					type "sym"
+					sym  "_ZN9CTFPlayer8DropFlagEb"
+				}
 				
 			//	"GetTFConditionName"
 			//	{

@@ -14,6 +14,7 @@
 #include "mod/pop/common.h"
 #include "mod/pop/popmgr_extensions.h"
 #include "stub/extraentitydata.h"
+#include "mod/bot/guard_action.h"
 
 
 // update data with every call to:
@@ -211,6 +212,9 @@ namespace Mod::Pop::ECAttr_Extensions
 
 		float keep_away_radius = 0;
 		KeepAwayTarget keep_away_target = ENEMIES;
+
+		std::shared_ptr<GuardPath> guard_path;
+		bool ignore_nav_avoid = false;
 	};
 
 	/* maps ECAttr instances -> extra data instances */
@@ -219,15 +223,9 @@ namespace Mod::Pop::ECAttr_Extensions
 	/* maps CTFBot instances -> their current ECAttr instance */
 	std::unordered_map<CTFBot *, EventChangeAttributesData *> ecattr_map;
 
-	
 	std::vector<DelayedAddCond> delayed_addconds;
 
 	std::vector<PeriodicTaskImpl> pending_periodic_tasks;
-	
-#if 0
-	/* maps CTFBot instances -> their current ECAttr name */
-	std::map<CHandle<CTFBot>, std::string> ecattr_map;
-#endif
 	
 	std::unordered_map<std::string, CTFItemDefinition*> item_defs;
 
@@ -978,6 +976,8 @@ namespace Mod::Pop::ECAttr_Extensions
 					data.prefer_team = i;
 				}
 			}
+		} else if (FStrEq(name, "IgnoreNavAvoid")) {
+			data.ignore_nav_avoid = kv->GetBool();
 		} else {
 			found = false;
 		}
@@ -987,6 +987,8 @@ namespace Mod::Pop::ECAttr_Extensions
 			found = true;
 			if (FStrEq(name, "AddCond")) {
 				Parse_AddCond(data.addconds, kv);
+			} else if (FStrEq(name, "Path")) {
+				data.guard_path = Parse_GuardPath(kv);
 			} else if (Parse_PeriodicTask(data.periodic_tasks, kv, name)) {
 
 			} else {
@@ -1440,6 +1442,10 @@ namespace Mod::Pop::ECAttr_Extensions
 		if (data->fov != -1) {
 			bot->m_iDefaultFOV = data->fov;
 			bot->SetFOV(bot, data->fov, 0.0f, 0);
+		}
+
+		if (data->guard_path != nullptr) {
+			bot->GetOrCreateEntityModule<GuardPathModule>("guardpath")->m_Path = data->guard_path;
 		}
 	}
 	
@@ -2892,6 +2898,15 @@ namespace Mod::Pop::ECAttr_Extensions
 
 		DETOUR_MEMBER_CALL(actor);
 	}
+	
+	DETOUR_DECL_MEMBER_CALL_CONVENTION(__gcc_regcall, bool, CFuncNavCost_IsApplicableTo, CBaseCombatCharacter *who)
+	{
+		auto data = GetDataForBot(who);
+
+		if (data != nullptr && data->ignore_nav_avoid) return false;
+
+		return DETOUR_MEMBER_CALL(who);
+	}
 
 	class CMod : public IMod, public IModCallbackListener, public IFrameUpdatePostEntityThinkListener
 	{
@@ -2970,8 +2985,7 @@ namespace Mod::Pop::ECAttr_Extensions
 			MOD_ADD_DETOUR_MEMBER(CNavArea_IsPotentiallyVisible, "CNavArea::IsPotentiallyVisible");
 			MOD_ADD_DETOUR_MEMBER(IVision_IsLineOfSightClearToEntity, "IVision::IsLineOfSightClearToEntity");
 			MOD_ADD_DETOUR_MEMBER(CTFBotTacticalMonitor_Update, "CTFBotTacticalMonitor::Update");
-			
-			
+			MOD_ADD_DETOUR_MEMBER(CFuncNavCost_IsApplicableTo, "CFuncNavCost::IsApplicableTo [clone]");
 		}
 
 		virtual bool OnLoad() override

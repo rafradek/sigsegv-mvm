@@ -1424,6 +1424,7 @@ WaveSchedule
 					//Idle - Sit in spawn and wait
 					//Passive - Sit at spawn position, until an active threat is in vision
 					//Medic - Use medic AI
+					//FollowPath - Follow path specified in Path
 				Item "The Short Circuit"
 				DesiredAttackRange 100 [$SIGSEGV] // How close to the target the bot should want to move when trying to attack. For melee weapons, default is 100. For other weapons except sniper rifles - 500
 				MoveBehindEnemy 1 [$SIGSEGV] // Should the bot try to get behind the target, similar to how the Spy bot behaves. Instead of 1 you can also specify custom distance at which the bot will start strafing around the target (default: 0) 
@@ -1761,6 +1762,8 @@ WaveSchedule
 				ExtAttr IgnoreBots [$SIGSEGV] // Ignore bots
 				ExtAttr IgnoreRealPlayers [$SIGSEGV] // Ignore non bot players
 				ExtAttr IgnoreNPC [$SIGSEGV] // Ignore NPC such as tanks skeletons halloween bosses
+				ExtAttr IgnoreNoDamage [$SIGSEGV] // Ignore enemies that did not damage this bot
+				ExtAttr IgnoreNoDamageAlly [$SIGSEGV] // Ignore enemies that did not damage this bot or its allies
 
 				Message //Displays message in the chat
 				{
@@ -2623,6 +2626,85 @@ WaveSchedule
 					Class Heavy
 				}
 				Shuffle 1 [$SIGSEGV] // Ensure that every bot type rolls in even amount (Default: 0)
+			}
+		}
+	}
+	Wave
+	{
+		StartWaveOutput
+			{
+				Target wave_start_relay
+				Action Trigger
+			}
+		DoneOutput					
+			{
+				Target wave_finished_relay
+				Action trigger
+			}
+		WaveSpawn
+		{
+			Name "wave01a"
+			Where spawnbot
+			TotalCount 2
+			MaxActive 2
+			SpawnCount 2
+			WaitBeforeStarting 0
+			WaitBetweenSpawns 0.25
+			TotalCurrency 200	
+			Squad
+			{
+				TFBot
+				{
+					Class Soldier
+					Action FollowPath [$SIGSEGV] // Action that follows path specified by path keyvalue
+					Path [$SIGSEGV] // A path to use, for action FollowPath. Path needs either one or multiple Node keys or Track key with a name of a path_track entity. A path made of Node keys loops after completion
+					{
+						Node "100 3257 321" // Simple node keyvalue, specifies node position or entity
+						Node {
+							Target "-1317 4055 135" // Node position or entity
+							AimTarget  "313 132 313" // Look at specified position or entity
+							Wait 3 // Wait this many seconds after approaching this node
+							Output // Fire output after approaching this node
+							{
+								Target !activator
+								Action SetHealth
+								Param 100
+								Delay 0.3
+							}
+							Next node3 // Next node in path to use instead of the node below
+						}
+						Node {
+							Target "-236 4642 213"
+							Name node3 // Name of the node, for Next key
+						}
+					}
+				}
+				TFBot
+				{
+					Class Soldier
+					Action FollowPath [$SIGSEGV] // Action that follows path specified by path keyvalue
+					Path [$SIGSEGV] // Path to use, alternative path_track usage
+					{
+						Track boss_path_2 // Use this path_track entity
+						TeleportToTrack 1 // Teleport to first node on start
+						TrackFinishOutput // Fire output after finishing a path_track path
+						{
+							Target !activator
+							Action SetHealth
+							Param 100
+							Delay 0.3
+						}
+						TrackFireOnPassOutput 1 // Fire OnPass output of path_track entities after passing them (Default: 1)
+						NodeReachRange 100 // Consider node reached if the bot is within specifed range (Default: 100)
+						PursueRange 0 // If not set to 0, allows the bot to pursue spotted enemies for specified distance (Default: 400)
+					}
+					IgnoreNavAvoid 1 [$SIGSEGV] // Ignore nav avoid and nav prefer areas
+					CharacterAttributes
+					{
+						"Ignore player clip" 1
+					}
+				}
+				NoFormation 1 [$SIGSEGV]
 			}
 		}
 	}

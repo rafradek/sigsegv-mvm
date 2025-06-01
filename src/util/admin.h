@@ -15,6 +15,8 @@ int GetSMTargets(CBasePlayer *caller, const char *pattern, std::vector<CBasePlay
 bool PlayerIsSMAdmin     (CBasePlayer *player);
 bool PlayerIsSMAdminOrBot(CBasePlayer *player);
 
+bool PlayerCanCallAdminCommand(CBasePlayer *player, const char *command);
+
 FlagBits GetPlayerSMAdminFlags(CBasePlayer *player);
 
 bool PlayerHasSMAdminFlag(CBasePlayer *player, AdminFlag flag);

@@ -27,6 +27,7 @@
 #include "mod/etc/entity_limit_manager.h"
 #include "mod/mvm/player_limit.h"
 #include "util/value_override.h"
+#include "mod/bot/guard_action.h"
 
 static StaticFuncThunk<bool, CTFBot *, CTFPlayer *, int> ft_TeleportNearVictim  ("TeleportNearVictim");
 
@@ -253,6 +254,7 @@ namespace Mod::Pop::TFBot_Extensions
 		// custom
 		ACTION_Mobber,
 		ACTION_Passive,
+		ACTION_FollowPath
 	};
 
     class TeleporterModule : public EntityModule
@@ -292,6 +294,8 @@ namespace Mod::Pop::TFBot_Extensions
 		bool prefer_extra_slots = false;
 
 		bool prefer_normal_slots = false;
+
+		std::shared_ptr<GuardPath> guard_path;
 	};
 
 	std::unordered_map<CTFBotSpawner *, SpawnerData> spawners;
@@ -544,6 +548,8 @@ namespace Mod::Pop::TFBot_Extensions
 			data.action = ACTION_Idle;
 		} else if (FStrEq(value, "Passive")) {
 			data.action = ACTION_Passive;
+		} else if (FStrEq(value, "FollowPath")) {
+			data.action = ACTION_FollowPath;
 		} else {
 			Warning("Unknown value \'%s\' for TFBot Action.\n", value);
 		}
@@ -695,6 +701,8 @@ namespace Mod::Pop::TFBot_Extensions
 				spawners[spawner].prefer_extra_slots = subkey->GetBool();
 			} else if (FStrEq(name, "PreferNormalSlots")) {
 				spawners[spawner].prefer_normal_slots = subkey->GetBool();
+			} else if (FStrEq(name, "Path")) {
+				spawners[spawner].guard_path = Parse_GuardPath(subkey);
 //#ifdef ENABLE_BROKEN_STUFF
 			} else if (FStrEq(name, "DropWeapon")) {
 				spawners[spawner].drop_weapon = subkey->GetBool();
@@ -725,7 +733,7 @@ namespace Mod::Pop::TFBot_Extensions
 		/* post-processing: modify all of the spawner's EventChangeAttributes_t structs as necessary */
 		auto l_postproc_ecattr = [](CTFBotSpawner *spawner, CTFBot::EventChangeAttributes_t& ecattr){
 			/* Action Mobber: add implicit Attributes IgnoreFlag */
-			if (spawners[spawner].action == ACTION_Mobber || spawners[spawner].action == ACTION_Passive) {
+			if (spawners[spawner].action == ACTION_Mobber || spawners[spawner].action == ACTION_Passive || spawners[spawner].action == ACTION_FollowPath) {
 				/* operator|= on enums: >:[ */
 				ecattr.m_nBotAttrs = static_cast<CTFBot::AttributeType>(ecattr.m_nBotAttrs | CTFBot::ATTR_IGNORE_FLAG);
 			}
@@ -1088,6 +1096,10 @@ namespace Mod::Pop::TFBot_Extensions
 			case ACTION_Passive:
 				DevMsg("CTFBotSpawner: setting initial action of bot #%d \"%s\" to Passive\n", ENTINDEX(actor), actor->GetPlayerName());
 				return new CTFBotPassive();
+			case ACTION_FollowPath:
+   				actor->GetOrCreateEntityModule<GuardPathModule>("guardpath")->m_Path = data->guard_path;
+				DevMsg("CTFBotSpawner: setting initial action of bot #%d \"%s\" to FollowPath\n", ENTINDEX(actor), actor->GetPlayerName());
+				return new CTFBotGuardAction<CTFBot>();
 
 			case ACTION_BotSpyInfiltrate:
 				DevMsg("CTFBotSpawner: setting initial action of bot #%d \"%s\" to SpyInfiltrate\n", ENTINDEX(actor), actor->GetPlayerName());
@@ -2459,21 +2471,7 @@ namespace Mod::Pop::TFBot_Extensions
 			// Some maps, such as mvm_berserker, rely on vanilla cannot pick up intelligence behavior, which to not respect their attribute when the bomb first spawn in
 			const char *str = engine->GetMapEntitiesString();
 			const char *find = FindCaseSensitive(str, "cannot pick up intelligence");
-			if (find != nullptr) {
-				Msg("Found cannot pick up intelligence\n");
-			}
 			is_this_map_ignoring_cannot_pickup = find != nullptr;
-			// std::string str(cvar_cannot_pickup_flag_ignore_maps.GetString());
-            // boost::tokenizer<boost::char_separator<char>> tokens(str, boost::char_separator<char>(","));
-
-			// const char *map = STRING(gpGlobals->mapname);
-			// is_this_map_ignoring_cannot_pickup = false;
-            // for (auto &token : tokens) {
-            //     if (StringStartsWith(map, token.c_str())) {
-			// 		is_this_map_ignoring_cannot_pickup = true;
-			// 		break;
-			// 	}
-            // }
 			ClearAllData();
 		}
 		

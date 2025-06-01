@@ -5612,7 +5612,7 @@ namespace Mod::Attr::Custom_Attributes
 			CALL_ATTRIB_HOOK_FLOAT_ON_OTHER(builder, sentry_cost, mod_sentry_cost);
 			result *= sentry_cost;
 			if (sentry_cost > 1.0f && result > builder->GetAmmoCount( TF_AMMO_METAL )) {
-				gamehelpers->TextMsg(ENTINDEX(builder), TEXTMSG_DEST_CENTER, TranslateText(builder, "You need metal to build a sentry gun", 1, &result));
+				gamehelpers->TextMsg(ENTINDEX(builder), TEXTMSG_DEST_CENTER, TranslateText(builder, "You need metal to build a sentry gun", result));
 			}
 		}
 		else if (object == OBJ_DISPENSER) {
@@ -5620,7 +5620,7 @@ namespace Mod::Attr::Custom_Attributes
 			CALL_ATTRIB_HOOK_FLOAT_ON_OTHER(builder, dispenser_cost, mod_dispenser_cost);
 			result *= dispenser_cost;
 			if (dispenser_cost > 1.0f && result > builder->GetAmmoCount( TF_AMMO_METAL )) {
-				gamehelpers->TextMsg(ENTINDEX(builder), TEXTMSG_DEST_CENTER, TranslateText(builder, "You need metal to build a dispenser", 1, &result));
+				gamehelpers->TextMsg(ENTINDEX(builder), TEXTMSG_DEST_CENTER, TranslateText(builder, "You need metal to build a dispenser", result));
 			}
 		}
 		return result;
@@ -7724,7 +7724,7 @@ namespace Mod::Attr::Custom_Attributes
 	bool IsCustomViewmodelAllowed(CTFPlayer *player) {
 		if (players_viewmodel_disallowed[player->entindex()]) {
 			if (!players_viewmodel_informed_about_disallowed[player->entindex()]) {
-				PrintToChatSM(player, 1, "%t\n", "Custom hand models disabled");
+				PrintToChatSM(player, "%t\n", "Custom hand models disabled");
 				players_viewmodel_informed_about_disallowed[player->entindex()] = true;
 			}
 			return false;
@@ -7739,7 +7739,7 @@ namespace Mod::Attr::Custom_Attributes
 			fclose(file);
 		}
 
-		PrintToChatSM(player, 1, "%t\n", "Custom hand models notify");
+		PrintToChatSM(player, "%t\n", "Custom hand models notify");
 
 		return true;
 	}
@@ -8674,7 +8674,7 @@ namespace Mod::Attr::Custom_Attributes
 		});
 
 		if (player != target && !attribute_info_vec.empty()) {
-			attribute_info_vec.insert(attribute_info_vec.begin(), TranslateText(player, "Inspecting player", 1, target->GetPlayerName()));
+			attribute_info_vec.insert(attribute_info_vec.begin(), TranslateText(player, "Inspecting player", target->GetPlayerName()));
 		}
 		
 		/*hudtextparms_t textparms;

@@ -60,6 +60,12 @@ bool PlayerIsSMAdminOrBot(CBasePlayer *player)
 }
 
 
+bool PlayerCanCallAdminCommand(CBasePlayer *player, const char *command)
+{
+	return (player->IsBot() || (PlayerIsSMAdmin(player) && adminsys->CanAdminUseCommand(ENTINDEX(player), command)));
+}
+
+
 FlagBits GetPlayerSMAdminFlags(CBasePlayer *player)
 {
 	AdminId id = GetPlayerSMAdminID(player);

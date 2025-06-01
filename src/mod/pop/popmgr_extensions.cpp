@@ -32,6 +32,7 @@
 #include "mod/attr/custom_attributes.h"
 #include "CommandBuffer.h"
 #include <regex>
+#include "util/translation.h"
 
 // WARN_IGNORE__REORDER()
 // #include <../server/vote_controller.h>
@@ -196,7 +197,7 @@ namespace Mod::Pop::PopMgr_Extensions
 				TFGameRules()->SetCustomUpgradesFile(convalue.c_str());
 				if (force && last_custom_upgrades != convalue) {
 					received_message_tick = true;
-					PrintToChatAllSM(2, "%s%t\n","\x07""ffb200", "Custom upgrades notify");
+					PrintToChatAllSM("%s%t\n","\x07""ffb200", "Custom upgrades notify");
 				}
 				last_custom_upgrades = convalue;
 			}
@@ -2184,7 +2185,7 @@ namespace Mod::Pop::PopMgr_Extensions
 			CONVAR_SCOPE_VALUE(tf_mvm_endless_force_on, 1);
 			
 			if (state.m_bSingleClassAllowed != -1) {
-				gamehelpers->TextMsg(ENTINDEX(player), TEXTMSG_DEST_CENTER, TranslateText(player, "Only class is allowed in this mission", 1, TranslateText(player, g_aPlayerClassNames_NonLocalized[state.m_bSingleClassAllowed])));
+				gamehelpers->TextMsg(ENTINDEX(player), TEXTMSG_DEST_CENTER, TranslateText(player, "Only class is allowed in this mission", TranslateText(player, g_aPlayerClassNames_NonLocalized[state.m_bSingleClassAllowed])));
 
 				player->HandleCommand_JoinClass(g_aRawPlayerClassNames[state.m_bSingleClassAllowed]);
 
@@ -2196,7 +2197,7 @@ namespace Mod::Pop::PopMgr_Extensions
 				filter.AddRecipient(player);
 				CBaseEntity::EmitSound(filter, ENTINDEX(player), sound);
 
-				gamehelpers->TextMsg(ENTINDEX(player), TEXTMSG_DEST_CENTER, TranslateText(player, state.m_DisallowedClasses[plclass] > 0 ? "Exceeded the class limit in this mission" : "is not allowed in this mission", 1, classname));
+				gamehelpers->TextMsg(ENTINDEX(player), TEXTMSG_DEST_CENTER, TranslateText(player, state.m_DisallowedClasses[plclass] > 0 ? "Exceeded the class limit in this mission" : "is not allowed in this mission", classname));
 
 				if (do_switch) {
 					for (int i=1; i < TF_CLASS_COUNT; i++){
@@ -2358,7 +2359,7 @@ namespace Mod::Pop::PopMgr_Extensions
 		DevMsg("Pass send\n");
 
 		if (state.m_ExtraLoadoutItemsNotify)
-			PrintToChatSM(player, 1, "\x07""7fd4ff%t\n", "This mission allows you to equip custom items. Type !missionitems in chat to see available items for your class");
+			PrintToChatSM(player, "\x07""7fd4ff%t\n", "This mission allows you to equip custom items. Type !missionitems in chat to see available items for your class");
 
 		//auto explanation = Mod::Pop::Wave_Extensions::GetWaveExplanation(0);
 		
@@ -2388,7 +2389,7 @@ namespace Mod::Pop::PopMgr_Extensions
 			state.m_SandmanStuns.Get() ||
 			state.m_bNoReanimators
 		)) { 
-			PrintToChatSM(player, 1,"\x07""7fd4ff%t\n","Type !missioninfo in chat to check custom mission information");
+			PrintToChatSM(player, "\x07""7fd4ff%t\n","Type !missioninfo in chat to check custom mission information");
 		}
 	}
 
@@ -3121,11 +3122,11 @@ namespace Mod::Pop::PopMgr_Extensions
 		{
 			if (strtol(str.c_str(), nullptr, 0) == upgradeslot + 1)
 			{	
-				gamehelpers->TextMsg(ENTINDEX(player), TEXTMSG_DEST_CENTER, TranslateText(player, "upgrade is not allowed in this mission", 1, upgradename));
+				gamehelpers->TextMsg(ENTINDEX(player), TEXTMSG_DEST_CENTER, TranslateText(player, "upgrade is not allowed in this mission", upgradename));
 				return false;
 			}
 			else if (FStrEq(upgradename, str.c_str())) {
-				gamehelpers->TextMsg(ENTINDEX(player), TEXTMSG_DEST_CENTER, TranslateText(player, "upgrade is not allowed in this mission", 1, upgradename));
+				gamehelpers->TextMsg(ENTINDEX(player), TEXTMSG_DEST_CENTER, TranslateText(player, "upgrade is not allowed in this mission", upgradename));
 				return false;
 			}
 		}
@@ -3197,7 +3198,7 @@ namespace Mod::Pop::PopMgr_Extensions
 			}
 			
 			if (foundMatch) {
-				gamehelpers->TextMsg(ENTINDEX(player), TEXTMSG_DEST_CENTER, TranslateText(player, "You cannot buy upgrades for this weapon in this mission", 4, entry.max != 0 ? TranslateText(player,"more ") : "", upgradename, incompatibleItem.c_str(), !incompatibleItem.empty() ? TranslateText(player," blocks this upgrade") : ""));
+				gamehelpers->TextMsg(ENTINDEX(player), TEXTMSG_DEST_CENTER, TranslateText(player, "You cannot buy upgrades for this weapon in this mission", entry.max != 0 ? TranslateText(player,"more ") : "", upgradename, incompatibleItem.c_str(), !incompatibleItem.empty() ? TranslateText(player," blocks this upgrade") : ""));
 				return false;
 			}
 		}
@@ -3736,7 +3737,7 @@ namespace Mod::Pop::PopMgr_Extensions
 				static ConVarRef tf_mvm_respec_credit_goal("tf_mvm_respec_credit_goal");
 				int creditGoal = tf_mvm_respec_credit_goal.GetInt();
 				int respecLimit = state.m_RespecLimit.Get();
-				ItemDrawInfo info1(TranslateText(player, "Collect credits upgrade refund", 2, &creditGoal, &respecLimit), ITEMDRAW_DISABLED);
+				ItemDrawInfo info1(TranslateText(player, "Collect credits upgrade refund", &creditGoal, &respecLimit), ITEMDRAW_DISABLED);
 				menu->AppendItem("", info1);
 			}
 			if (state.m_ImprovedAirblast.Get()) {
@@ -3912,7 +3913,7 @@ namespace Mod::Pop::PopMgr_Extensions
 		SelectItemAttributeListHandler *handler = new SelectItemAttributeListHandler(player);
         IBaseMenu *menu = menus->GetDefaultStyle()->CreateMenu(handler, g_Ext.GetIdentity());
         
-        menu->SetDefaultTitle(TranslateText(player, "Item attributes format", 1, state.m_ItemAttributes[id].entry->GetInfo(player)));
+        menu->SetDefaultTitle(TranslateText(player, "Item attributes format", state.m_ItemAttributes[id].entry->GetInfo(player)));
         menu->SetMenuOptionFlags(MENUFLAG_BUTTON_EXIT);
 
 		if (id < (int)state.m_ItemAttributes.size()) {
@@ -3969,7 +3970,7 @@ namespace Mod::Pop::PopMgr_Extensions
 			menu->SetDefaultTitle(TranslateText(player, "All class attributes"));
 		}
 		else {
-        	menu->SetDefaultTitle(TranslateText(player, "Item attributes format", 1, std::string(TranslateText(player, g_aPlayerClassNames_NonLocalized[id])).c_str()));
+        	menu->SetDefaultTitle(TranslateText(player, "Item attributes format", std::string(TranslateText(player, g_aPlayerClassNames_NonLocalized[id])).c_str()));
 		}
         menu->SetMenuOptionFlags(MENUFLAG_BUTTON_EXIT);
 
@@ -4033,7 +4034,7 @@ namespace Mod::Pop::PopMgr_Extensions
 		SelectForcedItemsInfoHandler *handler = new SelectForcedItemsInfoHandler(player);
         IBaseMenu *menu = menus->GetDefaultStyle()->CreateMenu(handler, g_Ext.GetIdentity());
         
-        menu->SetDefaultTitle(TranslateText(player, "Forced items class", 1, std::string(TranslateText(player, g_aPlayerClassNames_NonLocalized[id])).c_str()));
+        menu->SetDefaultTitle(TranslateText(player, "Forced items class", std::string(TranslateText(player, g_aPlayerClassNames_NonLocalized[id])).c_str()));
         menu->SetMenuOptionFlags(MENUFLAG_BUTTON_EXIT);
 
 		for (auto &items_class : {state.m_ForceItems.items, state.m_ForceItems.items_no_remove}) {
@@ -4089,7 +4090,7 @@ namespace Mod::Pop::PopMgr_Extensions
 		SelectExtraLoadoutItemsInfoHandler *handler = new SelectExtraLoadoutItemsInfoHandler(player);
         IBaseMenu *menu = menus->GetDefaultStyle()->CreateMenu(handler, g_Ext.GetIdentity());
         
-        menu->SetDefaultTitle(TranslateText(player, "Extra loadout items class", 1, TranslateText(player, g_aPlayerClassNames_NonLocalized[id])));
+        menu->SetDefaultTitle(TranslateText(player, "Extra loadout items class", TranslateText(player, g_aPlayerClassNames_NonLocalized[id])));
         menu->SetMenuOptionFlags(MENUFLAG_BUTTON_EXIT);
 
 		for (size_t i = 0; i < state.m_ExtraLoadoutItems.size(); i++) {
@@ -4202,7 +4203,7 @@ namespace Mod::Pop::PopMgr_Extensions
 		SelectExtraLoadoutItemsHandler *handler = new SelectExtraLoadoutItemsHandler(player, autoHide);
         IBaseMenu *menu = menus->GetDefaultStyle()->CreateMenu(handler, g_Ext.GetIdentity());
         
-        menu->SetDefaultTitle(TranslateText(player, "Extra loadout items class", 1, TranslateText(player, g_aPlayerClassNames_NonLocalized[class_index])));
+        menu->SetDefaultTitle(TranslateText(player, "Extra loadout items class", TranslateText(player, g_aPlayerClassNames_NonLocalized[class_index])));
         menu->SetMenuOptionFlags(MENUFLAG_BUTTON_EXIT);
 
 		int wave = TFObjectiveResource()->m_nMannVsMachineWaveCount;
@@ -4223,7 +4224,7 @@ namespace Mod::Pop::PopMgr_Extensions
 					snprintf(cost, sizeof(cost), "($%d)", item.cost);
 				}
 
-				ItemDrawInfo info1(FormatTextForPlayerSM(player, 4, "%t: %s %s %t", loadoutStrings[item.loadout_slot], GetItemNameForDisplay(item.item, player), cost, selected ? "(selected)" : ""), ITEMDRAW_DEFAULT);
+				ItemDrawInfo info1(CFmtStr("%s: %s %s %s", TranslateText(player, loadoutStrings[item.loadout_slot]), GetItemNameForDisplay(item.item, player), cost, TranslateText(player, selected ? "(selected)" : "")), ITEMDRAW_DEFAULT);
 				std::string num = std::to_string(i);
 				menu->AppendItem(num.c_str(), info1);
 			}
@@ -6426,7 +6427,7 @@ namespace Mod::Pop::PopMgr_Extensions
 			SpewOutputFunc(LocalSpewOutputFunc);
 
 		if (parse_warning) {
-			PrintToChatAllSM(1,"\x07""ffb2b2""%t\n","It is possible that a parsing error had occured. Check console for details");
+			PrintToChatAllSM("\x07""ffb2b2""%t\n","It is possible that a parsing error had occured. Check console for details");
 		}
 		
 		pop_parse_successful = ret;
@@ -7149,6 +7150,57 @@ namespace Mod::Pop::PopMgr_Extensions
 	}
 
     StaticFuncThunk<void, int> ft_SetupMaxPlayers("SetupMaxPlayers");
+
+	extern ConVar cvar_custom_popfile;
+
+	void LoadCustomPopfile(const char *popfile) {
+		if(TFGameRules()->IsMannVsMachineMode())
+			return;
+		const char* value_c_str{cvar_custom_popfile.GetString()};
+		std::string_view value{value_c_str};
+		if(value == ""){
+			state.Reset(false);
+			ForEachTFPlayer([](CTFPlayer* player){
+				player->GetAttributeList()->DestroyAllAttributes();        
+			});
+			ConVarRef restart_cvar{"mp_restartgame_immediate"};
+			restart_cvar.SetValue(1);
+			return;
+		}
+		if(!filesystem->FileExists(value_c_str)){
+			Warning("Cannot load popfile: file \"%s\" does not exist\n",
+					value_c_str);
+			return;
+		}
+		state.Reset(true);
+		state.ResetCVars(true);
+		ForEachTFPlayer([](CTFPlayer* player){
+			if(player == nullptr) return;
+			if(player->GetAttributeList() != nullptr)
+				player->GetAttributeList()->DestroyAllAttributes();        
+			for(int i{0}; i < player->GetNumWearables(); ++i){
+				CEconWearable* wearable = player->GetWearable(i);
+				if((wearable != nullptr)
+					&& (wearable->GetItem() != nullptr)
+				) wearable->GetItem()->GetAttributeList().DestroyAllAttributes();
+			}
+			for(int i{0}; i < player->WeaponCount(); ++i){
+				CBaseCombatWeapon* weapon = player->GetWeapon(i);
+				if((weapon != nullptr)
+					&& (weapon->GetItem() != nullptr)
+				) weapon->GetItem()->GetAttributeList().DestroyAllAttributes();
+			}
+		});
+		KeyValues* kv{new KeyValues{""}};
+		reading_popfile = true;
+		if(kv->LoadFromFile(filesystem, value_c_str))
+			Parse_Popfile(kv, filesystem);
+		state.ResetCVars(false);
+		reading_popfile = false;
+		ConVarRef restart_cvar{"mp_restartgame_immediate"};
+		restart_cvar.SetValue(1);
+		kv->deleteThis();
+	}
 	
 	class CMod : public IMod, public IModCallbackListener, public IFrameUpdatePostEntityThinkListener
 	{
@@ -7451,6 +7503,9 @@ namespace Mod::Pop::PopMgr_Extensions
 						bones.erase(bone->pszName());
 				}
 			}
+			if (strlen(cvar_custom_popfile.GetString()) > 0) {
+				LoadCustomPopfile(cvar_custom_popfile.GetString());
+			}
 			if (strlen(cvar_custom_upgrades_file.GetString()) > 0) {
 				ResendUpgradeFile(true);
 			}
@@ -7698,53 +7753,22 @@ namespace Mod::Pop::PopMgr_Extensions
         "Force load specified popfile on map start in PvP "
         "(use tf_mvm_popfile instead for MvM)",
         [](IConVar* cvar, const char* old_value, auto){
-            if(TFGameRules()->IsMannVsMachineMode())
-                return;
-            const char* value_c_str{cvar_custom_popfile.GetString()};
-            std::string_view value{value_c_str};
-            if(value == ""){
-                state.Reset(false);
-                ForEachTFPlayer([](CTFPlayer* player){
-                    player->GetAttributeList()->DestroyAllAttributes();        
-                });
-                ConVarRef restart_cvar{"mp_restartgame_immediate"};
-                restart_cvar.SetValue(1);
-                return;
-            }
-            if(!filesystem->FileExists(value_c_str)){
-                Warning("Cannot load popfile: file \"%s\" does not exist\n",
-                        value_c_str);
-                return;
-            }
-            state.Reset(true);
-			state.ResetCVars(true);
-            ForEachTFPlayer([](CTFPlayer* player){
-                if(player == nullptr) return;
-                if(player->GetAttributeList() != nullptr)
-                    player->GetAttributeList()->DestroyAllAttributes();        
-	            for(int i{0}; i < player->GetNumWearables(); ++i){
-		            CEconWearable* wearable = player->GetWearable(i);
-		            if((wearable != nullptr)
-                        && (wearable->GetItem() != nullptr)
-                    ) wearable->GetItem()->GetAttributeList().DestroyAllAttributes();
-	            }
-	            for(int i{0}; i < player->WeaponCount(); ++i){
-		            CBaseCombatWeapon* weapon = player->GetWeapon(i);
-		            if((weapon != nullptr)
-                        && (weapon->GetItem() != nullptr)
-                    ) weapon->GetItem()->GetAttributeList().DestroyAllAttributes();
-	            }
-            });
-            KeyValues* kv{new KeyValues{""}};
-			reading_popfile = true;
-            if(kv->LoadFromFile(filesystem, value_c_str))
-                Parse_Popfile(kv, filesystem);
-			state.ResetCVars(false);
-			reading_popfile = false;
-            ConVarRef restart_cvar{"mp_restartgame_immediate"};
-            restart_cvar.SetValue(1);
-            kv->deleteThis();
+            LoadCustomPopfile(cvar_custom_popfile.GetString());
         }};
+	
+	ModCommandAdmin sig_custom_popfile_add("sig_custom_popfile_add", [](CCommandPlayer *player, const CCommand& args){
+		KeyValues* kv{new KeyValues{""}};
+		reading_popfile = true;
+		if(kv->LoadFromBuffer("scripts/population/custompopfile.pop", args.ArgS(), filesystem, "GAME"))
+			Parse_Popfile(kv, filesystem);
+		reading_popfile = false;
+		kv->deleteThis();
+
+	}, &s_Mod, "Parse provided keyvalues and add it to current popfile extensions");
+	
+	ModCommandAdmin sig_custom_popfile_reset("sig_custom_popfile_reset", [](CCommandPlayer *player, const CCommand& args){
+        LoadCustomPopfile(cvar_custom_popfile.GetString());
+	}, &s_Mod, "reset added popfile extensions by sig_custom_popfile_add");
 	
 	
 	class CKVCond_PopMgr : public IKVCond

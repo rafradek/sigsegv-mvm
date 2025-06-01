@@ -837,11 +837,11 @@ namespace Mod::MvM::Extended_Upgrades
         }
 
         if (wave < upgrade->allow_wave_min) {
-            reason = TranslateText(player, "Available from wave", 1, &upgrade->allow_wave_min);
+            reason = TranslateText(player, "Available from wave", upgrade->allow_wave_min);
             return false;
         }
         else if (wave > upgrade->allow_wave_max) {
-            reason = TranslateText(player, "Available up to wave", 1, &upgrade->allow_wave_max);
+            reason = TranslateText(player, "Available up to wave", upgrade->allow_wave_max);
             return false;
         }
 
@@ -861,14 +861,14 @@ namespace Mod::MvM::Extended_Upgrades
                         CEconEntity *item_require = GetEconEntityAtLoadoutSlot(player, (int)slot);
                         if (item_require != nullptr && item_require->GetItem() != nullptr && GetCurrentUpgradeLevel(child, item_require, player) < entry.second) {
                             std::string childName = GetUpgradeNameTranslated(player, child);
-                            reason = TranslateText(player, "Requires upgrade", 2, childName.c_str(), &entry.second);
+                            reason = TranslateText(player, "Requires upgrade", childName.c_str(), entry.second);
                             return false;
                         }
                     }
                 }
                 else if (GetCurrentUpgradeLevel(child, item, player) < entry.second) {
                     std::string childName = GetUpgradeNameTranslated(player, child);
-                    reason = TranslateText(player, "Requires upgrade", 2, childName.c_str(), &entry.second);
+                    reason = TranslateText(player, "Requires upgrade", childName.c_str(), entry.second);
                     return false;
                 }
             }
@@ -892,14 +892,14 @@ namespace Mod::MvM::Extended_Upgrades
                         if (item_disallow != nullptr && item_disallow->GetItem() != nullptr && 
                         GetCurrentUpgradeLevel(child, item_disallow, player) >= entry.second) {
                             std::string childName = GetUpgradeNameTranslated(player, child);
-                            reason = TranslateText(player, "Incompatible upgrade", 1, childName.c_str());
+                            reason = TranslateText(player, "Incompatible upgrade", childName.c_str());
                             return false;
                         }
                     }
                 }
                 else if (GetCurrentUpgradeLevel(child, item, player) >= entry.second) {
                     std::string childName = GetUpgradeNameTranslated(player, child);
-                    reason = TranslateText(player, "Incompatible upgrade", 1, childName.c_str());
+                    reason = TranslateText(player, "Incompatible upgrade", childName.c_str());
                     return false;
                 }
             }
@@ -930,7 +930,7 @@ namespace Mod::MvM::Extended_Upgrades
                     }
                     else {
                         std::string childName = GetUpgradeNameTranslated(player, child);
-                        reason = TranslateText(player, "Requires upgrade", 2, childName.c_str(), &entry.second);
+                        reason = TranslateText(player, "Requires upgrade", childName.c_str(), entry.second);
                     }
                 }
             }
@@ -1000,13 +1000,11 @@ namespace Mod::MvM::Extended_Upgrades
             int maxUpgradesForThisTier = ((int) max_tier_upgrades.size() > upgrade->tier - 1 ? max_tier_upgrades[upgrade->tier - 1] : 1);
             int minUpgradesForPrevTier = (upgrade->tier > 1 && (int) min_tier_upgrades.size() > upgrade->tier - 2 ? min_tier_upgrades[upgrade->tier - 2] : 1);
             if (numTierUpgrades >= maxUpgradesForThisTier) {
-                reason = TranslateText(player, "Tier is closed", 1, &upgrade->tier);
+                reason = TranslateText(player, "Tier is closed", upgrade->tier);
                 return false;
             }
             if (upgrade->tier > 1 && numPrevTierUpgrades < minUpgradesForPrevTier) {
-                int tierDiff = minUpgradesForPrevTier - numPrevTierUpgrades;
-                int prevTier = upgrade->tier - 1;
-                reason = TranslateText(player, "Buy more upgrades", 2, &tierDiff, &prevTier);
+                reason = TranslateText(player, "Buy more upgrades", minUpgradesForPrevTier - numPrevTierUpgrades, upgrade->tier - 1);
                 return false;
             }
         }
@@ -1222,7 +1220,7 @@ namespace Mod::MvM::Extended_Upgrades
         if (slot == -1)
             menu->SetDefaultTitle(TranslateText(player, "Player upgrades"));
         else {
-            menu->SetDefaultTitle(TranslateText(player, "Item upgrades", 1, GetItemNameForDisplay(item->GetItem(), player)));
+            menu->SetDefaultTitle(TranslateText(player, "Item upgrades", GetItemNameForDisplay(item->GetItem(), player)));
         }
         menu->SetMenuOptionFlags(MENUFLAG_BUTTON_EXITBACK);
 

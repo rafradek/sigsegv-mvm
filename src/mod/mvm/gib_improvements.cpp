@@ -157,7 +157,6 @@ namespace Mod::MvM::Gib_Improvements
 			return true;
 		}
 		bool ret = DETOUR_MEMBER_CALL(info);
-		DevMsg("damage info %d %d\n", ret, info.GetDamageType());
 		return ret;
 	}
 	
@@ -175,7 +174,6 @@ namespace Mod::MvM::Gib_Improvements
 	{
 		auto player = reinterpret_cast<CTFPlayer *>(this);
 		
-		DevMsg("Create ragdoll %d\n", bShouldGib);
 		CTFBot *bot;
 		if (TFGameRules()->IsMannVsMachineMode() && (bot = ToTFBot(player)) != nullptr) {
 			if (bot->IsMiniBoss() || bot->GetModelScale() > 1.0f) {

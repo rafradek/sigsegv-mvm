@@ -164,6 +164,59 @@ public:
 		BUILDING_ONLY	= 0x0010,
 	};
 	
+#ifdef ADD_EXTATTR
+
+	class ExtendedAttr
+	{
+	public:
+		
+		enum ExtAttr : uint8_t
+		{
+			ALWAYS_FIRE_WEAPON_ALT = 0,
+			TARGET_STICKIES = 1,
+			BUILD_DISPENSER_SG = 2,
+			BUILD_DISPENSER_TP = 3,
+			HOLD_CANTEENS = 4,
+			JUMP_STOMP = 5,
+			IGNORE_PLAYERS = 6,
+			IGNORE_BUILDINGS = 7,
+			IGNORE_NPC = 8,
+			IGNORE_REAL_PLAYERS = 9,
+			IGNORE_BOTS = 10,
+			NO_SPAWN_PROTECTION_FIX = 11,
+			MEDIC_LOOK_AT_THREATS = 12,
+			IGNORE_NO_DAMAGE = 13,
+			IGNORE_NO_DAMAGE_ALLY = 14,
+		};
+
+		ExtendedAttr& operator=(const ExtendedAttr&) = default;
+		
+		void Zero() { this->m_nBits = 0; }
+		bool IsZero() { return this->m_nBits == 0; }
+		
+		void Set(ExtAttr attr, bool on) { on ? this->TurnOn(attr) : this->TurnOff(attr); }
+		void TurnOn(ExtAttr attr)       { this->m_nBits |=  (1U << (int)attr); }
+		void TurnOff(ExtAttr attr)      { this->m_nBits &= ~(1U << (int)attr); }
+		
+		bool operator[](ExtAttr attr)       { return ((this->m_nBits & (1U << (int)attr)) != 0); }
+		bool operator[](ExtAttr attr) const { return ((this->m_nBits & (1U << (int)attr)) != 0); }
+		
+		void Dump() const { /*DevMsg("CTFBot::ExtendedAttr::Dump %08x\n", this->m_nBits);*/ }
+		
+	private:
+		uint32_t m_nBits = 0;
+	};
+	SIZE_CHECK(ExtendedAttr, 0x4);
+
+	class ExtendedAttrModule : public EntityModule
+	{
+	public:
+		ExtendedAttrModule() {};
+		ExtendedAttrModule(CBaseEntity *entity) {};
+		ExtendedAttr attrs;
+	};
+#endif
+
 	struct EventChangeAttributes_t
 	{
 		struct item_attributes_t
@@ -211,7 +264,11 @@ public:
 			m_iSkill = EASY;
 			m_nWeaponRestrict = ANY_WEAPON;
 			m_nMission = CTFBot::MissionType::MISSION_NONE;
+#ifdef ADD_EXTATTR
+			pad_10.Zero();
+#else
 			pad_10 = m_nMission;
+#endif
 			m_nBotAttrs = ATTR_NONE;
 			m_flVisionRange = -1.f;
 
@@ -228,7 +285,11 @@ public:
 		WeaponRestriction m_nWeaponRestrict;       // +0x08
 		MissionType m_nMission;                    // +0x0c
 		// 64 bit checked
+#ifdef ADD_EXTATTR
+		ExtendedAttr pad_10;
+#else
 		uint32_t pad_10; // TODO: 0x10
+#endif
 		AttributeType m_nBotAttrs;                 // +0x14
 		float m_flVisionRange;                     // +0x18
 		CUtlStringList m_ItemNames;                // +0x1c
@@ -242,97 +303,6 @@ public:
 	SIZE_CHECK(EventChangeAttributes_t, 0x6c);
 #endif
 	
-#ifdef ADD_EXTATTR
-	/* custom */
-	class ExtraData
-	{
-	public:
-		ExtraData()
-		{
-			this->Reset();
-		}
-		
-		void Reset()
-		{
-			this->m_bAlwaysFireWeaponAlt = false;
-			this->m_bTargetStickies      = false;
-			this->m_bTauntAfterEveryKill = false;
-			this->m_nSplitCurrencyPacks  = 1;
-		}
-		
-		ExtraData& operator=(const ExtraData& that) = default;
-		
-		bool GetAlwaysFireWeaponAlt() const   { return this->m_bAlwaysFireWeaponAlt; }
-		void SetAlwaysFireWeaponAlt(bool val) { this->m_bAlwaysFireWeaponAlt = val; }
-		
-		bool GetTargetStickies() const   { return this->m_bTargetStickies; }
-		void SetTargetStickies(bool val) { this->m_bTargetStickies = val; }
-		
-		bool GetTauntAfterEveryKill() const   { return this->m_bTauntAfterEveryKill; }
-		void SetTauntAfterEveryKill(bool val) { this->m_bTauntAfterEveryKill = val; }
-		
-		int GetSplitCurrencyPacks() const   { return this->m_nSplitCurrencyPacks; }
-		void SetSplitCurrencyPacks(int val) { this->m_nSplitCurrencyPacks = val; }
-		
-	private:
-		bool m_bAlwaysFireWeaponAlt;
-		bool m_bTargetStickies;
-		bool m_bTauntAfterEveryKill;
-		int m_nSplitCurrencyPacks;
-	};
-	const ExtraData& Ext() const;
-#endif
-	
-#ifdef ADD_EXTATTR
-
-	class ExtendedAttr
-	{
-	public:
-		
-		enum ExtAttr : uint8_t
-		{
-			ALWAYS_FIRE_WEAPON_ALT = 0,
-			TARGET_STICKIES = 1,
-			BUILD_DISPENSER_SG = 2,
-			BUILD_DISPENSER_TP = 3,
-			HOLD_CANTEENS = 4,
-			JUMP_STOMP = 5,
-			IGNORE_PLAYERS = 6,
-			IGNORE_BUILDINGS = 7,
-			IGNORE_NPC = 8,
-			IGNORE_REAL_PLAYERS = 9,
-			IGNORE_BOTS = 10,
-			NO_SPAWN_PROTECTION_FIX = 11,
-			MEDIC_LOOK_AT_THREATS = 12,
-		};
-
-		ExtendedAttr& operator=(const ExtendedAttr&) = default;
-		
-		void Zero() { this->m_nBits = 0; }
-		bool IsZero() { return this->m_nBits == 0; }
-		
-		void Set(ExtAttr attr, bool on) { on ? this->TurnOn(attr) : this->TurnOff(attr); }
-		void TurnOn(ExtAttr attr)       { this->m_nBits |=  (1U << (int)attr); }
-		void TurnOff(ExtAttr attr)      { this->m_nBits &= ~(1U << (int)attr); }
-		
-		bool operator[](ExtAttr attr)       { return ((this->m_nBits & (1U << (int)attr)) != 0); }
-		bool operator[](ExtAttr attr) const { return ((this->m_nBits & (1U << (int)attr)) != 0); }
-		
-		void Dump() const { /*DevMsg("CTFBot::ExtendedAttr::Dump %08x\n", this->m_nBits);*/ }
-		
-	private:
-		uint32_t m_nBits = 0;
-	};
-	SIZE_CHECK(ExtendedAttr, 0x4);
-
-	class ExtendedAttrModule : public EntityModule
-	{
-	public:
-		ExtendedAttrModule() {};
-		ExtendedAttrModule(CBaseEntity *entity) {};
-		ExtendedAttr attrs;
-	};
-#endif
 	
 	bool HasAttribute(AttributeType attr) const { return ((this->m_nBotAttrs & attr) != 0); }
 	void SetAttribute(AttributeType attr)       {        this->m_nBotAttrs = this->m_nBotAttrs | attr; }
@@ -451,6 +421,14 @@ inline CTFBot *ToTFBot(CBaseEntity *pEntity)
 		return nullptr;
 
 	return static_cast<CTFBot *>(pEntity);
+}
+
+inline CTFBot *ToTFBot(CBasePlayer *pPlayer)
+{
+	if (pPlayer == nullptr || !pPlayer->IsBotOfType(TF_BOT_TYPE))
+		return nullptr;
+
+	return static_cast<CTFBot *>(pPlayer);
 }
 
 template<typename T> T *NextBotCreatePlayerBot(const char *name, bool fake_client = true);

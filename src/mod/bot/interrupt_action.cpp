@@ -94,14 +94,20 @@ ActionResult<Actor> CTFBotMoveTo<Actor>::Update(Actor *actor, float dt)
         this->m_PathFollower.Invalidate();
     }
     if (!m_bDone) {
-
+        bool onFinalNav = TheNavMesh->GetNavArea(pos) == actor->GetLastKnownArea();
+        if (onFinalNav && this->m_fFinalNavAreaReachTime == 0) {
+            this->m_fFinalNavAreaReachTime = gpGlobals->curtime;
+        }
+        else if (!onFinalNav) {
+            this->m_fFinalNavAreaReachTime = 0;
+        }
         if (!m_bWaitUntilDone) {
             m_bDone = true;
         }
         else if (m_bKillLook) {
             m_bDone = this->m_hTargetAim == nullptr || !this->m_hTargetAim->IsAlive();
         }
-        else if (pos == vec3_origin || TheNavMesh->GetNavArea(pos) == actor->GetLastKnownArea() || inRange) {
+        else if (pos == vec3_origin || (this->m_hTarget == nullptr && onFinalNav && this->m_fFinalNavAreaReachTime + 5 < gpGlobals->curtime) || inRange) {
             m_bDone = true;
         }
 
@@ -154,10 +160,10 @@ ActionResult<Actor> CTFBotMoveTo<Actor>::Update(Actor *actor, float dt)
 
         if (look_now) {
             if (this->m_hTargetAim != nullptr) {
-                actor->GetBodyInterface()->AimHeadTowards(this->m_hTargetAim, IBody::LookAtPriorityType::OVERRIDE_ALL, 0.2f, NULL, "Aiming at target we need to destroy to progress");
+                actor->GetBodyInterface()->AimHeadTowards(this->m_hTargetAim, IBody::LookAtPriorityType::OVERRIDE_ALL, 0.2f, NULL, m_bKillLook ? "Aiming at target we need to destroy to progress" : "Aiming at target entity");
             }
             else {
-                actor->GetBodyInterface()->AimHeadTowards(look, IBody::LookAtPriorityType::OVERRIDE_ALL, 0.2f, NULL, "Aiming at target we need to destroy to progress");
+                actor->GetBodyInterface()->AimHeadTowards(look, IBody::LookAtPriorityType::OVERRIDE_ALL, 0.2f, NULL, "Aiming at position");
             }
         }
     }
