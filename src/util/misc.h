@@ -1184,4 +1184,15 @@ std::string GetMapNameNoVersion(const std::string &name);
  * Returns true if the mission is for map. Returns true if the mission does not contain map version too
  */
 bool IsMissionForMap(const char *mission, const char *map);
+
+struct InputInfoTemplate
+{
+	std::string target;
+	std::string input;
+	std::string param;
+	float delay;
+};
+
+InputInfoTemplate Parse_InputInfoTemplate(KeyValues *kv);
+void TriggerList(CBaseEntity *activator, std::vector<InputInfoTemplate> &triggers);
 #endif

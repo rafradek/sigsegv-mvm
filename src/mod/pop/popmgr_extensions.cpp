@@ -467,7 +467,7 @@ namespace Mod::Pop::PopMgr_Extensions
 			m_BluHumanInfiniteAmmo    ("sig_mvm_bluhuman_infinite_ammo"),
 			m_SetCreditTeam           ("sig_mvm_set_credit_team"),
 			m_EnableDominations       ("sig_mvm_dominations"),
-			m_RobotLimit              ("sig_mvm_robot_limit_override"),
+			m_RobotLimit              ("tf_mvm_max_invaders"),
 			m_BotsHumans              ("sig_mvm_bots_are_humans"),
 			m_ForceHoliday            ("tf_forced_holiday"),
 			m_VanillaMode             ("sig_vanilla_mode"),
@@ -3819,7 +3819,8 @@ namespace Mod::Pop::PopMgr_Extensions
 		for (const auto& entry : state.m_ItemReplace) {
 			const char *from_str = entry.entry->GetInfo(player);
 			const char *to_str = GetItemNameForDisplay(entry.item, player);
-			ItemDrawInfo info1(CFmtStr("%s -> %s", from_str, to_str), ITEMDRAW_DISABLED);
+			CFmtStr str("%s -> %s", from_str, to_str);
+			ItemDrawInfo info1(str, ITEMDRAW_DISABLED);
 			menu->AppendItem("attr", info1);
 		}
 
@@ -4223,8 +4224,7 @@ namespace Mod::Pop::PopMgr_Extensions
 				if (item.cost > 0 && !state.m_BoughtLoadoutItems[player->GetSteamID()].count(i)) {
 					snprintf(cost, sizeof(cost), "($%d)", item.cost);
 				}
-
-				ItemDrawInfo info1(CFmtStr("%s: %s %s %s", TranslateText(player, loadoutStrings[item.loadout_slot]), GetItemNameForDisplay(item.item, player), cost, TranslateText(player, selected ? "(selected)" : "")), ITEMDRAW_DEFAULT);
+				ItemDrawInfo info1(FormatTextForPlayerSM(player, "%t: %s %s %t", loadoutStrings[item.loadout_slot], GetItemNameForDisplay(item.item, player), cost, selected ? "(selected)" : ""), ITEMDRAW_DEFAULT);
 				std::string num = std::to_string(i);
 				menu->AppendItem(num.c_str(), info1);
 			}
@@ -6336,7 +6336,7 @@ namespace Mod::Pop::PopMgr_Extensions
 	RefCount rc_CPopulationManager_Parse;
 	DETOUR_DECL_MEMBER(bool, CPopulationManager_Parse)
 	{
-		TriggerList(nullptr, state.m_missionUnloadOutput, nullptr);
+		TriggerList(nullptr, state.m_missionUnloadOutput);
 
 		Msg("Parse\n");
 	//	DevMsg("CPopulationManager::Parse\n");

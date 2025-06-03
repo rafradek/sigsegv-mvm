@@ -141,7 +141,7 @@
 				"g_pScriptVM" "g_pScriptVM"
 				"g_GameStringPool" "_ZL16g_GameStringPool"
 				"steamgameserverapicontext" "steamgameserverapicontext"
-				
+				"gEntList" "gEntList"
 			}
 			
 			"addrs_group"

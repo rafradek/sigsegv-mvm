@@ -51,7 +51,6 @@ namespace Mod::Pop::ExtAttr::IgnoreTargets
 		
 		CTFPlayer *player = reinterpret_cast<CTFPlayer *>(this);
 		auto result = DETOUR_MEMBER_CALL(info);
-		TIME_SCOPE2(takedmg)
 		auto bot = ToTFBot(player);
 		if (info.GetAttacker() != nullptr && bot != nullptr && info.GetAttacker()->IsCombatCharacter()) {
 			auto mod = bot->GetOrCreateEntityModule<TakeDamageFromModule>("takedamagefrom");
@@ -64,7 +63,7 @@ namespace Mod::Pop::ExtAttr::IgnoreTargets
 			if (gpGlobals->curtime > mod->nextNotifyAlliesHurt) {
 				int handleNum = info.GetAttacker()->GetRefEHandle().ToInt();
 				ForEachTFBot([&](CTFBot *ally) {
-					if (bot->GetTeamNumber() != ally->GetTeamNumber() && ally->IsAlive() && ally->ExtAttr()[CTFBot::ExtendedAttr::IGNORE_NO_DAMAGE_ALLY] && ally->GetVisionInterface()->IsAbleToSee(bot, IVision::FieldOfViewCheckType::DISREGARD_FOV, nullptr) && ally->GetVisionInterface()->IsAbleToSee(info.GetAttacker(), IVision::FieldOfViewCheckType::DISREGARD_FOV, nullptr)) {
+					if (bot->GetTeamNumber() == ally->GetTeamNumber() && ally->IsAlive() && ally->ExtAttr()[CTFBot::ExtendedAttr::IGNORE_NO_DAMAGE_ALLY] && ally->GetVisionInterface()->IsAbleToSee(bot, IVision::FieldOfViewCheckType::DISREGARD_FOV, nullptr) && ally->GetVisionInterface()->IsAbleToSee(info.GetAttacker(), IVision::FieldOfViewCheckType::DISREGARD_FOV, nullptr)) {
 						auto modAlly = ally->GetOrCreateEntityModule<TakeDamageFromModule>("takedamagefrom");
 						modAlly->allyTookDamageFrom.insert(handleNum);
 					}

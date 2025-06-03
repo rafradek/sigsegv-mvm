@@ -47,8 +47,6 @@ public:
 	std::unordered_map<std::string, std::pair<variant_t, variant_t>> props;
 };
 
-void TriggerList(CBaseEntity *activator, std::vector<InputInfoTemplate> &triggers, PointTemplateInstance *inst);
-
 void FixupKeyvalue(std::string &val,int id, const char *parentname, FixupNames &matching) {
 	size_t amperpos = 0;
 	while((amperpos = val.find('\1',amperpos)) != std::string::npos){
@@ -326,7 +324,7 @@ std::shared_ptr<PointTemplateInstance> PointTemplate::SpawnTemplate(CBaseEntity 
 	FixupTriggers(this->on_parent_kill_triggers, templ_inst.get(), templ_inst->on_parent_kill_triggers_fixed, g_fixupNames);
 	FixupTriggers(this->on_kill_triggers, templ_inst.get(), templ_inst->on_kill_triggers_fixed, g_fixupNames);
 	if (!templ_inst->on_spawn_triggers_fixed.empty()) {
-		TriggerList(parent != nullptr ? parent : UTIL_EntityByIndex(0), templ_inst->on_spawn_triggers_fixed, templ_inst.get());
+		TriggerList(parent != nullptr ? parent : UTIL_EntityByIndex(0), templ_inst->on_spawn_triggers_fixed);
 	}
 
 	for (auto &str : this->fixup_names) {
@@ -481,30 +479,6 @@ bool Parse_ShootTemplate(ShootTemplateData &data, KeyValues *kv)
 	return data.templ != nullptr;
 }
 
-InputInfoTemplate Parse_InputInfoTemplate(KeyValues *kv)
-{
-	std::string target;
-	std::string action;
-	float delay = 0.0f;
-	std::string param;
-	FOR_EACH_SUBKEY(kv, subkey) {
-		const char *name = subkey->GetName();
-		if (FStrEq(name, "Target")) {
-			target = subkey->GetString();
-		}
-		else if (FStrEq(name, "Action")) {
-			action = subkey->GetString();
-		}
-		else if (FStrEq(name, "Delay")) {
-			delay = subkey->GetFloat();
-		}
-		else if (FStrEq(name, "Param")) {
-			param = subkey->GetString();
-		}
-	}
-	return {target, action, param, delay};
-}
-
 PointTemplate *FindPointTemplate(const std::string &str) {
 
 	auto it = Point_Templates().find(str);
@@ -512,39 +486,6 @@ PointTemplate *FindPointTemplate(const std::string &str) {
 		return &(it->second);
 
 	return nullptr;
-}
-
-void TriggerList(CBaseEntity *activator, std::vector<InputInfoTemplate> &triggers, PointTemplateInstance *inst)
-{
-
-	//CBaseEntity *trigger = CreateEntityByName("logic_relay");
-	//variant_t variant1;
-	for (auto &inputinfo : triggers) {
-		variant_t variant;
-		//if (!param.empty()) {
-			variant.SetString(AllocPooledString(inputinfo.param.c_str()));
-		//}
-		//else {
-		//	variant.SetString(NULL_STRING);
-		//}
-		g_EventQueue.GetRef().AddEvent( STRING(AllocPooledString(inputinfo.target.c_str())), STRING(AllocPooledString(inputinfo.input.c_str())), variant, inputinfo.delay, activator, activator, -1);
-	}
-	/*for(auto it = triggers.begin(); it != triggers.end(); it++){
-		std::string val = *(it); 
-		if (!inst->templ->no_fixup)
-			FixupKeyvalue(val,inst->id,"");
-		trigger->KeyValue("ontrigger",val.c_str());
-
-	}
-
-	trigger->KeyValue("spawnflags", "2");
-	servertools->DispatchSpawn(trigger);
-	trigger->Activate();
-	if (activator != nullptr && activator->IsPlayer())
-		trigger->AcceptInput("trigger", activator, activator ,variant1,-1);
-	else
-		trigger->AcceptInput("trigger", UTIL_EntityByIndex(0),UTIL_EntityByIndex(0),variant1,-1);
-	servertools->RemoveEntity(trigger);*/
 }
 
 void PointTemplateInstance::OnKilledParent(bool cleared) {
@@ -556,7 +497,7 @@ void PointTemplateInstance::OnKilledParent(bool cleared) {
 	}
 
 	if (!cleared && !this->templ->on_parent_kill_triggers.empty()) {
-		TriggerList(this->parent != nullptr && this->parent->IsPlayer() ? this->parent.Get() : UTIL_EntityByIndex(0), this->on_parent_kill_triggers_fixed, this);
+		TriggerList(this->parent != nullptr && this->parent->IsPlayer() ? this->parent.Get() : UTIL_EntityByIndex(0), this->on_parent_kill_triggers_fixed);
 	}
 
 	for(auto it = this->entities.begin(); it != this->entities.end(); it++){
@@ -621,7 +562,7 @@ void Update_Point_Templates()
 				if (!hasalive)
 				{
 					inst->all_entities_killed = true;
-					TriggerList(inst->parent != nullptr && inst->parent->IsPlayer() ? inst->parent.Get() : UTIL_EntityByIndex(0), inst->on_kill_triggers_fixed, inst.get());
+					TriggerList(inst->parent != nullptr && inst->parent->IsPlayer() ? inst->parent.Get() : UTIL_EntityByIndex(0), inst->on_kill_triggers_fixed);
 				}
 			}
 			if (inst->all_entities_killed && !((inst->has_parent || inst->is_wave_spawned) && !inst->on_parent_kill_triggers_fixed.empty())) {

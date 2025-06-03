@@ -193,7 +193,7 @@ ActionResult<Actor> CTFBotGuardAction<Actor>::Update(Actor *actor, float dt)
                 if (this->m_hTrackTarget != nullptr){
                     m_hTrackTarget->m_OnPass->FireOutput(Variant(), actor, m_hTrackTarget);
                 }
-                TriggerList(actor, node.m_onReachedOutput, nullptr);
+                TriggerList(actor, node.m_onReachedOutput);
             }
             m_bNodeCompleted = true;
         }
@@ -203,7 +203,7 @@ ActionResult<Actor> CTFBotGuardAction<Actor>::Update(Actor *actor, float dt)
         if (this->m_hTrackTarget != nullptr) {
             this->m_hTrackTarget = this->m_hTrackTarget->GetNext();
             if (this->m_hTrackTarget == nullptr) {
-                TriggerList(actor, this->m_Path->m_onTrackEndOutput, nullptr);
+                TriggerList(actor, this->m_Path->m_onTrackEndOutput);
                 m_bTrackCompleted = true;
             }
         }

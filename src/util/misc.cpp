@@ -5,6 +5,7 @@
 #include "stub/usermessages_sv.h"
 #include "stub/trace.h"
 #include "stub/gamerules.h"
+#include "stub/misc.h"
 #include <gamemovement.h>
 
 template<typename LINE_FUNC>
@@ -312,4 +313,37 @@ bool IsMissionForMap(const char *mission, const char *map) {
 		}
 	}
 	return !foundMapVersion;
+}
+
+InputInfoTemplate Parse_InputInfoTemplate(KeyValues *kv)
+{
+	std::string target;
+	std::string action;
+	float delay = 0.0f;
+	std::string param;
+	FOR_EACH_SUBKEY(kv, subkey) {
+		const char *name = subkey->GetName();
+		if (FStrEq(name, "Target")) {
+			target = subkey->GetString();
+		}
+		else if (FStrEq(name, "Action")) {
+			action = subkey->GetString();
+		}
+		else if (FStrEq(name, "Delay")) {
+			delay = subkey->GetFloat();
+		}
+		else if (FStrEq(name, "Param")) {
+			param = subkey->GetString();
+		}
+	}
+	return {target, action, param, delay};
+}
+
+void TriggerList(CBaseEntity *activator, std::vector<InputInfoTemplate> &triggers)
+{
+	for (auto &inputinfo : triggers) {
+		variant_t variant;
+		variant.SetString(AllocPooledString(inputinfo.param.c_str()));
+		g_EventQueue.GetRef().AddEvent( STRING(AllocPooledString(inputinfo.target.c_str())), STRING(AllocPooledString(inputinfo.input.c_str())), variant, inputinfo.delay, activator, activator, -1);
+	}
 }

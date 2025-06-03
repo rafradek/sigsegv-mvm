@@ -20,13 +20,6 @@ struct HierarchicalSpawn_t
 class PointTemplateInstance;
 typedef void ( *PointTemplateKilledCallback )( PointTemplateInstance * );
 
-struct InputInfoTemplate
-{
-	std::string target;
-	std::string input;
-	std::string param;
-	float delay;
-};
 
 using EntityKeys = std::multimap<std::string,std::string, CaseInsensitiveLess>;
 using TemplateParams = std::map<std::string,std::string, CaseInsensitiveLess>;
@@ -110,8 +103,6 @@ public:
 
 PointTemplateInfo Parse_SpawnTemplate(KeyValues *kv);
 bool Parse_ShootTemplate(ShootTemplateData &data, KeyValues *kv);
-InputInfoTemplate Parse_InputInfoTemplate(KeyValues *kv);
-void TriggerList(CBaseEntity *activator, std::vector<InputInfoTemplate> &triggers, PointTemplateInstance *inst);
 
 PointTemplate *FindPointTemplate(const std::string &str);
 extern std::unordered_map<std::string, PointTemplate, CaseInsensitiveHash, CaseInsensitiveCompare> g_templates;
