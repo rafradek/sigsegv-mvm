@@ -15,9 +15,9 @@ jobs:
         shell: bash
 
     runs-on: ubuntu-latest
-    # Ubuntu 20.04 container with all required dependencies and gcc 13
+    # Steam sniper sdk
     container:
-      image: rafradek/ubuntu2004dev:latest
+      image: registry.gitlab.steamos.cloud/steamrt/sniper/sdk
 
     steps:
     - name: Checkout repository
@@ -28,6 +28,7 @@ jobs:
     - name: Clone and install AMBuild
       run: |
         pushd ..
+        apt-get install -y pip
         mkdir -p alliedmodders
         cd alliedmodders
         git clone https://github.com/alliedmodders/ambuild --depth 1
@@ -68,10 +69,10 @@ jobs:
         rm lua-*.tar.gz
         mv lua-* lua
         cd lua
-        make CC=g++ MYCFLAGS='-m32' MYLDFLAGS='-m32'
+        make CC=g++-14 MYCFLAGS='-m32' MYLDFLAGS='-m32'
         mv src/liblua.a ../liblua.a
         make clean
-        make CC=g++ MYCFLAGS='-fPIC'
+        make CC=g++-14 MYCFLAGS='-fPIC'
         mv src/liblua.a ../libluax64.a
         popd
 
