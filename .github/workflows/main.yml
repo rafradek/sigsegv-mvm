@@ -24,11 +24,13 @@ jobs:
       uses: actions/checkout@v4
       with:
         submodules: recursive
+    - name: Install dependencies
+      run: |
+        apt-get install -y pip libiberty-dev libiberty-dev:i386 libboost-dev libboost-dev:i386 libbsd-dev libbsd-dev:i386 libunwind-dev libunwind-dev:i386
 
     - name: Clone and install AMBuild
       run: |
         pushd ..
-        apt-get install -y pip
         mkdir -p alliedmodders
         cd alliedmodders
         git clone https://github.com/alliedmodders/ambuild --depth 1
