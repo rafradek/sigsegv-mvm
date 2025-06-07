@@ -4,6 +4,7 @@
 
 #include "link/link.h"
 #include "stub/sendprop.h"
+#include "prop.h"
 
 typedef struct CustomFile_s
 {
@@ -78,6 +79,8 @@ public:
 	void     UserInfoChanged(int slot) { vt_UserInfoChanged(this, slot); }
 	void     RejectConnection(const netadr_t &addr, int challenge, const char *reason) { vt_RejectConnection(this, addr, challenge, reason); }
 
+	DECL_EXTRACT(CUtlVector<CBaseClient*>, m_Clients);
+
 #ifdef PLATFORM_64BITS
     int &GetMaxClientsRef() { Error("Put correct GetMaxClientsRef offset\n"); return *(int *)((uintptr_t)(this) + 0x14C); }
 #else
@@ -90,6 +93,7 @@ private:
 	static MemberVFuncThunk<CBaseServer *, float>                                     vt_GetCPUUsage;
 	static MemberVFuncThunk<CBaseServer *, void, int>                                 vt_UserInfoChanged;
 	static MemberVFuncThunk<CBaseServer *, void, const netadr_t &, int, const char *> vt_RejectConnection;
+	
 };
 
 class CGameServer : public CBaseServer

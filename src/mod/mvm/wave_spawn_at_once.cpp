@@ -9,7 +9,7 @@
 namespace Mod::MvM::Sub_Wave_Spawn_At_Once
 {
 	int waveNum = 0;
-    CValueOverride_ConVar<int> sig_mvm_robot_limit_override("sig_mvm_robot_limit_override");
+    CValueOverride_ConVar<int> tf_mvm_max_invaders("tf_mvm_max_invaders");
 	DETOUR_DECL_MEMBER(bool, CPopulationManager_Parse)
 	{
 		waveNum = 0;
@@ -17,7 +17,7 @@ namespace Mod::MvM::Sub_Wave_Spawn_At_Once
 		auto manager = reinterpret_cast<CPopulationManager *>(this);
 		int red, blu, spectators, robots;
 		Mod::MvM::Player_Limit::GetSlotCounts(red, blu, spectators, robots);
-		sig_mvm_robot_limit_override.Set(Max(sig_mvm_robot_limit_override.GetOriginalValue(), gpGlobals->maxClients - red - blu - 1));
+		tf_mvm_max_invaders.Set(Max(tf_mvm_max_invaders.GetOriginalValue(), gpGlobals->maxClients - red - blu - 1));
 		return ret;
 	}
 
@@ -58,7 +58,7 @@ namespace Mod::MvM::Sub_Wave_Spawn_At_Once
 		}
 
 		virtual void OnDisable() override {
-			sig_mvm_robot_limit_override.Reset();
+			tf_mvm_max_invaders.Reset();
 		}
 	};
 	CMod s_Mod_Sub_Wave_Spawn_At_Once;
@@ -76,7 +76,7 @@ namespace Mod::MvM::Wave_Spawn_At_Once
 	int waveNum = 0;
 	RefCount rc_CPopulationManager_Parse;
 	
-    CValueOverride_ConVar<int> sig_mvm_robot_limit_override("sig_mvm_robot_limit_override");
+    CValueOverride_ConVar<int> tf_mvm_max_invaders("tf_mvm_max_invaders");
 	DETOUR_DECL_MEMBER(bool, CPopulationManager_Parse)
 	{
 		SCOPED_INCREMENT(rc_CPopulationManager_Parse);
@@ -84,7 +84,7 @@ namespace Mod::MvM::Wave_Spawn_At_Once
 		auto ret = DETOUR_MEMBER_CALL();
 		int red, blu, spectators, robots;
 		Mod::MvM::Player_Limit::GetSlotCounts(red, blu, spectators, robots);
-		sig_mvm_robot_limit_override.Set(Max(sig_mvm_robot_limit_override.GetOriginalValue(), Min(gpGlobals->maxClients - red - blu - 1, Mod::Pop::PopMgr_Extensions::GetMaxRobotLimit() * waveNum )));
+		tf_mvm_max_invaders.Set(Max(tf_mvm_max_invaders.GetOriginalValue(), Min(gpGlobals->maxClients - red - blu - 1, Mod::Pop::PopMgr_Extensions::GetMaxRobotLimit() * waveNum )));
 
 		return ret;
 	}
@@ -190,7 +190,7 @@ namespace Mod::MvM::Wave_Spawn_At_Once
 		}
 
 		virtual void OnDisable() override {
-			sig_mvm_robot_limit_override.Reset();
+			tf_mvm_max_invaders.Reset();
 		}
 	};
 	CMod s_Mod_Wave_Spawn_At_Once;

@@ -72,6 +72,11 @@ namespace Mod {
     }
 }
 
+namespace Mod::Etc::Extra_Player_Slots
+{
+	void PopfileAllowBotExtraSlots(bool enable);
+}
+
 namespace Mod::Etc::Mapentity_Additions
 {
     void ClearFakeProp();
@@ -731,7 +736,7 @@ namespace Mod::Pop::PopMgr_Extensions
 			this->m_iEnemyTeamForReverse = TF_TEAM_RED;
 			this->m_iRobotLimitSetByMission = 22;
 			this->m_bPlayerBombCarrierBuffs = false;
-			this->m_bEnable100Slots = false;
+			this->m_bEnable255Slots = false;
 			this->m_bAllowBotsSapPlayers = false;
 			this->m_iLoseTime = -1;
 			
@@ -880,7 +885,7 @@ namespace Mod::Pop::PopMgr_Extensions
 		int m_iEnemyTeamForReverse;
 		int m_iRobotLimitSetByMission;
 		bool m_bPlayerBombCarrierBuffs;
-		bool m_bEnable100Slots;
+		bool m_bEnable255Slots;
 		bool m_bAllowBotsSapPlayers;
 		int m_iLoseTime;
 		
@@ -6382,6 +6387,7 @@ namespace Mod::Pop::PopMgr_Extensions
 	//	if ( state.m_iRedTeamMaxPlayers > 0) {
 	//		ResetMaxRedTeamPlayers(6);
 	//	}
+		bool prevHas255Slots = state.m_bEnable255Slots;
 
 		std::string prevNavFile = state.m_CustomNavFile;
 		state.Reset(true);
@@ -6401,6 +6407,9 @@ namespace Mod::Pop::PopMgr_Extensions
 
 		state.ResetCVars(false);
 
+		if (prevHas255Slots && !state.m_bEnable255Slots) {
+			Mod::Etc::Extra_Player_Slots::PopfileAllowBotExtraSlots(false);
+		}
 		// Reset nav mesh
 		if (state.m_CustomNavFile != prevNavFile) {
 			
@@ -6990,9 +6999,12 @@ namespace Mod::Pop::PopMgr_Extensions
 			} else if (FStrEq(name, "AutoWeaponStrip")) {
 				state.m_AutoWeaponStrip.Set(subkey->GetBool());
 			} else if (FStrEq(name, "AllowBotExtraSlots")) {
-				state.m_AllowBotsExtraSlots.Set(subkey->GetBool());
 				if (subkey->GetBool()) {
 					SetAllowBotExtraSlot();
+				}
+				if (subkey->GetInt() > 1) {
+					Mod::Etc::Extra_Player_Slots::PopfileAllowBotExtraSlots(true);
+					state.m_bEnable255Slots = true;
 				}
 			} else if (FStrEq(name, "RemoveUnusedOffhandViewmodel")) {
 				state.m_RemoveOffhandViewmodel.Set(subkey->GetBool());
@@ -7201,7 +7213,7 @@ namespace Mod::Pop::PopMgr_Extensions
 		restart_cvar.SetValue(1);
 		kv->deleteThis();
 	}
-	
+
 	class CMod : public IMod, public IModCallbackListener, public IFrameUpdatePostEntityThinkListener
 	{
 	public:
@@ -7520,14 +7532,14 @@ namespace Mod::Pop::PopMgr_Extensions
 		{
 			state.m_PlayerUpgradeSend.clear();
 			
-			for (int i = 0; i < TF_CLASS_COUNT; i++)
-				state.m_MissingRobotBones[i].clear();
-
-				
 			if (changelevel_maxplayers) {
 				ft_SetupMaxPlayers(MAX_PLAYERS);
 				changelevel_maxplayers = false;
 			}
+			for (int i = 0; i < TF_CLASS_COUNT; i++)
+				state.m_MissingRobotBones[i].clear();
+
+				
 		}
 		
 		virtual void FrameUpdatePostEntityThink() override

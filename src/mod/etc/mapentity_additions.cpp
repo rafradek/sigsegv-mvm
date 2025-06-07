@@ -2481,7 +2481,7 @@ namespace Mod::Etc::Mapentity_Additions
         { 
             if (change_level_info.set) {
                 if (g_pPopulationManager.GetRef() != nullptr) {
-                    THINK_FUNC_SET(g_pPopulationManager.GetRef(), SetForcedMission, 1.0f);
+                    THINK_FUNC_SET(g_pPopulationManager.GetRef(), SetForcedMission, gpGlobals->curtime + 1.0f);
                 }
                 else {
                     change_level_info.set = false;

@@ -3337,6 +3337,13 @@
 					type "sym"
 					sym  "_ZN15CBaseProjectile13IsDestroyableEb"
 				}
+				"CBaseServer::GetClient"
+				{
+					lib "engine"
+					type "sym"
+					sym  "_ZN11CBaseServer9GetClientEi"
+				}
+				
 			}
 			"addrs_group"
 			{

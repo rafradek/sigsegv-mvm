@@ -24,6 +24,9 @@
 #include <steam/isteamgameserver.h>
 #include <gamemovement.h>
 #include <worldsize.h>
+#include <filesystem>
+#include "stub/populators.h"
+#include "stub/tf_objective_resource.h"
 
 class SVC_ServerInfo
 {
@@ -48,7 +51,7 @@ namespace Mod::Etc::Extra_Player_Slots
 {
 
 #ifdef SE_IS_TF2
-    constexpr int DEFAULT_MAX_PLAYERS = 101;
+    constexpr int DEFAULT_MAX_PLAYERS = MAX_PLAYERS;
 // Fake to clients that the players in extra slots are CBaseCombatCharacter to prevent forced disconnect
 #define FAKE_PLAYER_CLASS
 #elif definded(SE_IS_CSS)
@@ -57,6 +60,8 @@ namespace Mod::Etc::Extra_Player_Slots
     inline bool ExtraSlotsEnabled();
     
     extern ConVar cvar_enable;
+    
+    void CheckMapRestart();
 
     ConVar sig_etc_extra_player_slots_count("sig_etc_extra_player_slots_count", "101", FCVAR_NOTIFY,
 		"Extra player slot count. Requires map restart to function");
@@ -64,17 +69,13 @@ namespace Mod::Etc::Extra_Player_Slots
     ConVar sig_etc_extra_player_slots_allow_bots("sig_etc_extra_player_slots_allow_bots", "0", FCVAR_NOTIFY | FCVAR_GAMEDLL,
 		"Allow bots to use extra player slots",
 		[](IConVar *pConVar, const char *pOldValue, float flOldValue){
-			if (sig_etc_extra_player_slots_allow_bots.GetBool() && cvar_enable.GetBool() && flOldValue == 0.0f && ExtraSlotsEnabled() && gpGlobals->maxClients < sig_etc_extra_player_slots_count.GetInt()) {
-                engine->ChangeLevel(STRING(gpGlobals->mapname), nullptr);
-            }
+            CheckMapRestart();
 		});
 
     ConVar sig_etc_extra_player_slots_allow_players("sig_etc_extra_player_slots_allow_players", "0", FCVAR_NOTIFY,
 		"Allow players to use extra player slots",
 		[](IConVar *pConVar, const char *pOldValue, float flOldValue){
-			if (sig_etc_extra_player_slots_allow_players.GetBool() && cvar_enable.GetBool() && flOldValue == 0.0f && ExtraSlotsEnabled() && gpGlobals->maxClients < sig_etc_extra_player_slots_count.GetInt()) {
-                engine->ChangeLevel(STRING(gpGlobals->mapname), nullptr);
-            }
+            CheckMapRestart();
 		});
 
     ConVar sig_etc_extra_player_slots_voice_display_fix("sig_etc_extra_player_slots_voice_display_fix", "0", FCVAR_NOTIFY,
@@ -92,23 +93,65 @@ namespace Mod::Etc::Extra_Player_Slots
 
     inline bool ExtraSlotsEnabled()
     {
-        return sig_etc_extra_player_slots_count.GetInt() > DEFAULT_MAX_PLAYERS && (sig_etc_extra_player_slots_allow_bots.GetBool() || sig_etc_extra_player_slots_allow_players.GetBool());
+        return cvar_enable.GetBool() && sig_etc_extra_player_slots_count.GetInt() > DEFAULT_MAX_PLAYERS && (sig_etc_extra_player_slots_allow_bots.GetBool() || sig_etc_extra_player_slots_allow_players.GetBool());
     }
 
     bool ExtraSlotsEnabledForBots()
     {
-        return ExtraSlotsEnabled() && cvar_enable.GetBool() && sig_etc_extra_player_slots_allow_bots.GetBool();
+        return ExtraSlotsEnabled() && sig_etc_extra_player_slots_allow_bots.GetBool();
     }
 
     bool ExtraSlotsEnabledExternal()
     {
-        return ExtraSlotsEnabled() && cvar_enable.GetBool();
+        return ExtraSlotsEnabled();
     }
+    
+    std::string nextMissionAfterMapChange;
+    void CheckMapRestart() {
+        bool slotsEnabled = ExtraSlotsEnabled();
+        bool slotsAdded = gpGlobals->maxClients >= sig_etc_extra_player_slots_count.GetInt();
+        bool changeLevel = slotsEnabled != slotsAdded;
+
+        if (changeLevel) {
+            Msg("extra slots changed, change level\n");
+            std::filesystem::path filename = g_pPopulationManager->GetPopulationFilename();
+            nextMissionAfterMapChange = filename.stem();
+            engine->ChangeLevel(STRING(gpGlobals->mapname), nullptr);
+        }
+    }
+
+    void PopfileAllowBotExtraSlots(bool enable)
+    {
+        if (!sig_etc_extra_player_slots_allow_bots.GetBool() && enable) {
+            sig_etc_extra_player_slots_allow_bots.SetValue(2);
+        }
+        if (sig_etc_extra_player_slots_allow_bots.GetInt() == 2 && !enable) {
+            sig_etc_extra_player_slots_allow_bots.SetValue(0);
+        }
+    }
+
+    bool MissionHasExtraSlots(const char *filename) 
+	{
+        KeyValues *kv = new KeyValues("kv");
+        kv->UsesConditionals(false);
+        if (kv->LoadFromFile(filesystem, filename)) {
+            FOR_EACH_SUBKEY(kv, subkey) {
+
+                if (FStrEq(subkey->GetName(), "AllowBotExtraSlots") && subkey->GetInt() > 1) {
+                    kv->deleteThis();
+                    return true;
+                }
+            }
+        }
+        kv->deleteThis();
+
+        return false;
+	}
 
     bool MapHasExtraSlots(const char *map) 
 	{
-        if (!ExtraSlotsEnabled()) return false;
-		if (sig_etc_extra_player_slots_allow_bots.GetBool() || sig_etc_extra_player_slots_allow_players.GetBool()) return true;
+        if (!cvar_enable.GetBool()) return false;
+		if (sig_etc_extra_player_slots_allow_bots.GetInt() == 1 || sig_etc_extra_player_slots_allow_players.GetBool()) return true;
 
 		FileFindHandle_t missionHandle;
 		for (const char *missionName = filesystem->FindFirstEx("scripts/population/*.pop", "GAME", &missionHandle);
@@ -118,25 +161,17 @@ namespace Mod::Etc::Extra_Player_Slots
 
 			char poppath[256];
 			snprintf(poppath, sizeof(poppath), "%s%s","scripts/population/", missionName);
-			KeyValues *kv = new KeyValues("kv");
-			kv->UsesConditionals(false);
-			if (kv->LoadFromFile(filesystem, poppath)) {
-				FOR_EACH_SUBKEY(kv, subkey) {
-
-					if (FStrEq(subkey->GetName(), "AllowBotExtraSlots") && subkey->GetBool() ) {
-                        
-		                filesystem->FindClose(missionHandle);
-                        kv->deleteThis();
-						return true;
-					}
-				}
-			}
-            kv->deleteThis();
+            if (MissionHasExtraSlots(poppath)) {
+                sig_etc_extra_player_slots_allow_bots.SetValue(2);
+                filesystem->FindClose(missionHandle);
+                return true;
+            }
 		}
 		filesystem->FindClose(missionHandle);
 
         return false;
 	}
+    
 
     DETOUR_DECL_MEMBER(CBaseClient *, CBaseServer_CreateFakeClient, const char *name)
 	{
@@ -179,7 +214,7 @@ namespace Mod::Etc::Extra_Player_Slots
             std::vector<CBaseClient *> clientList;
 
             // Make sure all slots are taken
-            if (server->GetClientCount() != server->GetMaxClients()) {
+            if (server->GetClientCount() < server->GetMaxClients()) {
                 // Set clients as fake so they are considered taken
                 for (int i = 0; i < server->GetClientCount(); i++) {
                     CBaseClient *client = static_cast<CBaseClient *>(server->GetClient(i));
@@ -1037,6 +1072,25 @@ namespace Mod::Etc::Extra_Player_Slots
 		DETOUR_MEMBER_CALL(pVictim);
 	}
 
+    DETOUR_DECL_MEMBER(void, CPopulationManager_SetPopulationFilename, const char *filename)
+    {
+        DETOUR_MEMBER_CALL(filename);
+        if (MissionHasExtraSlots(filename)) {
+            sig_etc_extra_player_slots_allow_bots.SetValue(2);
+        }
+    }
+
+    StaticFuncThunk<void, const CCommand&> tf_mvm_popfile("tf_mvm_popfile");
+    THINK_FUNC_DECL(SetForcedMission)
+    {
+        if (!nextMissionAfterMapChange.empty() && g_pPopulationManager.GetRef() != nullptr) {
+            const char * commandn[] = {"tf_mvm_popfile", nextMissionAfterMapChange.c_str()};
+            CCommand command = CCommand(2, commandn);
+            tf_mvm_popfile(command);
+            nextMissionAfterMapChange.clear();
+        }
+    }
+    
 #ifdef FAKE_PLAYER_CLASS
     GlobalThunk<ServerClass> g_CBasePlayer_ClassReg("g_CBasePlayer_ClassReg");
     GlobalThunk<ServerClass> g_CBaseCombatCharacter_ClassReg("g_CBaseCombatCharacter_ClassReg");
@@ -1249,6 +1303,7 @@ namespace Mod::Etc::Extra_Player_Slots
             MOD_ADD_DETOUR_STATIC(Host_Changelevel, "Host_Changelevel");
             
             MOD_ADD_DETOUR_MEMBER(CTriggerCatapult_OnLaunchedVictim, "CTriggerCatapult::OnLaunchedVictim");
+            MOD_ADD_DETOUR_MEMBER(CPopulationManager_SetPopulationFilename, "CPopulationManager::SetPopulationFilename");
             
 #ifdef FAKE_PLAYER_CLASS
             MOD_ADD_DETOUR_MEMBER(CServerGameClients_ClientPutInServer, "CServerGameClients::ClientPutInServer");
@@ -1527,13 +1582,26 @@ namespace Mod::Etc::Extra_Player_Slots
             }
         }
 
+        virtual void LevelInitPostEntity() override
+        { 
+            if (!nextMissionAfterMapChange.empty()) {
+                if (g_pPopulationManager.GetRef() != nullptr) {
+                    THINK_FUNC_SET(g_pPopulationManager.GetRef(), SetForcedMission, gpGlobals->curtime + 1.0f);
+                }
+                else {
+                    nextMissionAfterMapChange.clear();
+                }
+            }
+        }
+
         virtual void LevelInitPreEntity() override
 		{
             kill_events.clear();
-
-            if (ExtraSlotsEnabled() && MapHasExtraSlots(STRING(gpGlobals->mapname)) && (gpGlobals->maxClients >= DEFAULT_MAX_PLAYERS - 1 && gpGlobals->maxClients < sig_etc_extra_player_slots_count.GetInt())) {
-                engine->ChangeLevel(STRING(gpGlobals->mapname), nullptr);
-            }
+            // Msg("has extra slots %d\n", MapHasExtraSlots(STRING(gpGlobals->mapname)));
+            // if (MapHasExtraSlots(STRING(gpGlobals->mapname)) && (gpGlobals->maxClients >= DEFAULT_MAX_PLAYERS - 1 && gpGlobals->maxClients < sig_etc_extra_player_slots_count.GetInt())) {
+            //     Msg("pre entity change level %s\n", STRING(gpGlobals->mapname));
+            //     engine->ChangeLevel(STRING(gpGlobals->mapname), nullptr);
+            // }
             sv_alltalk.Reset();
             for (auto &time : talk_time) {
                 time = -100.0f;
@@ -1542,35 +1610,51 @@ namespace Mod::Etc::Extra_Player_Slots
                 time = -100.0f;
             }
             PrepareLagCompensation();
+            if (sv->GetMaxClients() < sv->GetClientCount()) {
+                for (int i = sv->GetMaxClients(); i < sv->GetClientCount(); i++) {
+                    delete ((CBaseServer *)sv)->m_Clients[i];
+                }
+                ((CBaseServer *)sv)->m_Clients->SetCountNonDestructively(sv->GetMaxClients());
+            }
         }
 
         virtual void LevelShutdownPostEntity() override
 		{
             //Msg("Has %d\n", sig_etc_extra_player_slots_allow_bots.GetBool());
-            bool enable = MapHasExtraSlots(nextmap.c_str());
-            if (!enable && gpGlobals->maxClients >= DEFAULT_MAX_PLAYERS) {
-			    //static ConVarRef tv_enable("tv_enable");
-                //bool tv_enabled = tv_enable.GetBool();
-                //tv_enable.SetValue(false);
-                //ft_SetupMaxPlayers(DEFAULT_MAX_PLAYERS);
-                //tv_enable.SetValue(tv_enabled);
-            }
-            else {
-                if (ExtraSlotsEnabled() && (gpGlobals->maxClients < sig_etc_extra_player_slots_count.GetInt())) {
-                    // Kick old HLTV client
-                    int clientCount = sv->GetClientCount();
-                    for ( int i=0 ; i < clientCount ; i++ )
-                    {
-                        IClient *pClient = sv->GetClient( i );
+            bool enable = ExtraSlotsEnabled(); //MapHasExtraSlots(nextmap.c_str());
+            if (!enable && gpGlobals->maxClients > DEFAULT_MAX_PLAYERS) {
+			    static ConVarRef tv_enable("tv_enable");
+                bool tv_enabled = tv_enable.GetBool();
+                tv_enable.SetValue(false);
 
-                        if (pClient->IsConnected() && pClient->IsHLTV() && i <= DEFAULT_MAX_PLAYERS)
-                        {
-                            pClient->Disconnect("");
-                            break;
-                        }
+                // Kick old HLTV client
+                int clientCount = sv->GetClientCount();
+                for ( int i=0 ; i < clientCount ; i++ ) {
+                    IClient *pClient = sv->GetClient( i );
+
+                    if (pClient->IsConnected() && pClient->IsHLTV()) {
+                        pClient->Disconnect("");
+                        break;
                     }
-                    ft_SetupMaxPlayers(sig_etc_extra_player_slots_count.GetInt());
                 }
+                ft_SetupMaxPlayers(DEFAULT_MAX_PLAYERS);
+                tv_enable.SetValue(tv_enabled);
+                Msg("Decrease slot count\n");
+            }
+            else if (enable && (gpGlobals->maxClients < sig_etc_extra_player_slots_count.GetInt())) {
+                // Kick old HLTV client
+                int clientCount = sv->GetClientCount();
+                for ( int i=0 ; i < clientCount ; i++ )
+                {
+                    IClient *pClient = sv->GetClient( i );
+
+                    if (pClient->IsConnected() && pClient->IsHLTV() && i <= DEFAULT_MAX_PLAYERS)
+                    {
+                        pClient->Disconnect("");
+                        break;
+                    }
+                }
+                ft_SetupMaxPlayers(sig_etc_extra_player_slots_count.GetInt());
             }
             
         }

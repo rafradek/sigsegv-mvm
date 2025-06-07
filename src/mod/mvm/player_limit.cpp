@@ -116,16 +116,11 @@ namespace Mod::MvM::Player_Limit
 	{
 		//static ConVarRef tf_mvm_max_connected_players("tf_mvm_max_connected_players");
 		static ConVarRef tf_mvm_defenders_team_size("tf_mvm_defenders_team_size");
+		static ConVarRef tf_mvm_max_invaders("tf_mvm_max_invaders");
 
 		red = tf_mvm_defenders_team_size.GetInt();
 		blu = 0;
-		robots = 22;
-		
-		static ConVarRef sig_mvm_robot_limit("sig_mvm_robot_limit");
-		static ConVarRef sig_mvm_robot_limit_override("sig_mvm_robot_limit_override");
-		if (sig_mvm_robot_limit.GetBool()) {
-			robots = sig_mvm_robot_limit_override.GetInt();
-		}
+		robots = tf_mvm_max_invaders.GetInt();
 
 		spectators = GetMaxSpectators();
 		

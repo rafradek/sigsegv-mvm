@@ -405,16 +405,6 @@ enum : int32_t
 	TF_STATE_COUNT,
 };
 
-enum : int32_t
-{
-	VISION_MODE_NONE      = 0,
-	VISION_MODE_PYRO      = 1,
-	VISION_MODE_HALLOWEEN = 2,
-	VISION_MODE_ROME      = 3,
-	
-	MAX_VISION_MODES,
-};
-
 enum : uint32_t
 {
 	TF_ITEM_UNDEFINED    = 0,

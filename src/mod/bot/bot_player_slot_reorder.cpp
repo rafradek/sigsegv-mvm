@@ -29,6 +29,7 @@ namespace Mod::Bot::Bot_Player_Slot_Reorder
     DETOUR_DECL_MEMBER(CBaseClient *, CBaseServer_GetFreeClient, netadr_t &adr)
 	{
         auto server = reinterpret_cast<CBaseServer *>(this);
+        if (Mod::Etc::Extra_Player_Slots::ExtraSlotsEnabledExternal()) return DETOUR_MEMBER_CALL(adr);
 
 		static ConVarRef tv_enable("tv_enable");
         if (server != hltv && rc_CBaseServer_CreateFakeClient) {
@@ -46,7 +47,7 @@ namespace Mod::Bot::Bot_Player_Slot_Reorder
                 }
 
                 // Create clients to fill all slots
-                while (server->GetClientCount() != server->GetMaxClients()) {
+                while (server->GetClientCount() < server->GetMaxClients()) {
                     CBaseClient *lastClient = DETOUR_MEMBER_CALL(adr);
                     if (lastClient != nullptr) {
                         clientList.push_back(lastClient);

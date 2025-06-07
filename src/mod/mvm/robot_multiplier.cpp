@@ -16,7 +16,7 @@ namespace Mod::MvM::Robot_Multiplier
 		"Starting cash multiplier for robot multiplier mode");
 
 
-    CValueOverride_ConVar<int> sig_mvm_robot_limit_override("sig_mvm_robot_limit_override");
+    CValueOverride_ConVar<int> tf_mvm_max_invaders("tf_mvm_max_invaders");
 	DETOUR_DECL_MEMBER(bool, CPopulationManager_Parse)
 	{
 		bool ret = DETOUR_MEMBER_CALL();
@@ -24,7 +24,7 @@ namespace Mod::MvM::Robot_Multiplier
 		manager->m_nStartingCurrency = manager->m_nStartingCurrency * (manager->m_nStartingCurrency < 3000 ? sig_mvm_robot_multiplier_currency_start.GetFloat() : sig_mvm_robot_multiplier_currency.GetFloat());
 		int realMult = cvar_enable.GetInt() * 22 / Mod::Pop::PopMgr_Extensions::GetMaxRobotLimit();
 		
-		sig_mvm_robot_limit_override.Set(realMult * Mod::Pop::PopMgr_Extensions::GetMaxRobotLimit());
+		tf_mvm_max_invaders.Set(realMult * Mod::Pop::PopMgr_Extensions::GetMaxRobotLimit());
 		return ret;
 	}
 
@@ -78,7 +78,7 @@ namespace Mod::MvM::Robot_Multiplier
 
 	DETOUR_DECL_MEMBER(bool, CMissionPopulator_Parse, KeyValues *kv)
 	{
-		static ConVarRef robotMax("sig_mvm_robot_limit_override");
+		static ConVarRef robotMax("tf_mvm_max_invaders");
 		auto mission = reinterpret_cast<CMissionPopulator *>(this);
 		int realMult = cvar_enable.GetInt() * 22 / Mod::Pop::PopMgr_Extensions::GetMaxRobotLimit();
 
@@ -105,7 +105,7 @@ namespace Mod::MvM::Robot_Multiplier
 		}
 
 		virtual void OnDisable() override {
-			sig_mvm_robot_limit_override.Reset();
+			tf_mvm_max_invaders.Reset();
 		}
 	};
 	CMod s_Mod;

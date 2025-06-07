@@ -30,6 +30,9 @@ namespace Mod::MvM::Robot_Limit
 	bool allocate_round_start = false;
 	bool hibernated = false;
 	
+	ConVar *tf_mvm_max_invaders;
+	int GetMvMInvaderLimit() { return tf_mvm_max_invaders->GetInt(); }
+
 	THINK_FUNC_DECL(SpawnBots)
 	{
 		allocate_round_start = true;
@@ -46,8 +49,20 @@ namespace Mod::MvM::Robot_Limit
 		THINK_FUNC_SET(g_pPopulationManager, SpawnBots, gpGlobals->curtime + 0.12f);
 	}
 
-	ConVar *tf_mvm_max_invaders;
-	int GetMvMInvaderLimit() { return tf_mvm_max_invaders->GetInt(); }
+	THINK_FUNC_DECL(SpawnBotsSecondPass)
+	{
+		CUtlVector<CTFPlayer *> mvm_bots;
+		int num_bots = CPopulationManager::CollectMvMBots(&mvm_bots);
+
+		while (num_bots < GetMvMInvaderLimit()) {
+			CTFBot *bot = NextBotCreatePlayerBot<CTFBot>("TFBot", false);
+			if (bot != nullptr) {
+				bot->ChangeTeam(TEAM_SPECTATOR, false, true, false);
+			}
+			num_bots++;
+		}
+	}
+
 
 	// Get max slot number that the bots may occupy
 	int GetMaxAllowedSlot()
@@ -75,10 +90,10 @@ namespace Mod::MvM::Robot_Limit
 		if (Mod::Etc::Extra_Player_Slots::ExtraSlotsEnabledForBots()) {
 
 			int playerReservedSlots = red + blu + spectators;
-			
+
 			for (int i = 0; i < mvm_bots.Count(); i++) {
 				if (ENTINDEX(mvm_bots[i]) <= playerReservedSlots) {
-					sv->GetClient(mvm_bots[i]->entindex() - 1)->Disconnect("kick bot in player reserved slot");
+					engine->ServerCommand(CFmtStr("kickid %d %s  [bot slot: %d. reserved slot count: %d]\n", mvm_bots[i]->GetUserID(), "kick bot in player reserved slot", ENTINDEX(mvm_bots[i]), playerReservedSlots));
 					mvm_bots.Remove(i);
 					i--;
 				}
@@ -89,7 +104,7 @@ namespace Mod::MvM::Robot_Limit
 		for (int i = 0; i < mvm_bots.Count(); i++) {
 			if (ENTINDEX(mvm_bots[i]) > MAX_PLAYERS && ENTINDEX(mvm_bots[i]) > maxAllowedSlot) {
 				
-				sv->GetClient(mvm_bots[i]->entindex() - 1)->Disconnect("kick bot over the maximum allowed slot [bot slot: %d, max slot: %d]", ENTINDEX(mvm_bots[i]), maxAllowedSlot);
+				engine->ServerCommand(CFmtStr("kickid %d kick bot over the maximum allowed slot [bot slot: %d, max slot: %d]\n", mvm_bots[i]->GetUserID(), ENTINDEX(mvm_bots[i]), maxAllowedSlot));
 				mvm_bots.Remove(i);
 				i--;
 			}
@@ -147,7 +162,7 @@ namespace Mod::MvM::Robot_Limit
 
 			/* now, kick the bots we nominated */
 			for (auto bot : bots_to_kick) {
-				sv->GetClient(bot->entindex() - 1)->Disconnect("kick nominated bot over the limit");
+				engine->ServerCommand(CFmtStr("kickid %d %s\n", bot->GetUserID(), "kick nominated bot over the limit"));
 			}
 		}
 	}
@@ -222,26 +237,32 @@ namespace Mod::MvM::Robot_Limit
 		
 		CheckForMaxInvadersAndKickExtras(mvm_bots);
 		num_bots = mvm_bots.Count();
+		bool full_success = true;
 
 		while (num_bots < GetMvMInvaderLimit()) {
+			CTFBot *bot = NextBotCreatePlayerBot<CTFBot>("TFBot", false);
+			if (bot != nullptr) {
+				bot->ChangeTeam(TEAM_SPECTATOR, false, true, false);
+			}
 			// Kick spectator players if the player limit is exceeded, sorry
-			if (sv->GetNumClients() >= sv->GetMaxClients()) {
+			else {
+				full_success = false;
 				bool kicked = false;
 				ForEachTFPlayer([&](CTFPlayer *player) {
 					if (player->GetTeamNumber() < 2 && player->IsRealPlayer() && !PlayerIsSMAdmin(player)) {
-						sv->GetClient(player->entindex() - 1)->Disconnect("Exceeded total player limit for the mission");
+						engine->ServerCommand(CFmtStr("kickid %d %s\n", player->GetUserID(), "Exceeded total player limit for the mission"));
+						kicked = true;
 						return false;
 					}
 					return true;
 				});
 			}
-
-			CTFBot *bot = NextBotCreatePlayerBot<CTFBot>("TFBot", false);
-			if (bot != nullptr) {
-				bot->ChangeTeam(TEAM_SPECTATOR, false, true, false);
-			}
 			
 			++num_bots;
+		}
+		// Failed to spawn all bots, try again later
+		if (!full_success) {
+			THINK_FUNC_SET(g_pPopulationManager, SpawnBotsSecondPass, gpGlobals->curtime + 0.05f);
 		}
 		
 		popmgr->m_bAllocatedBots = true;
@@ -297,6 +318,14 @@ namespace Mod::MvM::Robot_Limit
 		DETOUR_MEMBER_CALL(hibernate);
 	}
 
+	static void MaxInvadersChangeCallback( IConVar *pConVar, const char *pOldValue, float flOldValue )
+	{
+		if (pConVar == tf_mvm_max_invaders) {
+			if (g_pPopulationManager != nullptr)
+				THINK_FUNC_SET(g_pPopulationManager, SpawnBots, gpGlobals->curtime + 0.12f);
+		}
+	}
+
 	class CMod : public IMod, public IModCallbackListener
 	{
 	public:
@@ -311,6 +340,16 @@ namespace Mod::MvM::Robot_Limit
 			MOD_ADD_DETOUR_MEMBER(CMannVsMachineStats_RoundEvent_WaveEnd, "CMannVsMachineStats::RoundEvent_WaveEnd");
 
 			MOD_ADD_DETOUR_MEMBER(CGameServer_SetHibernating, "CGameServer::SetHibernating");
+		}
+
+		virtual void OnEnable() override
+		{
+			icvar->InstallGlobalChangeCallback(MaxInvadersChangeCallback);
+		}
+
+		virtual void OnDisable() override
+		{
+			icvar->RemoveGlobalChangeCallback(MaxInvadersChangeCallback);
 		}
 
 		virtual bool OnLoad() override

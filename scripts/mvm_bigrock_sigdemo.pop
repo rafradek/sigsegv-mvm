@@ -54,10 +54,13 @@ WaveSchedule
 	SniperHideLasers 1 [$SIGSEGV] //If set, snipers will not display lasers when aiming
 	SentryBusterFriendlyFire 0 [$SIGSEGV] //If set to 0, buster will not damage robots (default: 1)
 	BotPushaway 0 [$SIGSEGV] //Should bots push each other away (default: 1)
-	AllowBotExtraSlots 1 [$SIGSEGV] // Increases maximum RobotLimit to a total player slot limit (On most servers with -unrestricted_maxplayers this is 94 after excluding defenders, on some this is 250). Must be placed before RobotLimit. Bots will prefer normal slots by default unless the TFBot has the PreferExtraSlots 1 key (default: 0)
-	ExtraBotSlotsNoDeathcam 1 [$SIGSEGV] // If bots in extra slots kill a player, the bot name in deathcam with display as ERRORNAME. If you don't like that you can turn deathcam off (default: 1)
-	ExtraBotSlotsReservedNormalSlotCount 8 [$SIGSEGV] // If the Robot and human limit combined is above 100, reserve this many normal slots for giants and preferred bots. You can add PreferNormalSlots 1 to TFBot to make the robot use the reserved slot (default: 8)
-	RobotLimit 18 [$SIGSEGV] //Sets a robot limit. You can increase or decrease it, but increasing it will reduce max spectator and player count (you need to set MaxSpectators below 5). Without AllowBotsExtraSlots, 26 is maximum value to keep 6 players active (default: 22)
+	AllowBotExtraSlots 1 [$SIGSEGV] // If set to value:
+		// 0 - Default
+		// 1 - On servers with -unrestricted_maxplayers, sets player limit to maximum if not set already (this is 94 after excluding defenders)
+		// 2 - On servers with sig_etc_extra_player_slots 1, sets player limit up to 248 after exluding defenders. Bots on extra slots may experience visual glitches. Bots will prefer normal slots by default unless the TFBot has the PreferExtraSlots 1 key. Recommended to set AutoWeaponStrip RemoveBotExpressions
+	ExtraBotSlotsNoDeathcam 1 [$SIGSEGV] // With AllowBotExtraSlots 2, If bots in extra slots kill a player, the bot name in deathcam with display as ERRORNAME. If you don't like that you can turn deathcam off (default: 1)
+	ExtraBotSlotsReservedNormalSlotCount 8 [$SIGSEGV] // With AllowBotExtraSlots 2, If the Robot and human limit combined is above 100, reserve this many normal slots for giants and preferred bots. You can add PreferNormalSlots 1 to TFBot to make the robot use the reserved slot (default: 8)
+	RobotLimit 18 [$SIGSEGV] //Sets a robot limit. You can increase or decrease it, but increasing it will reduce max spectator and player count (you need to set MaxSpectators below 5). Without AllowBotExtraSlots, 94 (on -unrestricted_maxplayers servers, 26 otherwise) is maximum value to keep 6 players active (default: 22)
 	EnableDominations 1 [$SIGSEGV] //Should enable player to bot dominations
 	MedigunShieldDamage 1 [$SIGSEGV] //If set to 1, bot medigun shields will damage players. Use "dmg penalty vs players" attribute to control damage dealt (default: 0)
 	SendBotsToSpectatorImmediately 1 [$SIGSEGV] //Should the bots be transferred to spectator team immediately after dying. Use this if your mission consists of lots of easy to kill enemies (default: 0)
@@ -200,6 +203,7 @@ WaveSchedule
 	// FastWholeMapBuildInTriggersMinRadius 4500 [$SIGSEGV] // Same as FastWholeMapTriggers, except it applies to all triggers including map made. The trigger volume must be larger than a cube with specified size to be considered "whole map" trigger. It might improve performance of some map gimmics but usually does barely anyting (default: 0) 
 	AutoWeaponStrip 1 [$SIGSEGV] // Automatically strip stock weapons without attributes in slots that are not used (default: 0)
 	RemoveUnusedOffhandViewmodel 1 [$SIGSEGV] // Remove unused offhand viewmodel on other class than Spy (default: 1)
+	RemoveBotExpressions 1 [$SIGSEGV] // Remove expressions for bots (like yelling when firing minigun). Reduces entity count by 1 per bot (default: 0)
 
 
 	//////////////////////////

@@ -208,6 +208,18 @@ extern IMDLCache *mdlcache;
 
 extern IClientMode *g_pClientMode;
 
+#ifdef SE_IS_TF2
+#define TF_DLL
+#endif
+
+#ifdef SE_IS_CSS
+#define CSTRIKE
+#endif
+
+#ifdef SE_IS_HL2DM
+#define HL2MP
+#endif
+
 
 /* C standard library */
 #include <cstddef>
@@ -375,6 +387,7 @@ WARN_RESTORE()
 WARN_IGNORE__SIGN_COMPARE()
 #include <utlbuffer.h>
 WARN_RESTORE()
+#include <dt_send.h>
 #include <shareddefs.h>
 #include <icvar.h>
 #include "sdk2013/convar.h"
@@ -395,7 +408,6 @@ WARN_RESTORE()
 #include <IStaticPropMgr.h>
 #include <ivdebugoverlay.h>
 #include "sdk2013/debugoverlay_shared.h"
-#include <dt_send.h>
 #include <steam/steamclientpublic.h>
 #include <util_shared.h>
 #undef EntityFromEntityHandle
