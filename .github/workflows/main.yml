@@ -71,10 +71,10 @@ jobs:
         rm lua-*.tar.gz
         mv lua-* lua
         cd lua
-        make CC=g++-14 MYCFLAGS='-m32' MYLDFLAGS='-m32'
+        make CC=g++ MYCFLAGS='-m32' MYLDFLAGS='-m32'
         mv src/liblua.a ../liblua.a
         make clean
-        make CC=g++-14 MYCFLAGS='-fPIC'
+        make CC=g++ MYCFLAGS='-fPIC'
         mv src/liblua.a ../libluax64.a
         popd
 
@@ -83,7 +83,7 @@ jobs:
         echo "export PATH=$HOME/.local/bin:$PATH" >> $GITHUB_ENV
         export PATH=$HOME/.local/bin:$PATH
         PATH=$HOME/.local/bin:$PATH
-        ./autoconfig.sh
+        CC=gcc-14 CXX=g++-14 ./autoconfig.sh
 
     - name: Build
       run: |
