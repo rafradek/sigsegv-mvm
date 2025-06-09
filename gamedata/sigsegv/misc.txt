@@ -1955,6 +1955,13 @@
 					lib  "engine"
 					sym  "_ZN11CHLTVServer13ConnectClientER8netadr_siiiiPKcS3_S3_i"
 				}
+				"CHLTVServer::Shutdown"
+				{
+					type "sym"
+					lib  "engine"
+					sym  "_ZN11CHLTVServer8ShutdownEv"
+				}
+				
 				"CTFGameRules::BetweenRounds_Think"
 				{
 					type "sym"

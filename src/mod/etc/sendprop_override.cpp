@@ -212,7 +212,7 @@ namespace Mod::Etc::SendProp_Override
 	)
     {
 		int count = DETOUR_STATIC_CALL(pTable, pFromState, nFromBits, pToState, nToBits, pDeltaProps, nMaxDeltaProps, objectID);
-        if (client_num != 0 && objectID >= 0 && objectID < 2048 && entityHasOverride[objectID]) {
+        if (client_num != 0 && objectID >= 0 && objectID < MAX_EDICTS && entityHasOverride[objectID]) {
             return CheckOverridePropIndex(pDeltaProps, count, objectID);
         }
         return count;

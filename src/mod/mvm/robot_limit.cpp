@@ -184,6 +184,7 @@ namespace Mod::MvM::Robot_Limit
 			if (ENTINDEX(bot) == 0)  continue;
 			if (!bot->IsBot())       continue;
 			if (!bot->IsConnected()) continue;
+			if (bot->GetEntityModule<EntityModule>("tfbotcustom")) continue; // Manually spawned tfbot entities are not counted
 
 			if (bot->GetTeamNumber() == TF_TEAM_RED) {
 				if (collect_red /*&& bot->m_Shared->InCond(TF_COND_REPROGRAMMED)*/) {

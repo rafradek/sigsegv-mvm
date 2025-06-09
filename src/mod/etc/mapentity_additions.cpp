@@ -1311,7 +1311,7 @@ namespace Mod::Etc::Mapentity_Additions
         this->SetNextThink(gpGlobals->curtime + 0.1f, "WeaponSpawnerTick");
     }
 
-    char fakePopMgr[800] {};
+    char fakePopMgr[3200] {};
 
     RefCount rc_IsSpaceToSpawnHere_Allow;
     

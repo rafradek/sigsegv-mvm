@@ -1428,7 +1428,7 @@ namespace Mod::Perf::SendProp_Optimize
         if (pOwner->IsPlayer()) pOwner->edict()->m_fStateFlags = oldFlags | (pOwner->edict()->m_fStateFlags & ~(FL_FULL_EDICT_CHANGED));
     }
 
-#ifdef SE_IS_TF2
+#ifdef SE_IS_SDK2013_BASED
     DETOUR_DECL_MEMBER_CALL_CONVENTION(__gcc_regcall,void , CBaseAnimatingOverlay_FastRemoveLayer, int layer)
 #else
     DETOUR_DECL_MEMBER(void, CBaseAnimatingOverlay_FastRemoveLayer, int layer)
@@ -1688,7 +1688,7 @@ namespace Mod::Perf::SendProp_Optimize
             //MOD_ADD_DETOUR_STATIC(SendTable_CalcDelta,   "SendTable_CalcDelta");
             MOD_ADD_REPLACE_FUNC_MEMBER(CBaseEdict_GetChangeAccessor,   "CBaseEdict::GetChangeAccessor");
             MOD_ADD_DETOUR_MEMBER(CAnimationLayer_StudioFrameAdvance,"CAnimationLayer::StudioFrameAdvance");
-#ifdef SE_IS_TF2
+#ifdef SE_IS_SDK2013_BASED
             MOD_ADD_DETOUR_MEMBER(CBaseAnimatingOverlay_FastRemoveLayer,"CBaseAnimatingOverlay::FastRemoveLayer [clone]");
 #else
             MOD_ADD_DETOUR_MEMBER(CBaseAnimatingOverlay_FastRemoveLayer,"CBaseAnimatingOverlay::FastRemoveLayer");

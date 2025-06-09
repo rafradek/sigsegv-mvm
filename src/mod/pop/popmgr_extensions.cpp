@@ -6387,7 +6387,6 @@ namespace Mod::Pop::PopMgr_Extensions
 	//	if ( state.m_iRedTeamMaxPlayers > 0) {
 	//		ResetMaxRedTeamPlayers(6);
 	//	}
-		bool prevHas255Slots = state.m_bEnable255Slots;
 
 		std::string prevNavFile = state.m_CustomNavFile;
 		state.Reset(true);
@@ -6407,7 +6406,8 @@ namespace Mod::Pop::PopMgr_Extensions
 
 		state.ResetCVars(false);
 
-		if (prevHas255Slots && !state.m_bEnable255Slots) {
+		static ConVarRef sig_etc_extra_player_slots_allow_bots("sig_etc_extra_player_slots_allow_bots");
+		if (sig_etc_extra_player_slots_allow_bots.GetInt() == 2 && !state.m_bEnable255Slots) {
 			Mod::Etc::Extra_Player_Slots::PopfileAllowBotExtraSlots(false);
 		}
 		// Reset nav mesh

@@ -27,6 +27,7 @@
 #include <filesystem>
 #include "stub/populators.h"
 #include "stub/tf_objective_resource.h"
+#include "stub/sendprop.h"
 
 class SVC_ServerInfo
 {
@@ -45,6 +46,8 @@ public:
 	CRC32_t		m_nMapCRC;		// server map CRC (only used by older demos)
 	MD5Value_t	m_nMapMD5;		// server map MD5
 	int			m_nMaxClients;	// max number of clients on server
+	int			m_nMaxClasses;	// max number of server classes
+	int			m_nPlayerSlot;	// our client slot number
 };
 
 namespace Mod::Etc::Extra_Player_Slots
@@ -59,24 +62,11 @@ namespace Mod::Etc::Extra_Player_Slots
 #endif
     inline bool ExtraSlotsEnabled();
     
-    extern ConVar cvar_enable;
+    extern ConVar sig_etc_extra_player_slots_allow_bots;
+    extern ConVar sig_etc_extra_player_slots_allow_players;
+    extern ConVar sig_etc_extra_player_slots_count;
     
     void CheckMapRestart();
-
-    ConVar sig_etc_extra_player_slots_count("sig_etc_extra_player_slots_count", "101", FCVAR_NOTIFY,
-		"Extra player slot count. Requires map restart to function");
-
-    ConVar sig_etc_extra_player_slots_allow_bots("sig_etc_extra_player_slots_allow_bots", "0", FCVAR_NOTIFY | FCVAR_GAMEDLL,
-		"Allow bots to use extra player slots",
-		[](IConVar *pConVar, const char *pOldValue, float flOldValue){
-            CheckMapRestart();
-		});
-
-    ConVar sig_etc_extra_player_slots_allow_players("sig_etc_extra_player_slots_allow_players", "0", FCVAR_NOTIFY,
-		"Allow players to use extra player slots",
-		[](IConVar *pConVar, const char *pOldValue, float flOldValue){
-            CheckMapRestart();
-		});
 
     ConVar sig_etc_extra_player_slots_voice_display_fix("sig_etc_extra_player_slots_voice_display_fix", "0", FCVAR_NOTIFY,
 		"Fixes voice chat indicator showing with more than 64 slots");
@@ -91,9 +81,10 @@ namespace Mod::Etc::Extra_Player_Slots
     RefCount rc_CBaseServer_CreateFakeClient_HLTV;
     RefCount rc_CBaseServer_CreateFakeClient;
 
+    CBasePlayer *placeholderPlayer = nullptr;
     inline bool ExtraSlotsEnabled()
     {
-        return cvar_enable.GetBool() && sig_etc_extra_player_slots_count.GetInt() > DEFAULT_MAX_PLAYERS && (sig_etc_extra_player_slots_allow_bots.GetBool() || sig_etc_extra_player_slots_allow_players.GetBool());
+        return sig_etc_extra_player_slots_count.GetInt() > DEFAULT_MAX_PLAYERS && (sig_etc_extra_player_slots_allow_bots.GetBool() || sig_etc_extra_player_slots_allow_players.GetBool());
     }
 
     bool ExtraSlotsEnabledForBots()
@@ -150,7 +141,6 @@ namespace Mod::Etc::Extra_Player_Slots
 
     bool MapHasExtraSlots(const char *map) 
 	{
-        if (!cvar_enable.GetBool()) return false;
 		if (sig_etc_extra_player_slots_allow_bots.GetInt() == 1 || sig_etc_extra_player_slots_allow_players.GetBool()) return true;
 
 		FileFindHandle_t missionHandle;
@@ -297,7 +287,6 @@ namespace Mod::Etc::Extra_Player_Slots
 		    maxplayers = sig_etc_extra_player_slots_count.GetInt();
 	}
 
-    edict_t *world_edict = nullptr;
     std::vector<CLagCompensationManager *> lag_compensation_copies;
 
 	DETOUR_DECL_MEMBER(void, CLagCompensationManager_FrameUpdatePostEntityThink)
@@ -307,15 +296,15 @@ namespace Mod::Etc::Extra_Player_Slots
         if (preMaxPlayers > DEFAULT_MAX_PLAYERS) {
             // Run lag compensation using multiple copies of compensation managers. Each manager manages MAX_PLAYERS players. For each manager copy extra MAX_PLAYERS slots into the first MAX_PLAYERS edict slots
             edict_t originalEdicts[DEFAULT_MAX_PLAYERS];
-            memcpy(originalEdicts, world_edict+1, sizeof(edict_t) * DEFAULT_MAX_PLAYERS);
+            memcpy(originalEdicts, g_pWorldEdict+1, sizeof(edict_t) * DEFAULT_MAX_PLAYERS);
 
             for (int i = 1; i < (preMaxPlayers + DEFAULT_MAX_PLAYERS - 1) / DEFAULT_MAX_PLAYERS; i++) {
                 int slotsCopy = Min(preMaxPlayers - i * DEFAULT_MAX_PLAYERS, DEFAULT_MAX_PLAYERS);
-                memcpy(world_edict+1, world_edict+1 + DEFAULT_MAX_PLAYERS * i, sizeof(edict_t) * slotsCopy);
+                memcpy(g_pWorldEdict+1, g_pWorldEdict+1 + DEFAULT_MAX_PLAYERS * i, sizeof(edict_t) * slotsCopy);
                 gpGlobals->maxClients = slotsCopy;
                 (Detour_CLagCompensationManager_FrameUpdatePostEntityThink::Actual)(reinterpret_cast<Detour_CLagCompensationManager_FrameUpdatePostEntityThink *>(lag_compensation_copies[i - 1]));
             }
-            memcpy(world_edict+1, originalEdicts, sizeof(edict_t) * DEFAULT_MAX_PLAYERS);
+            memcpy(g_pWorldEdict+1, originalEdicts, sizeof(edict_t) * DEFAULT_MAX_PLAYERS);
             gpGlobals->maxClients = DEFAULT_MAX_PLAYERS;
         }
 		DETOUR_MEMBER_CALL();
@@ -335,20 +324,20 @@ namespace Mod::Etc::Extra_Player_Slots
                 return;
             }
             edict_t originalEdicts[DEFAULT_MAX_PLAYERS];
-            memcpy(originalEdicts, world_edict+1, sizeof(edict_t) * DEFAULT_MAX_PLAYERS);
+            memcpy(originalEdicts, g_pWorldEdict+1, sizeof(edict_t) * DEFAULT_MAX_PLAYERS);
 
             for (int i = 1; i < (preMaxPlayers + DEFAULT_MAX_PLAYERS - 1) / DEFAULT_MAX_PLAYERS; i++) {
                 int slotsCopy = Min(preMaxPlayers - i * DEFAULT_MAX_PLAYERS, DEFAULT_MAX_PLAYERS);
-                memcpy(world_edict+1, world_edict+1 + DEFAULT_MAX_PLAYERS * i, sizeof(edict_t) * slotsCopy);
+                memcpy(g_pWorldEdict+1, g_pWorldEdict+1 + DEFAULT_MAX_PLAYERS * i, sizeof(edict_t) * slotsCopy);
                 for (int j = 1; j <= slotsCopy; j++) {
-                    (world_edict+j)->m_EdictIndex = j;
+                    (g_pWorldEdict+j)->m_EdictIndex = j;
                 }
                 gpGlobals->maxClients = slotsCopy;
                 player_move_entindex = -i * DEFAULT_MAX_PLAYERS;
                 (Detour_CLagCompensationManager_StartLagCompensation::Actual)(reinterpret_cast<Detour_CLagCompensationManager_StartLagCompensation *>(lag_compensation_copies[i - 1]),player, cmd);
             }
             player_move_entindex = 0;
-            memcpy(world_edict+1, originalEdicts, sizeof(edict_t) * DEFAULT_MAX_PLAYERS);
+            memcpy(g_pWorldEdict+1, originalEdicts, sizeof(edict_t) * DEFAULT_MAX_PLAYERS);
             gpGlobals->maxClients = DEFAULT_MAX_PLAYERS;
         }
 		DETOUR_MEMBER_CALL(player, cmd);
@@ -368,15 +357,15 @@ namespace Mod::Etc::Extra_Player_Slots
 
         if (preMaxPlayers > DEFAULT_MAX_PLAYERS) {
             edict_t originalEdicts[DEFAULT_MAX_PLAYERS];
-            memcpy(originalEdicts, world_edict+1, sizeof(edict_t) * DEFAULT_MAX_PLAYERS);
+            memcpy(originalEdicts, g_pWorldEdict+1, sizeof(edict_t) * DEFAULT_MAX_PLAYERS);
 
             for (int i = 1; i < (preMaxPlayers + DEFAULT_MAX_PLAYERS - 1) / DEFAULT_MAX_PLAYERS; i++) {
                 int slotsCopy = Min(preMaxPlayers - i * DEFAULT_MAX_PLAYERS, DEFAULT_MAX_PLAYERS);
-                memcpy(world_edict+1, world_edict+1 + DEFAULT_MAX_PLAYERS * i, sizeof(edict_t) * slotsCopy);
+                memcpy(g_pWorldEdict+1, g_pWorldEdict+1 + DEFAULT_MAX_PLAYERS * i, sizeof(edict_t) * slotsCopy);
                 gpGlobals->maxClients = slotsCopy;
                 (Detour_CLagCompensationManager_FinishLagCompensation::Actual)(reinterpret_cast<Detour_CLagCompensationManager_FinishLagCompensation *>(lag_compensation_copies[i - 1]), player);
             }
-            memcpy(world_edict+1, originalEdicts, sizeof(edict_t) * DEFAULT_MAX_PLAYERS);
+            memcpy(g_pWorldEdict+1, originalEdicts, sizeof(edict_t) * DEFAULT_MAX_PLAYERS);
             gpGlobals->maxClients = DEFAULT_MAX_PLAYERS;
         }
 		DETOUR_MEMBER_CALL(player);
@@ -567,10 +556,8 @@ namespace Mod::Etc::Extra_Player_Slots
         char *ready = (char *)(TFGameRules()->m_bPlayerReady.Get());
         CTFPlayer *player = reinterpret_cast<CTFPlayer *>(this);
         char oldReady = ready[player->entindex()];
-        Msg("pre ready %d \n", ready[player->entindex()]);
         DETOUR_MEMBER_CALL(team);
         if (player->entindex() > DEFAULT_MAX_PLAYERS) {
-            Msg("post ready %d\n", ready[player->entindex()]);
             ready[player->entindex()] = oldReady;
         }
     }
@@ -826,6 +813,10 @@ namespace Mod::Etc::Extra_Player_Slots
     bool sending_delayed_event = false;
     DETOUR_DECL_MEMBER(void, CBaseClient_FireGameEvent, IGameEvent *event)
 	{
+        if (!ExtraSlotsEnabled()) {
+            DETOUR_MEMBER_CALL(event);
+            return;
+        }
         if (event->GetName() != nullptr && strcmp(event->GetName(), "player_connect_client") == 0) {
             if (event->GetInt("index") > DEFAULT_MAX_PLAYERS - 1) {
                 return;
@@ -834,7 +825,7 @@ namespace Mod::Etc::Extra_Player_Slots
         if (event->GetName() != nullptr && strcmp(event->GetName(), "player_hurt") == 0) {
             IGameEvent *npchurt = gameeventmanager->CreateEvent("npc_hurt");
             auto victim = UTIL_PlayerByUserId(event->GetInt("userid"));
-            if (npchurt && victim != nullptr) {
+            if (npchurt && victim != nullptr && victim->entindex() > DEFAULT_MAX_PLAYERS) {
 				npchurt->SetInt("entindex", victim->entindex());
 				npchurt->SetInt("health", Max(0, victim->GetHealth()));
 				npchurt->SetInt("damageamount", event->GetInt("damageamount"));
@@ -1103,10 +1094,14 @@ namespace Mod::Etc::Extra_Player_Slots
             GetContainingEntity(edict)->NetworkProp()->m_pServerClass = &g_CBaseCombatCharacter_ClassReg.GetRef();
     }
 
+    CBaseClient *hltv_client = nullptr;
     DETOUR_DECL_MEMBER(void, CBaseServer_FillServerInfo, SVC_ServerInfo &serverinfo)
 	{
         DETOUR_MEMBER_CALL(serverinfo);
-        serverinfo.m_nMaxClients = DEFAULT_MAX_PLAYERS;
+        serverinfo.m_nMaxClients = Min(DEFAULT_MAX_PLAYERS, serverinfo.m_nMaxClients);
+        if (sig_etc_extra_player_slots_allow_players.GetBool() && hltv_client != nullptr) {
+            serverinfo.m_nPlayerSlot = hltv_client->m_nClientSlot;
+        }
     }
 
     THINK_FUNC_DECL(FixUpItemModelThink)
@@ -1232,8 +1227,10 @@ namespace Mod::Etc::Extra_Player_Slots
         }
         return skin;
     }
+
 #endif
 
+    void DelayedDisable();
 	class CMod : public IMod, public IModCallbackListener, IFrameUpdatePostEntityThinkListener
 	{
 	public:
@@ -1342,9 +1339,15 @@ namespace Mod::Etc::Extra_Player_Slots
                 lag_compensation_copies.push_back(copiedLagManager);
             }
         }
+        
         virtual void OnEnablePost() override
 		{
-            world_edict = INDEXENT(0);
+            PrepareLagCompensation();
+        }
+        
+        
+        virtual void OnDisable() override
+		{
             PrepareLagCompensation();
         }
 
@@ -1549,7 +1552,7 @@ namespace Mod::Etc::Extra_Player_Slots
 #endif
             if (ExtraSlotsEnabled() && sig_etc_extra_player_slots_show_player_names.GetBool() && (sig_etc_extra_player_slots_allow_bots.GetBool() || sig_etc_extra_player_slots_allow_players.GetBool())) {
                 for (int i = 1 + gpGlobals->tickcount % 2; i <= gpGlobals->maxClients; i+=2) {
-                    auto player = (CTFPlayer *)(world_edict + i)->GetUnknown();
+                    auto player = (CTFPlayer *)(g_pWorldEdict + i)->GetUnknown();
                     if (player != nullptr && player->IsRealPlayer()) {
                         CBaseEntity *target = nullptr; 
                         if ((player->GetObserverMode() == OBS_MODE_DEATHCAM || player->GetObserverMode() == OBS_MODE_CHASE) && player->m_hObserverTarget != nullptr && player->m_hObserverTarget != player) {
@@ -1610,12 +1613,6 @@ namespace Mod::Etc::Extra_Player_Slots
                 time = -100.0f;
             }
             PrepareLagCompensation();
-            if (sv->GetMaxClients() < sv->GetClientCount()) {
-                for (int i = sv->GetMaxClients(); i < sv->GetClientCount(); i++) {
-                    delete ((CBaseServer *)sv)->m_Clients[i];
-                }
-                ((CBaseServer *)sv)->m_Clients->SetCountNonDestructively(sv->GetMaxClients());
-            }
         }
 
         virtual void LevelShutdownPostEntity() override
@@ -1640,6 +1637,19 @@ namespace Mod::Etc::Extra_Player_Slots
                 ft_SetupMaxPlayers(DEFAULT_MAX_PLAYERS);
                 tv_enable.SetValue(tv_enabled);
                 Msg("Decrease slot count\n");
+                
+                if (sv->GetMaxClients() < sv->GetClientCount()) {
+                    for (int i = sv->GetMaxClients(); i < sv->GetClientCount(); i++) {
+                        auto cl = ((CBaseServer *)sv)->m_Clients[i];
+                        if (cl->IsConnected()) {
+                            cl->Disconnect("");
+                        }
+                        delete ((CBaseServer *)sv)->m_Clients[i];
+                    }
+                    ((CBaseServer *)sv)->m_Clients->SetCountNonDestructively(sv->GetMaxClients());
+                }
+                
+                DelayedDisable();
             }
             else if (enable && (gpGlobals->maxClients < sig_etc_extra_player_slots_count.GetInt())) {
                 // Kick old HLTV client
@@ -1660,10 +1670,152 @@ namespace Mod::Etc::Extra_Player_Slots
         }
 	};
 	CMod s_Mod;
+
+    thread_local int client_num = 0;
+    thread_local CBaseClient *write_client = nullptr;
     
-	ConVar cvar_enable("sig_etc_extra_player_slots", "0", FCVAR_NOTIFY,
-		"Mod: allows usage of extra player slots",
+    DETOUR_DECL_MEMBER(int, CBasePlayer_ShouldTransmit, const CCheckTransmitInfo *info)
+	{
+        if (reinterpret_cast<CBasePlayer *>(this)->IsHLTV()) return FL_EDICT_ALWAYS;
+        
+        return DETOUR_MEMBER_CALL(info);
+    }
+
+    class CEntityWriteInfo {
+    public:
+        virtual	~CEntityWriteInfo() {};
+	
+        bool			m_bAsDelta;
+        CClientFrame	*m_pFrom;
+        CClientFrame	*m_pTo;
+
+        int		m_UpdateType;
+
+        int				m_nOldEntity;	// current entity index in m_pFrom
+        int				m_nNewEntity;	// current entity index in m_pTo
+
+        int				m_nHeaderBase;
+        int				m_nHeaderCount;
+        bf_write		*m_pBuf;
+        int				m_nClientEntity;
+
+        PackedEntity	*m_pOldPack;
+        PackedEntity	*m_pNewPack;
+        
+        CFrameSnapshot	*m_pFromSnapshot; // = m_pFrom->GetSnapshot();
+        CFrameSnapshot	*m_pToSnapshot; // = m_pTo->GetSnapshot();
+
+        CFrameSnapshot	*m_pBaseline; // the clients baseline
+
+        CBaseServer		*m_pServer;	// the server who writes this entity
+
+        int				m_nFullProps;	// number of properties send as full update (Enter PVS)
+        bool			m_bCullProps;	// filter props by clients in recipient lists
+    };
+    
+	DETOUR_DECL_STATIC_CALL_CONVENTION(__gcc_regcall, void, SV_DetermineUpdateType, CEntityWriteInfo *u )
+    {
+        PackedEntity *oldPack = u->m_pOldPack;
+        PackedEntity *newPack = u->m_pNewPack;
+
+        if (!write_client->IsFakeClient() && u->m_nNewEntity == hltv_client->m_nEntityIndex) {
+            CFrameSnapshotManager &snapmgr = g_FrameSnapshotManager;
+            u->m_pOldPack = snapmgr.GetPackedEntity(u->m_pFromSnapshot, client_num);
+            u->m_pNewPack = snapmgr.GetPackedEntity(u->m_pFromSnapshot, client_num);
+        }
+        DETOUR_STATIC_CALL(u);
+        u->m_pOldPack = oldPack;
+        u->m_pNewPack = newPack;
+
+    }
+
+	DETOUR_DECL_MEMBER(void, CBaseServer_WriteDeltaEntities, CBaseClient *client, CClientFrame *to, CClientFrame *from, bf_write &pBuf )
+    {
+		client_num = client->m_nEntityIndex;
+        write_client = client;
+        DETOUR_MEMBER_CALL(client, to, from, pBuf);
+        write_client = nullptr;
+        client_num = 0;
+    }
+
+	DETOUR_DECL_MEMBER(void, CHLTVServer_StartMaster, CBaseClient *client)
+	{
+        DETOUR_MEMBER_CALL(client);
+        hltv_client = client;
+    }
+
+	DETOUR_DECL_MEMBER(void, CHLTVServer_Shutdown)
+	{
+        DETOUR_MEMBER_CALL();
+        hltv_client = nullptr;
+    }
+
+	class CMod_ExtraPlayers : public IMod
+	{
+    public:
+		CMod_ExtraPlayers() : IMod("Perf:Extra_Player_Slots_Players")
+		{
+            MOD_ADD_DETOUR_MEMBER(CBasePlayer_ShouldTransmit, "CBasePlayer::ShouldTransmit");
+            MOD_ADD_DETOUR_MEMBER(CBaseServer_WriteDeltaEntities, "CBaseServer::WriteDeltaEntities");
+            
+            MOD_ADD_DETOUR_STATIC(SV_DetermineUpdateType, "SV_DetermineUpdateType");
+
+            MOD_ADD_DETOUR_MEMBER(CHLTVServer_StartMaster, "CHLTVServer::StartMaster");
+            MOD_ADD_DETOUR_MEMBER(CHLTVServer_Shutdown, "CHLTVServer::Shutdown");
+        }
+        
+        virtual void OnEnablePost() override
+		{
+            int hltvSlot = -1;
+            for (int i = 0; i < MAX_PLAYERS && i < sv->GetClientCount(); i++) {
+                auto cl = sv->GetClient(i);
+                if (cl->IsHLTV()) {
+                    hltv_client = (CBaseClient *)cl;
+                    break;
+                }
+            }
+        }
+    };
+	CMod_ExtraPlayers s_Mod_Extra_Players;
+
+	class CMod_ExtraBots : public IMod
+	{
+    public:
+		CMod_ExtraBots() : IMod("Perf:Extra_Player_Slots_Bots")
+		{
+        }
+    };
+	CMod_ExtraBots s_Mod_Extra_Bots;
+    void ToggleMods() {
+        if (ExtraSlotsEnabled()) {
+            s_Mod.Toggle(true);
+        }
+        s_Mod_Extra_Bots.Toggle(ExtraSlotsEnabled() && sig_etc_extra_player_slots_allow_bots.GetBool());
+        s_Mod_Extra_Players.Toggle(ExtraSlotsEnabled() && sig_etc_extra_player_slots_allow_players.GetBool());
+        CheckMapRestart();
+    }
+    
+    ConVar sig_etc_extra_player_slots_allow_bots("sig_etc_extra_player_slots_allow_bots", "0", FCVAR_NOTIFY | FCVAR_GAMEDLL,
+		"Allow bots to use extra player slots",
 		[](IConVar *pConVar, const char *pOldValue, float flOldValue){
-			s_Mod.Toggle(static_cast<ConVar *>(pConVar)->GetBool());
+            ToggleMods();
 		});
+
+    ConVar sig_etc_extra_player_slots_allow_players("sig_etc_extra_player_slots_allow_players", "0", FCVAR_NOTIFY,
+		"Allow players to use extra player slots",
+		[](IConVar *pConVar, const char *pOldValue, float flOldValue){
+            ToggleMods();
+		});
+
+    ConVar sig_etc_extra_player_slots_count("sig_etc_extra_player_slots_count", "101", FCVAR_NOTIFY,
+		"Extra player slot count. Requires map restart to function",
+        [](IConVar *pConVar, const char *pOldValue, float flOldValue){
+            ToggleMods();
+		});
+        
+    void DelayedDisable() {
+        s_Mod_Extra_Players.Toggle(false);
+        s_Mod_Extra_Bots.Toggle(false);
+        s_Mod.Toggle(false);
+    }
 }

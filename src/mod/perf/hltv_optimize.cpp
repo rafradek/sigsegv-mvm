@@ -270,7 +270,7 @@ namespace Mod::Perf::HLTV_Optimize
 
             // Limit snapshot rate when between rounds or when hltv server is empty and not recording
 			MOD_ADD_DETOUR_MEMBER(CHLTVDemoRecorder_RecordStringTables, "CHLTVDemoRecorder::RecordStringTables");
-#ifdef SE_IS_TF2
+#ifdef SE_IS_SDK2013_BASED
 			MOD_ADD_DETOUR_MEMBER(CHLTVDemoRecorder_StopRecording_clone, "CHLTVDemoRecorder::StopRecording [clone]");
 #else
 			MOD_ADD_DETOUR_MEMBER(CHLTVDemoRecorder_StopRecording, "CHLTVDemoRecorder::StopRecording");
