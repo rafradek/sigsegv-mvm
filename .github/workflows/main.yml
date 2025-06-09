@@ -21,6 +21,8 @@ jobs:
     steps:
     - name: Install dependencies
       run: |
+        apt-get update -y
+        apt-get install -y software-properties-common
         add-apt-repository ppa:ubuntu-toolchain-r/test -y
         dpkg --add-architecture i386
         apt-get update -y
