@@ -15,23 +15,18 @@ jobs:
         shell: bash
 
     runs-on: ubuntu-latest
+    # Steam sniper sdk
     container:
-      image: ubuntu:20.04
+      image: registry.gitlab.steamos.cloud/steamrt/sniper/sdk
 
     steps:
-    - name: Install dependencies
-      run: |
-        apt-get update -y
-        apt-get install -y software-properties-common
-        add-apt-repository ppa:ubuntu-toolchain-r/test -y
-        dpkg --add-architecture i386
-        apt-get update -y
-        apt-get install -y autoconf libtool python3 python-is-python3 pip nasm git wget pip libiberty-dev libiberty-dev:i386 libelf-dev libelf-dev:i386 libboost-dev libboost-dev:i386 libbsd-dev libbsd-dev:i386 libunwind-dev libunwind-dev:i386 g++-13 gcc-13:i386 linux-libc-dev linux-libc-dev:i386 
-
     - name: Checkout repository
       uses: actions/checkout@v4
       with:
         submodules: recursive
+    - name: Install dependencies
+      run: |
+        apt-get install -y pip libiberty-dev libiberty-dev:i386 libboost-dev libboost-dev:i386 libbsd-dev libbsd-dev:i386 libunwind-dev libunwind-dev:i386
 
     - name: Clone and install AMBuild
       run: |
@@ -76,10 +71,10 @@ jobs:
         rm lua-*.tar.gz
         mv lua-* lua
         cd lua
-        make CC=g++ MYCFLAGS='-m32' MYLDFLAGS='-m32'
+        make CC=g++-14 MYCFLAGS='-m32' MYLDFLAGS='-m32'
         mv src/liblua.a ../liblua.a
         make clean
-        make CC=g++ MYCFLAGS='-fPIC'
+        make CC=g++-14 MYCFLAGS='-fPIC'
         mv src/liblua.a ../libluax64.a
         popd
 
@@ -88,7 +83,7 @@ jobs:
         echo "export PATH=$HOME/.local/bin:$PATH" >> $GITHUB_ENV
         export PATH=$HOME/.local/bin:$PATH
         PATH=$HOME/.local/bin:$PATH
-        CC=gcc-13 CXX=g++-13 ./autoconfig.sh
+        ./autoconfig.sh
 
     - name: Build
       run: |

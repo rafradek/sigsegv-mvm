@@ -140,7 +140,10 @@ bool CExtSigsegv::SDK_OnLoad(char *error, size_t maxlength, bool late)
 //	for (int i = 0; i < 255; ++i) {
 //		ConColorMsg(Color(0xff, i, 0x00), "%02x%02x%02x\n", 0xff, i, 0x00);
 //	}
-	
+
+	// Need to call some function from vstdlib to fix a link error for optimize-only
+	RandomInt(0,0);
+
 	return true;
 	
 fail:

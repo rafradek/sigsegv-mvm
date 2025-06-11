@@ -802,10 +802,21 @@ namespace Mod::Etc::Extra_Player_Slots
     bool stopMoreEvents = false;
     DETOUR_DECL_MEMBER(bool, IGameEventManager2_FireEvent, IGameEvent *event, bool bDontBroadcast)
 	{
-        stopMoreEvents = false;
-        //return DETOUR_MEMBER_CALL(event, bDontBroadcast);
-        Msg("stop %s\n", event != nullptr ? event->GetName() : "f");
-        return false;
+        if (event != nullptr && event->GetName() != nullptr && strcmp(event->GetName(), "player_hurt") == 0) {
+            IGameEvent *npchurt = gameeventmanager->CreateEvent("npc_hurt");
+            auto victim = UTIL_PlayerByUserId(event->GetInt("userid"));
+            if (npchurt && victim != nullptr && victim->entindex() > DEFAULT_MAX_PLAYERS) {
+				npchurt->SetInt("entindex", victim->entindex());
+				npchurt->SetInt("health", Max(0, victim->GetHealth()));
+				npchurt->SetInt("damageamount", event->GetInt("damageamount"));
+				npchurt->SetBool("crit", event->GetBool("crit"));
+				npchurt->SetInt("attacker_player", event->GetInt("attacker"));
+				npchurt->SetInt("weaponid", event->GetInt("weaponid"));
+
+				gameeventmanager->FireEvent(npchurt);
+			}
+        }
+        return DETOUR_MEMBER_CALL(event, bDontBroadcast);
     }
 
     MemberFuncThunk<CBaseClient *, void, IGameEvent *>  ft_CBaseClient_FireGameEvent("CBaseClient::FireGameEvent");
@@ -822,20 +833,7 @@ namespace Mod::Etc::Extra_Player_Slots
                 return;
             }
         }
-        if (event->GetName() != nullptr && strcmp(event->GetName(), "player_hurt") == 0) {
-            IGameEvent *npchurt = gameeventmanager->CreateEvent("npc_hurt");
-            auto victim = UTIL_PlayerByUserId(event->GetInt("userid"));
-            if (npchurt && victim != nullptr && victim->entindex() > DEFAULT_MAX_PLAYERS) {
-				npchurt->SetInt("entindex", victim->entindex());
-				npchurt->SetInt("health", Max(0, victim->GetHealth()));
-				npchurt->SetInt("damageamount", event->GetInt("damageamount"));
-				npchurt->SetBool("crit", event->GetBool("crit"));
-				npchurt->SetInt("attacker_player", event->GetInt("attacker"));
-				npchurt->SetInt("weaponid", event->GetInt("weaponid"));
-
-				gameeventmanager->FireEvent(npchurt);
-			}
-        }
+        
         // Replace extra slot client id with some other bot with lower id
         IGameEvent *duplicate = nullptr;
         const char *eventName = nullptr;
