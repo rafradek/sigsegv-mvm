@@ -83,7 +83,7 @@ jobs:
         echo "export PATH=$HOME/.local/bin:$PATH" >> $GITHUB_ENV
         export PATH=$HOME/.local/bin:$PATH
         PATH=$HOME/.local/bin:$PATH
-        ./autoconfig.sh
+        CC=gcc-14 CXX=g++-14 ./autoconfig.sh
 
     - name: Build
       run: |
