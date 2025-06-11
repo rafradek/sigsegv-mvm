@@ -1286,7 +1286,7 @@ namespace Mod::Etc::Extra_Player_Slots
             //MOD_ADD_DETOUR_MEMBER(CTFGameRules_PowerupModeKillCountCompare, "CTFGameRules::PowerupModeKillCountCompare");
             //MOD_ADD_DETOUR_MEMBER(CTFGameRules_PowerupModeInitKillCountTimer, "CTFGameRules::PowerupModeInitKillCountTimer");
 
-            //MOD_ADD_DETOUR_MEMBER(IGameEventManager2_FireEvent, "IGameEventManager2::FireEvent");
+            MOD_ADD_DETOUR_MEMBER(IGameEventManager2_FireEvent, "IGameEventManager2::FireEvent");
             MOD_ADD_DETOUR_MEMBER(CBaseClient_FireGameEvent, "CBaseClient::FireGameEvent");
             MOD_ADD_DETOUR_MEMBER(CGameMovement_CheckStuck, "CGameMovement::CheckStuck");
             MOD_ADD_DETOUR_MEMBER(CSteam3Server_SendUpdatedServerDetails, "CSteam3Server::SendUpdatedServerDetails");
