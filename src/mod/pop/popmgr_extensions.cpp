@@ -4318,13 +4318,13 @@ namespace Mod::Pop::PopMgr_Extensions
 		DETOUR_MEMBER_CALL(player, weapon, i1, b1, b2, f1);
 	}
 
-	DETOUR_DECL_STATIC(bool, TF_IsHolidayActive)
+	DETOUR_DECL_STATIC(bool, TF_IsHolidayActive, int holiday)
 	{
 		
 		if (rc_CTFPlayer_ModifyOrAppendCriteria)
 			return false;
 		else
-			return DETOUR_STATIC_CALL();
+			return DETOUR_STATIC_CALL(holiday);
 	}
 
 	DETOUR_DECL_MEMBER(void, CTFGameRules_BetweenRounds_Think)

@@ -902,12 +902,12 @@ namespace Mod::Cond::Reprogrammed
 		DETOUR_MEMBER_CALL(criteria);
 	}
 
-	DETOUR_DECL_STATIC(bool, TF_IsHolidayActive)
+	DETOUR_DECL_STATIC(bool, TF_IsHolidayActive, int holiday)
 	{
 		if (rc_CTFPlayer_ModifyOrAppendCriteria)
 			return false;
 		else
-			return DETOUR_STATIC_CALL();
+			return DETOUR_STATIC_CALL(holiday);
 	}
 	
 	RefCount rc_CTFGameRules_FireGameEvent__teamplay_round_start;

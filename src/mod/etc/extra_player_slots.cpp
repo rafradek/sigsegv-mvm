@@ -902,7 +902,7 @@ namespace Mod::Etc::Extra_Player_Slots
                     auto restrictedPlayers = killEvent.participants;
                     for (size_t i = 0; i < 3; i++) {
                         if (killEvent.teams[i] != -1) {
-                            if (killEvent.teams[i] == killEvent.teams[i - 1] && killEvent.names[i] == killEvent.names[i - 1]) {
+                            if (i > 0 && killEvent.teams[i] == killEvent.teams[i - 1] && killEvent.names[i] == killEvent.names[i - 1]) {
                                 players[i] = players[i - 1];
                                 continue;
                             }
@@ -924,6 +924,10 @@ namespace Mod::Etc::Extra_Player_Slots
                                 killEvent.oldNames[i] = player->GetPlayerName();
                                 killEvent.usedPlayerIndexes[i] = player->entindex();
                                 killEvent.event->SetInt(i == 0 ? "userid" : (i == 1 ? "attacker" : "assister"), player->GetUserID());
+
+                                if (i > 0 && player == players[i-1]) {
+                                    continue;
+                                }
                                 
                                 player->SetPlayerName(killEvent.names[i].c_str());
                                 auto clientFakePlayer = static_cast<CBaseClient *>(sv->GetClient(player->entindex()-1));
@@ -965,9 +969,16 @@ namespace Mod::Etc::Extra_Player_Slots
                 if (gpGlobals->curtime - killEvent.time > 0.35f) {
                     
                     for (int i = 0; i < 3; i++) {
+
                         if (killEvent.usedPlayerIndexes[i] != -1 && killEvent.usedPlayerIndexes[i] != DEFAULT_MAX_PLAYERS) {
+                            
+                            if (i > 0 && killEvent.usedPlayerIndexes[i] == killEvent.usedPlayerIndexes[i - 1]) {
+                                continue;
+                            }
+
                             auto player = UTIL_PlayerByIndex(killEvent.usedPlayerIndexes[i]);
                             if (player != nullptr) {
+                                auto &newName = killEvent.names[i];
                                 auto &oldName = killEvent.oldNames[i];
                                 player->SetPlayerName(oldName.c_str());
                                 auto clientFakePlayer = static_cast<CBaseClient *>(sv->GetClient(player->entindex()-1));
