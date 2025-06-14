@@ -73,6 +73,16 @@ bool CPatch::Check()
 		return false;
 	}
 	
+	uintptr_t myAddrMin = (uintptr_t)scan.FirstMatch();
+	uintptr_t myAddrMax = (uintptr_t)myAddrMin + this->GetLength();
+	// Check if any other patch writes over this area
+	for(auto patch : AutoList<CPatch>::List()) {
+		if (patch->IsApplied() && (uintptr_t)patch->GetActualLocation() < myAddrMax && (uintptr_t)patch->GetActualLocation() + patch->GetLength() > myAddrMin) {
+			DevMsg("CPatch::Check: FAIL: \"%s\": Function already changed by another patch\n", this->m_pszFuncName);
+			return false;
+		}
+	}
+
 	this->m_bFoundOffset = true;
 	this->m_iFuncOffActual = (uintptr_t)scan.FirstMatch() - (uintptr_t)this->m_pFuncAddr;
 	

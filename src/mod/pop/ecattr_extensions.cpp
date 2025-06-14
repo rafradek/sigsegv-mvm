@@ -905,7 +905,7 @@ namespace Mod::Pop::ECAttr_Extensions
 			PrecacheParticleSystem( kv->GetString() );
 		} else if (FStrEq(name, "CustomEyeGlowColor")) {
 			data.eye_particle_color = true;
-			sscanf(kv->GetString(), "%d %d %d", &data.eye_particle_r, &data.eye_particle_g, &data.eye_particle_b);
+			sscanf(kv->GetString(), "%hhu %hhu %hhu", &data.eye_particle_r, &data.eye_particle_g, &data.eye_particle_b);
 		} else if (FStrEq(name, "StripItemSlot")) {
 			int val = GetLoadoutSlotByName(kv->GetString());
 			data.strip_item_slot.push_back(val == -1 ? kv->GetInt() : val);
@@ -1214,7 +1214,7 @@ namespace Mod::Pop::ECAttr_Extensions
 		auto owner = static_cast<CTFPlayer *>(this->GetOwnerEntity());
 		if (owner != nullptr) {
 			wearable->m_nSkin = owner->IsForcedSkin() ? owner->GetForcedSkin() : (owner->GetTeamNumber() == TF_TEAM_BLUE ? 1 : 0);
-			if (wearable->m_nSkin >= 0 && wearable->m_nSkin < g_ItemDefForSkinNum.size() && g_ItemDefForSkinNum[wearable->m_nSkin] != wearable->GetItem()->m_iItemDefinitionIndex) {
+			if (wearable->m_nSkin >= 0 && wearable->m_nSkin < (int) g_ItemDefForSkinNum.size() && g_ItemDefForSkinNum[wearable->m_nSkin] != wearable->GetItem()->m_iItemDefinitionIndex) {
 				wearable->GetItem()->Init(g_ItemDefForSkinNum[wearable->m_nSkin]);
 			}
 			

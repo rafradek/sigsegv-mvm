@@ -83,6 +83,7 @@ private:
 	static MemberVFuncThunk<      CBaseCombatCharacter *, bool, const CTakeDamageInfo&>   vt_ShouldGib;
 	static MemberVFuncThunk<      CBaseCombatCharacter *, bool, const Vector&>            vt_FInViewCone;
 	static MemberVFuncThunk<      CBaseCombatCharacter *, bool, const CTakeDamageInfo&, const Vector&> vt_BecomeRagdoll;
+	
 #ifdef SE_IS_TF2
 	static MemberVFuncThunk<      CBaseCombatCharacter *, int>                            vt_GetBossType;
 #endif
@@ -210,6 +211,7 @@ public:
 	CBaseEntity *FindUseEntity()                                         { return vt_FindUseEntity      (this); }
 	void LeaveVehicle(const Vector &pos = vec3_origin, const QAngle &ang = vec3_angle) { return vt_LeaveVehicle       (this, pos, ang); }
 	void CreateViewModel(int index)                                      { return vt_CreateViewModel(this, index); }
+	bool WantsLagCompensationOnEntity(const CBasePlayer *pPlayer, const CUserCmd *pCmd, const CBitVec<MAX_EDICTS> *pEntityTransmitBits) { return vt_WantsLagCompensationOnEntity(this, pPlayer, pCmd, pEntityTransmitBits); }
 	
 	bool IsRealPlayer() const { return !IsFakeClient() && !IsHLTV() && !IsReplay(); }
 	
@@ -272,6 +274,7 @@ private:
 	static MemberVFuncThunk<      CBasePlayer *, CBaseEntity *>               vt_FindUseEntity;
 	static MemberVFuncThunk<      CBasePlayer *, void, const Vector &,const QAngle &> vt_LeaveVehicle;
 	static MemberVFuncThunk<      CBasePlayer *, void, int>                   vt_CreateViewModel;
+	static MemberVFuncThunk<      CBasePlayer *, bool, const CBasePlayer *, const CUserCmd *, const CBitVec<MAX_EDICTS> *> vt_WantsLagCompensationOnEntity;
 };
 
 class CBaseMultiplayerPlayer : public CBasePlayer

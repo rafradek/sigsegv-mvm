@@ -878,7 +878,7 @@ namespace Mod::Util::Download_Manager
 		snprintf(poppath, sizeof(poppath), "%s/%s/scripts/population", game_path, cvar_downloadpath.GetString());
 		DIR *dir;
 		dirent *ent;
-		char filepath[512];
+		char filepath[513];
 		char respath[512];
 		char origMapFile[256];
 		snprintf(origMapFile, sizeof(origMapFile), "maps/%s.bsp", STRING(gpGlobals->mapname));
@@ -925,13 +925,17 @@ namespace Mod::Util::Download_Manager
 		}
 		filesystem->FindClose(mapHandle);
 		filesystem->AddSearchPath(origMapFile, "GAME");
-		Msg("Missing files:\n");
+		Msg("Missing files (also printed in missingfiles.txt):\n");
+		CUtlBuffer buf(0,0, CUtlBuffer::TEXT_BUFFER);
 		size_t pathfullLength = strlen(game_path) + 1 + strlen(cvar_downloadpath.GetString()) + 1;
 		for (auto &entry : missing_files) {
 			if (!entry.second.ends_with(".phy") && entry.second.length() > pathfullLength) {
+				buf.PutString(entry.second.c_str() + pathfullLength);
+				buf.PutChar('\n');
 				Msg("%s\n", entry.second.c_str() + pathfullLength);
 			}
 		}
+    	filesystem->WriteFile("missingfiles.txt", nullptr, buf);
 	}
 
 	KeyValues *kvBannedMissions = nullptr;
@@ -1155,24 +1159,26 @@ namespace Mod::Util::Download_Manager
 		//		map_names.emplace_back(map_name);
 		//	});
 			
-#ifndef _MSC_VER
-#warning NEED try/catch for std::regex ctor and funcs!
-#endif
-			
 			for (const auto& block : blocks) {
 			//	DevMsg("LoadDownloadsFile: Block \"%s\"\n", block.name.c_str());
 				
 				/* check each Map regex pattern against the current map and see if any is applicable */
 				bool match = false;
 				for (const auto& map_re : block.keys_map) {
-					std::regex re(map_re, std::regex::ECMAScript | std::regex::icase);
 					
-					if (std::regex_match(STRING(gpGlobals->mapname), re, std::regex_constants::match_any)) {
-					//	DevMsg("LoadDownloadsFile:   Map \"%s\" vs \"%s\": MATCH\n", map_re.c_str(), STRING(gpGlobals->mapname));
-						match = true;
-						break;
-					} else {
-					//	DevMsg("LoadDownloadsFile:   Map \"%s\" vs \"%s\": nope\n", map_re.c_str(), STRING(gpGlobals->mapname));
+					try {
+						std::regex re(map_re, std::regex::ECMAScript | std::regex::icase);
+						
+						if (std::regex_match(STRING(gpGlobals->mapname), re, std::regex_constants::match_any)) {
+						//	DevMsg("LoadDownloadsFile:   Map \"%s\" vs \"%s\": MATCH\n", map_re.c_str(), STRING(gpGlobals->mapname));
+							match = true;
+							break;
+						} else {
+						//	DevMsg("LoadDownloadsFile:   Map \"%s\" vs \"%s\": nope\n", map_re.c_str(), STRING(gpGlobals->mapname));
+						}
+					}
+					catch (...) {
+
 					}
 				}
 				if (!match) continue;
@@ -1735,7 +1741,7 @@ namespace Mod::Util::Download_Manager
 		virtual void LevelShutdownPreEntity() override
 		{
 			vote_pass_listener.isVoteForNewMap = false;
-			for (int i = 0; i < ARRAYSIZE(download_infos); i++) {
+			for (size_t i = 0; i < ARRAYSIZE(download_infos); i++) {
 				download_infos[i] = LateDownloadInfo();
 			}
 		}

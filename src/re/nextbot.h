@@ -79,7 +79,6 @@ SIZE_CHECK(NextBotManager,             0x0050);
 #endif
 
 
-#warning REMOVE THIS CRAP PLEASE
 /* NextBotKnownEntity.cpp */
 //inline CKnownEntity::~CKnownEntity() {}
 
@@ -447,7 +446,7 @@ template<class Actor> Action<Actor> *Action<Actor>::ApplyResult(Actor *actor, Be
 template<class Actor> void Action<Actor>::InvokeOnEnd(Actor *actor, Behavior<Actor> *behavior, Action<Actor> *action)                                        {        ft_Action_InvokeOnEnd                        <Actor>(this, actor, behavior, action);  }
 template<class Actor> ActionResult<Actor> Action<Actor>::InvokeOnResume(Actor *actor, Behavior<Actor> *behavior, Action<Actor> *action)                     { return ft_Action_InvokeOnResume                     <Actor>(this, actor, behavior, action);  }
 template<class Actor> char *Action<Actor>::BuildDecoratedName(char buf[256], const Action<Actor> *action) const                                                { return ft_Action_BuildDecoratedName                 <Actor>(this, buf, action);              }
-template<class Actor> char *Action<Actor>::DebugString() const                                                                                                  { return "Actor"; }
+template<class Actor> const char *Action<Actor>::DebugString() const                                                                                          { return "Actor"; }
 template<class Actor> void Action<Actor>::PrintStateToConsole() const                                                                                           {        ft_Action_PrintStateToConsole                <Actor>(this);                           }
 template<class Actor> void Action<Actor>::DeleteThis()                                                                                                        {        ft_Action_DeleteThis                        <Actor>(this);                           }
 

@@ -84,10 +84,8 @@ private:
 	CZombie *m_Actor;                          // +0x04
 };
 
-#warning REMOVE ME / MOVE ME ELSEWHERE!
 inline CTFBotPathCost::~CTFBotPathCost() {}
 
-#warning REMOVE ME / MOVE ME ELSEWHERE!
 inline CZombiePathCost::~CZombiePathCost() {}
 
 

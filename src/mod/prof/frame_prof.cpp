@@ -55,7 +55,7 @@ namespace Mod::Prof::Frame_Prof
 				s_lastUsage = currentUsage;
 				cpu_usage = flTimeDiff;
 			}
-            Msg("Frame time: %fs (%f max) CPU usage: %.1f%\n", timespent2.GetSeconds()/5, highestTime, cpu_usage/5*100);
+            Msg("Frame time: %fs (%f max) CPU usage: %.1f%%\n", timespent2.GetSeconds()/5, highestTime, cpu_usage/5*100);
 			highestTime = 0.0f;
             timespent2.Init();
             prevTime2 = gpGlobals->curtime/5;

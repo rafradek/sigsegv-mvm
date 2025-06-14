@@ -422,6 +422,7 @@
 				"CBasePlayer::SetVCollisionState" "_ZN11CBasePlayer18SetVCollisionStateERK6VectorS2_i"
 				"CBasePlayer::SetFOV" "_ZN11CBasePlayer6SetFOVEP11CBaseEntityifi"
 				"CBasePlayer::SetScriptOverlayMaterial" "_ZN11CBasePlayer24SetScriptOverlayMaterialEPKc"
+				"CBasePlayer::WantsLagCompensationOnEntity" "_ZNK11CBasePlayer28WantsLagCompensationOnEntityEPKS_PK8CUserCmdPK7CBitVecILi2048EE"
 				"CBasePlayer::ShouldTransmit" "_ZN11CBasePlayer14ShouldTransmitEPK18CCheckTransmitInfo"
 				"CBasePlayer::UpdateOnRemove" "_ZN11CBasePlayer14UpdateOnRemoveEv"
 				"CBasePlayer::Event_Killed" "_ZN11CBasePlayer12Event_KilledERK15CTakeDamageInfo"

@@ -656,13 +656,13 @@
 					sym  "_ZN6ActionI6CTFBotE11ApplyResultEPS0_P8BehaviorIS0_E12ActionResultIS0_E"
 					sym64  "_ZN6ActionI6CTFBotE11ApplyResultEPS0_P8BehaviorIS0_E12ActionResultIS0_E\\.isra\\..*"
 				}
-				"Action<CTFBot>::InvokeOnEnd"
-				{
-					type "fixed"
-					addr  "0x19c2b0"
-					//type "sym"
-					//sym  "_ZN6ActionI6CTFBotE11InvokeOnEndEPS0_P8BehaviorIS0_EPS1__part_249"
-				}
+				//"Action<CTFBot>::InvokeOnEnd"
+				//{
+				//	type "fixed"
+				//	addr  "0x19c2b0"
+				//	//type "sym"
+				//	//sym  "_ZN6ActionI6CTFBotE11InvokeOnEndEPS0_P8BehaviorIS0_EPS1__part_249"
+				//}
 				"Action<CTFBot>::InvokeOnEnd"
 				{
 					type "sym regex"
@@ -1325,13 +1325,13 @@
 					sym  "_ZN6ActionI7CZombieE11ApplyResultEPS0_P8BehaviorIS0_E12ActionResultIS0_E"
 					sym64 "_ZN6ActionI7CZombieE11ApplyResultEPS0_P8BehaviorIS0_E12ActionResultIS0_E\\.isra\\..*"
 				}
-				"Action<CZombie>::InvokeOnEnd"
-				{
-					type "fixed"
-					addr  "0x19c2b0"
-					//type "sym"
-					//sym  "_ZN6ActionI7CZombieE11InvokeOnEndEPS0_P8BehaviorIS0_EPS1__part_249"
-				}
+				//"Action<CZombie>::InvokeOnEnd"
+				//{
+				//	type "fixed"
+				//	addr  "0x19c2b0"
+				//	//type "sym"
+				//	//sym  "_ZN6ActionI7CZombieE11InvokeOnEndEPS0_P8BehaviorIS0_EPS1__part_249"
+				//}
 				"Action<CZombie>::InvokeOnEnd"
 				{
 					type "sym"

@@ -28,6 +28,7 @@
 #include "stub/populators.h"
 #include "stub/tf_objective_resource.h"
 #include "stub/sendprop.h"
+#include "mod/ai/npc_nextbot/npc_nextbot_unlag.h"
 
 class SVC_ServerInfo
 {
@@ -105,8 +106,10 @@ namespace Mod::Etc::Extra_Player_Slots
 
         if (changeLevel) {
             Msg("extra slots changed, change level\n");
-            std::filesystem::path filename = g_pPopulationManager->GetPopulationFilename();
-            nextMissionAfterMapChange = filename.stem();
+            if (g_pPopulationManager != nullptr) {
+                std::filesystem::path filename = g_pPopulationManager->GetPopulationFilename();
+                nextMissionAfterMapChange = filename.stem();
+            }
             engine->ChangeLevel(STRING(gpGlobals->mapname), nullptr);
         }
     }
@@ -292,21 +295,7 @@ namespace Mod::Etc::Extra_Player_Slots
 	DETOUR_DECL_MEMBER(void, CLagCompensationManager_FrameUpdatePostEntityThink)
 	{
         int preMaxPlayers = gpGlobals->maxClients;
-
-        if (preMaxPlayers > DEFAULT_MAX_PLAYERS) {
-            // Run lag compensation using multiple copies of compensation managers. Each manager manages MAX_PLAYERS players. For each manager copy extra MAX_PLAYERS slots into the first MAX_PLAYERS edict slots
-            edict_t originalEdicts[DEFAULT_MAX_PLAYERS];
-            memcpy(originalEdicts, g_pWorldEdict+1, sizeof(edict_t) * DEFAULT_MAX_PLAYERS);
-
-            for (int i = 1; i < (preMaxPlayers + DEFAULT_MAX_PLAYERS - 1) / DEFAULT_MAX_PLAYERS; i++) {
-                int slotsCopy = Min(preMaxPlayers - i * DEFAULT_MAX_PLAYERS, DEFAULT_MAX_PLAYERS);
-                memcpy(g_pWorldEdict+1, g_pWorldEdict+1 + DEFAULT_MAX_PLAYERS * i, sizeof(edict_t) * slotsCopy);
-                gpGlobals->maxClients = slotsCopy;
-                (Detour_CLagCompensationManager_FrameUpdatePostEntityThink::Actual)(reinterpret_cast<Detour_CLagCompensationManager_FrameUpdatePostEntityThink *>(lag_compensation_copies[i - 1]));
-            }
-            memcpy(g_pWorldEdict+1, originalEdicts, sizeof(edict_t) * DEFAULT_MAX_PLAYERS);
-            gpGlobals->maxClients = DEFAULT_MAX_PLAYERS;
-        }
+        gpGlobals->maxClients = Min(gpGlobals->maxClients, DEFAULT_MAX_PLAYERS);
 		DETOUR_MEMBER_CALL();
         gpGlobals->maxClients = preMaxPlayers;
 	}
@@ -314,60 +303,16 @@ namespace Mod::Etc::Extra_Player_Slots
     int player_move_entindex = 0;
 	DETOUR_DECL_MEMBER(void, CLagCompensationManager_StartLagCompensation, CBasePlayer *player, CUserCmd *cmd)
 	{
-		int preMaxPlayers = gpGlobals->maxClients;
-        if (preMaxPlayers > DEFAULT_MAX_PLAYERS) {
-            if (!player->IsRealPlayer() || player->GetObserverMode() != OBS_MODE_NONE) {
-                for (int i = 1; i < (gpGlobals->maxClients + DEFAULT_MAX_PLAYERS - 1) / DEFAULT_MAX_PLAYERS; i++) {
-                    (Detour_CLagCompensationManager_StartLagCompensation::Actual)(reinterpret_cast<Detour_CLagCompensationManager_StartLagCompensation *>(lag_compensation_copies[i - 1]),player, cmd);
-                }
-                DETOUR_MEMBER_CALL(player, cmd);
-                return;
-            }
-            edict_t originalEdicts[DEFAULT_MAX_PLAYERS];
-            memcpy(originalEdicts, g_pWorldEdict+1, sizeof(edict_t) * DEFAULT_MAX_PLAYERS);
-
-            for (int i = 1; i < (preMaxPlayers + DEFAULT_MAX_PLAYERS - 1) / DEFAULT_MAX_PLAYERS; i++) {
-                int slotsCopy = Min(preMaxPlayers - i * DEFAULT_MAX_PLAYERS, DEFAULT_MAX_PLAYERS);
-                memcpy(g_pWorldEdict+1, g_pWorldEdict+1 + DEFAULT_MAX_PLAYERS * i, sizeof(edict_t) * slotsCopy);
-                for (int j = 1; j <= slotsCopy; j++) {
-                    (g_pWorldEdict+j)->m_EdictIndex = j;
-                }
-                gpGlobals->maxClients = slotsCopy;
-                player_move_entindex = -i * DEFAULT_MAX_PLAYERS;
-                (Detour_CLagCompensationManager_StartLagCompensation::Actual)(reinterpret_cast<Detour_CLagCompensationManager_StartLagCompensation *>(lag_compensation_copies[i - 1]),player, cmd);
-            }
-            player_move_entindex = 0;
-            memcpy(g_pWorldEdict+1, originalEdicts, sizeof(edict_t) * DEFAULT_MAX_PLAYERS);
-            gpGlobals->maxClients = DEFAULT_MAX_PLAYERS;
-        }
+        int preMaxPlayers = gpGlobals->maxClients;
+        gpGlobals->maxClients = Min(gpGlobals->maxClients, DEFAULT_MAX_PLAYERS);
 		DETOUR_MEMBER_CALL(player, cmd);
         gpGlobals->maxClients = preMaxPlayers;
 	}
-	
-    DETOUR_DECL_MEMBER(void, CLagCompensationManager_BacktrackPlayer, CBasePlayer *player, float flTargetTime)
-	{
-        player->NetworkProp()->GetProp()->m_EdictIndex+=player_move_entindex;
-		DETOUR_MEMBER_CALL(player, flTargetTime);
-        player->NetworkProp()->GetProp()->m_EdictIndex-=player_move_entindex;
-    }
 
 	DETOUR_DECL_MEMBER(void, CLagCompensationManager_FinishLagCompensation, CBasePlayer *player)
 	{
-		int preMaxPlayers = gpGlobals->maxClients;
-
-        if (preMaxPlayers > DEFAULT_MAX_PLAYERS) {
-            edict_t originalEdicts[DEFAULT_MAX_PLAYERS];
-            memcpy(originalEdicts, g_pWorldEdict+1, sizeof(edict_t) * DEFAULT_MAX_PLAYERS);
-
-            for (int i = 1; i < (preMaxPlayers + DEFAULT_MAX_PLAYERS - 1) / DEFAULT_MAX_PLAYERS; i++) {
-                int slotsCopy = Min(preMaxPlayers - i * DEFAULT_MAX_PLAYERS, DEFAULT_MAX_PLAYERS);
-                memcpy(g_pWorldEdict+1, g_pWorldEdict+1 + DEFAULT_MAX_PLAYERS * i, sizeof(edict_t) * slotsCopy);
-                gpGlobals->maxClients = slotsCopy;
-                (Detour_CLagCompensationManager_FinishLagCompensation::Actual)(reinterpret_cast<Detour_CLagCompensationManager_FinishLagCompensation *>(lag_compensation_copies[i - 1]), player);
-            }
-            memcpy(g_pWorldEdict+1, originalEdicts, sizeof(edict_t) * DEFAULT_MAX_PLAYERS);
-            gpGlobals->maxClients = DEFAULT_MAX_PLAYERS;
-        }
+        int preMaxPlayers = gpGlobals->maxClients;
+        gpGlobals->maxClients = Min(gpGlobals->maxClients, DEFAULT_MAX_PLAYERS);
 		DETOUR_MEMBER_CALL(player);
         gpGlobals->maxClients = preMaxPlayers;
 	}
@@ -1039,6 +984,18 @@ namespace Mod::Etc::Extra_Player_Slots
         }
 		return DETOUR_MEMBER_CALL();
 	}
+    
+    class LagCompensatedPlayerModule : public EntityModule, public Mod::AI::NPC_Nextbot::LagCompensatedEntity
+    {
+    public:
+        LagCompensatedPlayerModule(CBaseEntity *entity) : EntityModule(entity), Mod::AI::NPC_Nextbot::LagCompensatedEntity((CBaseAnimatingOverlay *)entity), me(ToTFPlayer(entity)) {}
+
+		virtual bool WantsLagCompensation(CBasePlayer *player, const CUserCmd *pCmd, const CBitVec<MAX_EDICTS> *pEntityTransmitBits) override
+        {
+            return player->WantsLagCompensationOnEntity(me, pCmd, pEntityTransmitBits);
+        }
+        CTFPlayer *me;
+    };
 
 	DETOUR_DECL_MEMBER(void, CTFPlayer_Event_Killed, const CTakeDamageInfo& info)
 	{
@@ -1050,6 +1007,11 @@ namespace Mod::Etc::Extra_Player_Slots
 #ifdef FAKE_PLAYER_CLASS
         if (ToBaseObject(player->m_hObserverTarget) != nullptr && ENTINDEX(ToBaseObject(player->m_hObserverTarget)->GetBuilder()) > DEFAULT_MAX_PLAYERS) {
             player->m_hObserverTarget = nullptr;
+        }
+        if (player->entindex() > DEFAULT_MAX_PLAYERS) {
+            ForEachTFPlayerEconEntity(player, [&](CEconEntity *ent){
+                ent->AddEffects(EF_NODRAW);
+            });
         }
 #endif
 	}
@@ -1236,6 +1198,15 @@ namespace Mod::Etc::Extra_Player_Slots
         }
         return skin;
     }
+    
+	DETOUR_DECL_MEMBER(void, CTFPlayer_Spawn)
+	{
+		CTFPlayer *player = reinterpret_cast<CTFPlayer *>(this); 
+        if (player->entindex() > DEFAULT_MAX_PLAYERS) {
+            player->GetOrCreateEntityModule<LagCompensatedPlayerModule>("lagcompensatedplayer");
+        }
+		DETOUR_MEMBER_CALL();
+    }
 
 #endif
 
@@ -1251,7 +1222,7 @@ namespace Mod::Etc::Extra_Player_Slots
 			MOD_ADD_DETOUR_MEMBER(CServerGameClients_GetPlayerLimits, "CServerGameClients::GetPlayerLimits");
 			MOD_ADD_DETOUR_MEMBER(CLagCompensationManager_FrameUpdatePostEntityThink, "CLagCompensationManager::FrameUpdatePostEntityThink");
             MOD_ADD_DETOUR_MEMBER(CLagCompensationManager_StartLagCompensation,  "CLagCompensationManager::StartLagCompensation");
-            MOD_ADD_DETOUR_MEMBER(CLagCompensationManager_BacktrackPlayer,  "CLagCompensationManager::BacktrackPlayer");
+            //MOD_ADD_DETOUR_MEMBER(CLagCompensationManager_BacktrackPlayer,  "CLagCompensationManager::BacktrackPlayer");
 			MOD_ADD_DETOUR_MEMBER(CLagCompensationManager_FinishLagCompensation, "CLagCompensationManager::FinishLagCompensation");
 			//MOD_ADD_DETOUR_STATIC(SendProxy_PlayerList,    "SendProxy_PlayerList");
 		    MOD_ADD_DETOUR_STATIC(SendProxyArrayLength_PlayerArray,    "SendProxyArrayLength_PlayerArray");
@@ -1322,6 +1293,7 @@ namespace Mod::Etc::Extra_Player_Slots
             MOD_ADD_VHOOK(CWeaponMedigun_Deploy, TypeName<CWeaponMedigun>(), "CWeaponMedigun::Deploy");
             MOD_ADD_DETOUR_MEMBER(CTFPlayer_FireBullet, "CTFPlayer::FireBullet");
             MOD_ADD_DETOUR_MEMBER(CTFPlayer_MaybeDrawRailgunBeam, "CTFPlayer::MaybeDrawRailgunBeam");
+            MOD_ADD_DETOUR_MEMBER(CTFPlayer_Spawn, "CTFPlayer::Spawn");
 #endif
             
 			//MOD_ADD_DETOUR_MEMBER(CTFPlayer_ShouldTransmit,               "CTFPlayer::ShouldTransmit");
@@ -1337,27 +1309,15 @@ namespace Mod::Etc::Extra_Player_Slots
 
         void PrepareLagCompensation()
         {
-            // Setup additional lag compensation managers
-            for (auto manager : lag_compensation_copies) {
-                delete manager;
-            }
-            lag_compensation_copies.clear();
-            for (int i = 1; i < (gpGlobals->maxClients + DEFAULT_MAX_PLAYERS - 1) / DEFAULT_MAX_PLAYERS; i++) {
-                auto copiedLagManager = reinterpret_cast<CLagCompensationManager *>(::operator new(0x1FFFF));
-                memcpy(copiedLagManager, &g_LagCompensationManager.GetRef(), 0x1FFFF);
-                lag_compensation_copies.push_back(copiedLagManager);
-            }
         }
         
         virtual void OnEnablePost() override
 		{
-            PrepareLagCompensation();
         }
         
         
         virtual void OnDisable() override
 		{
-            PrepareLagCompensation();
         }
 
         virtual void FrameUpdatePostEntityThink() override
@@ -1677,6 +1637,7 @@ namespace Mod::Etc::Extra_Player_Slots
             }
             
         }
+		virtual std::vector<std::string> GetRequiredMods() { return {"AI:My_Nextbot_Unlag"};}
 	};
 	CMod s_Mod;
 

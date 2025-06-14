@@ -1243,7 +1243,7 @@ namespace Mod::MvM::Extended_Upgrades
                     ItemDrawInfo info1(line.c_str(), 
                         cur_step >= max_step || player->GetCurrency() < upgrade.m_nCost ? ITEMDRAW_DISABLED : ITEMDRAW_DEFAULT);
                     
-                    static char buf[5];
+                    static char buf[16];
                     snprintf(buf, sizeof(buf), "r%d", (int)i);
                     menu->AppendItem(buf, info1);
                 }
@@ -1279,7 +1279,7 @@ namespace Mod::MvM::Extended_Upgrades
                     menu->AppendItem("", ItemDrawInfo("", ITEMDRAW_DISABLED));
                 }
                 
-                static char buf[4];
+                static char buf[16];
                 snprintf(buf, sizeof(buf), "%d", (int)i);
                 menu->AppendItem(buf, info1);
 
@@ -1300,7 +1300,7 @@ namespace Mod::MvM::Extended_Upgrades
 
                 ItemDrawInfo info1(text, ITEMDRAW_DISABLED);
                 
-                static char buf[4];
+                static char buf[16];
                 snprintf(buf, sizeof(buf), "%d", (int)i);
                 menu->AppendItem(buf, info1);
 
@@ -1374,7 +1374,7 @@ namespace Mod::MvM::Extended_Upgrades
 
                 ItemDrawInfo info2(GetItemNameForDisplay(item->GetItem(), player), hasValidUpgrades ? ITEMDRAW_DEFAULT : ITEMDRAW_DISABLED);
                 
-                static char buf[4];
+                static char buf[16];
                 snprintf(buf, sizeof(buf), "%d", (int)slot);
                 menu->AppendItem(buf, info2);
             }

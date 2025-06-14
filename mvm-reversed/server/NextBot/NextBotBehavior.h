@@ -391,7 +391,7 @@ private:
 	Action<T> *InvokeOnSuspend(T *actor, Behavior<T> *behavior, Action<T> *action);
 	
 	char *BuildDecoratedName(char buf[256], const Action<T> *action) const;
-	char *DebugString() const;
+	const char *DebugString() const;
 	void PrintStateToConsole() const;
 	
 	void HandleEvent(const char *name, const std::function<EventDesiredResult<T> (Action<T> *, T *)>& handler);

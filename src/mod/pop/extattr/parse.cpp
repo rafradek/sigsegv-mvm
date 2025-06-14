@@ -71,7 +71,7 @@ namespace Mod::Pop::ExtAttr::Parse
 	
 	DETOUR_DECL_MEMBER(void, CTFBot_OnEventChangeAttributes, CTFBot::EventChangeAttributes_t *ecattr)
 	{
-		if (this != nullptr && ecattr != nullptr) {
+		if (ecattr != nullptr) {
 			auto bot = reinterpret_cast<CTFBot *>(this);
 			auto &ext = ecattr->pad_10;
 

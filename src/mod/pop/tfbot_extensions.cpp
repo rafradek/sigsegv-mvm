@@ -239,7 +239,8 @@ namespace Mod::Pop::TFBot_Extensions
 
 	enum ActionType
 	{
-		ACTION_Default,
+		ACTION_NoOverride = -1,
+		ACTION_Default = 0,
 		
 		// built-in
 		ACTION_FetchFlag,
@@ -524,36 +525,36 @@ namespace Mod::Pop::TFBot_Extensions
 		DETOUR_MEMBER_CALL();
 	}
 	
-	void Parse_Action(SpawnerData &data, const char *value)
+	ActionType Parse_Action(const char *value)
 	{	
 		if (FStrEq(value, "Default")) {
-			data.action = ACTION_Default;
+			return ACTION_Default;
 		} else if (FStrEq(value, "FetchFlag")) {
-			data.action = ACTION_FetchFlag;
+			return ACTION_FetchFlag;
 		} else if (FStrEq(value, "PushToCapturePoint")) {
-			data.action = ACTION_PushToCapturePoint;
+			return ACTION_PushToCapturePoint;
 		} else if (FStrEq(value, "Mobber")) {
-			data.action = ACTION_Mobber;
+			return ACTION_Mobber;
 		} else if (FStrEq(value, "Spy")) {
-			data.action = ACTION_BotSpyInfiltrate;
+			return ACTION_BotSpyInfiltrate;
 		} else if (FStrEq(value, "Medic")) {
-			data.action = ACTION_MedicHeal;
+			return ACTION_MedicHeal;
 		} else if (FStrEq(value, "Sniper")) {
-			data.action = ACTION_SniperLurk;
+			return ACTION_SniperLurk;
 		} else if (FStrEq(value, "SuicideBomber")) {
-			data.action = ACTION_DestroySentries;
+			return ACTION_DestroySentries;
 		} else if (FStrEq(value, "EscortFlag")) {
-			data.action = ACTION_EscortFlag;
+			return ACTION_EscortFlag;
 		} else if (FStrEq(value, "Idle")) {
-			data.action = ACTION_Idle;
+			return ACTION_Idle;
 		} else if (FStrEq(value, "Passive")) {
-			data.action = ACTION_Passive;
+			return ACTION_Passive;
 		} else if (FStrEq(value, "FollowPath")) {
-			data.action = ACTION_FollowPath;
+			return ACTION_FollowPath;
 		} else {
 			Warning("Unknown value \'%s\' for TFBot Action.\n", value);
 		}
-		DevMsg("Parse action %d %s \n", data.action, value); 
+		return ACTION_Default;
 	}
 	
 	void Parse_EventChangeAttributesSig(CTFBotSpawner *spawner, KeyValues *kv)
@@ -684,7 +685,7 @@ namespace Mod::Pop::TFBot_Extensions
 			} else if (Parse_PeriodicTask(spawners[spawner].periodic_tasks, subkey, name)) {
 
 			} else if (FStrEq(name, "Action")) {
-				Parse_Action(spawners[spawner], subkey->GetString());
+				spawners[spawner].action = Parse_Action(subkey->GetString());
 			} else if (FStrEq(name, "EventChangeAttributesSig")) {
 				Parse_EventChangeAttributesSig(spawner, subkey);
 			} else if (FStrEq(name, "ForceRomeVision")) {
@@ -1074,63 +1075,66 @@ namespace Mod::Pop::TFBot_Extensions
 	DETOUR_DECL_MEMBER(Action<CTFBot> *, CTFBotScenarioMonitor_DesiredScenarioAndClassAction, CTFBot *actor)
 	{
 		auto data = GetDataForBot(actor);
-		if (data != nullptr) {
-			switch (data->action) {
-			
-			case ACTION_Default:
-				break;
-			
-			case ACTION_EscortFlag:
-			case ACTION_FetchFlag:
-				DevMsg("CTFBotSpawner: setting initial action of bot #%d \"%s\" to FetchFlag\n", ENTINDEX(actor), actor->GetPlayerName());
-				return CTFBotFetchFlag::New();
-			
-			case ACTION_PushToCapturePoint:
-				DevMsg("CTFBotSpawner: setting initial action of bot #%d \"%s\" to PushToCapturePoint[-->FetchFlag]\n", ENTINDEX(actor), actor->GetPlayerName());
-				return CTFBotPushToCapturePoint::New(CTFBotFetchFlag::New());
-			
-			case ACTION_Mobber:
-				DevMsg("CTFBotSpawner: setting initial action of bot #%d \"%s\" to Mobber\n", ENTINDEX(actor), actor->GetPlayerName());
-				return new CTFBotMobber();
+		ActionType type = (ActionType) actor->GetCustomVariableInt<"actionoverride">(ACTION_NoOverride);
+		bool typeOverride = type != ACTION_NoOverride;
+		if (data != nullptr && type == ACTION_NoOverride) {
+			type = data->action;
+		}
+		switch (type) {
+		
+		case ACTION_Default:
+			break;
+		
+		case ACTION_EscortFlag:
+		case ACTION_FetchFlag:
+			DevMsg("CTFBotSpawner: setting initial action of bot #%d \"%s\" to FetchFlag\n", ENTINDEX(actor), actor->GetPlayerName());
+			return CTFBotFetchFlag::New();
+		
+		case ACTION_PushToCapturePoint:
+			DevMsg("CTFBotSpawner: setting initial action of bot #%d \"%s\" to PushToCapturePoint[-->FetchFlag]\n", ENTINDEX(actor), actor->GetPlayerName());
+			return CTFBotPushToCapturePoint::New(CTFBotFetchFlag::New());
+		
+		case ACTION_Mobber:
+			DevMsg("CTFBotSpawner: setting initial action of bot #%d \"%s\" to Mobber\n", ENTINDEX(actor), actor->GetPlayerName());
+			return new CTFBotMobber();
 
-			case ACTION_Passive:
-				DevMsg("CTFBotSpawner: setting initial action of bot #%d \"%s\" to Passive\n", ENTINDEX(actor), actor->GetPlayerName());
-				return new CTFBotPassive();
-			case ACTION_FollowPath:
-   				actor->GetOrCreateEntityModule<GuardPathModule>("guardpath")->m_Path = data->guard_path;
-				DevMsg("CTFBotSpawner: setting initial action of bot #%d \"%s\" to FollowPath\n", ENTINDEX(actor), actor->GetPlayerName());
-				return new CTFBotGuardAction<CTFBot>();
+		case ACTION_Passive:
+			DevMsg("CTFBotSpawner: setting initial action of bot #%d \"%s\" to Passive\n", ENTINDEX(actor), actor->GetPlayerName());
+			return new CTFBotPassive();
+		case ACTION_FollowPath:
+			actor->GetOrCreateEntityModule<GuardPathModule>("guardpath")->m_Path = data->guard_path;
+			DevMsg("CTFBotSpawner: setting initial action of bot #%d \"%s\" to FollowPath\n", ENTINDEX(actor), actor->GetPlayerName());
+			return new CTFBotGuardAction<CTFBot>();
 
-			case ACTION_BotSpyInfiltrate:
-				DevMsg("CTFBotSpawner: setting initial action of bot #%d \"%s\" to SpyInfiltrate\n", ENTINDEX(actor), actor->GetPlayerName());
-				return CTFBotSpyInfiltrate::New();
-			case ACTION_SniperLurk:
-				DevMsg("CTFBotSpawner: setting initial action of bot #%d \"%s\" to Sniper\n", ENTINDEX(actor), actor->GetPlayerName());
-				actor->SetMission(CTFBot::MISSION_SNIPER);
-				break;
-			case ACTION_Idle:
-				DevMsg("CTFBotSpawner: setting initial action of bot #%d \"%s\" to Idle\n", ENTINDEX(actor), actor->GetPlayerName());
-				return nullptr;
-			//case ACTION_MedicHeal:
-			//	DevMsg("CTFBotSpawner: setting initial action of bot #%d \"%s\" to MedicHeal\n", ENTINDEX(actor), actor->GetPlayerName());
-			//	return CTFBotMedicHeal::New();
-			case ACTION_DestroySentries:
-				DevMsg("CTFBotSpawner: setting initial action of bot #%d \"%s\" to DestroySentries\n", ENTINDEX(actor), actor->GetPlayerName());
-				CBaseEntity *target = actor->SelectRandomReachableEnemy();
-					
-				if (target == nullptr) {
-					CBaseEntity *target = servertools->FindEntityByClassname(nullptr, "obj_sentrygun");
-				}
-				targets_sentrybuster[actor]=target;
-				//if (target != nullptr) {
-					//float m_flScale; // +0x2bf4
-					
-					//float scale = *(float *)((uintptr_t)actor+ 0x2bf4);
-					//*(CHandle<CBaseEntity>*)((uintptr_t)actor+ 0x2c00) = target;
-				//}
-				actor->SetMission(CTFBot::MISSION_DESTROY_SENTRIES);
-				break;
+		case ACTION_BotSpyInfiltrate:
+			DevMsg("CTFBotSpawner: setting initial action of bot #%d \"%s\" to SpyInfiltrate\n", ENTINDEX(actor), actor->GetPlayerName());
+			return CTFBotSpyInfiltrate::New();
+		case ACTION_SniperLurk:
+			DevMsg("CTFBotSpawner: setting initial action of bot #%d \"%s\" to Sniper\n", ENTINDEX(actor), actor->GetPlayerName());
+			actor->SetMission(CTFBot::MISSION_SNIPER);
+			break;
+		case ACTION_Idle:
+			DevMsg("CTFBotSpawner: setting initial action of bot #%d \"%s\" to Idle\n", ENTINDEX(actor), actor->GetPlayerName());
+			return nullptr;
+		//case ACTION_MedicHeal:
+		//	DevMsg("CTFBotSpawner: setting initial action of bot #%d \"%s\" to MedicHeal\n", ENTINDEX(actor), actor->GetPlayerName());
+		//	return CTFBotMedicHeal::New();
+		case ACTION_DestroySentries:
+			DevMsg("CTFBotSpawner: setting initial action of bot #%d \"%s\" to DestroySentries\n", ENTINDEX(actor), actor->GetPlayerName());
+			CBaseEntity *target = actor->SelectRandomReachableEnemy();
+				
+			if (target == nullptr) {
+				CBaseEntity *target = servertools->FindEntityByClassname(nullptr, "obj_sentrygun");
 			}
+			targets_sentrybuster[actor]=target;
+			//if (target != nullptr) {
+				//float m_flScale; // +0x2bf4
+				
+				//float scale = *(float *)((uintptr_t)actor+ 0x2bf4);
+				//*(CHandle<CBaseEntity>*)((uintptr_t)actor+ 0x2c00) = target;
+			//}
+			actor->SetMission(CTFBot::MISSION_DESTROY_SENTRIES);
+			break;
 		}
 		//if (actor->m_nBotAttrs & CTFBot::AttributeType::ATTR_TELEPORT_TO_HINT)
 		//	TeleportToHint(actor,data != nullptr && data->action != ACTION_Default);
@@ -1155,26 +1159,22 @@ namespace Mod::Pop::TFBot_Extensions
 	}
 
 	void SetActionOverride(CTFBot *bot, const char *action) {
-		auto data = GetDataForBot(bot);
-		if (data != nullptr) {
-			Parse_Action(*data, action);
-			bot->MyNextBotPointer()->OnCommandString("switch_action_override");
-		}
+		bot->SetCustomVariable<"actionoverride">(Variant((int)Parse_Action(action)));
+		bot->MyNextBotPointer()->OnCommandString("switch_action_override");
 	}
 
 	VHOOK_DECL(EventDesiredResult<CTFBot>, CTFBotScenarioMonitor_OnCommandString, CTFBot *actor, const char *cmd)
 	{
-		auto data = GetDataForBot(actor);
-		if (data != nullptr && actor->IsAlive() && StringStartsWith(cmd, "switch_action_override", false)) {
+		if (actor->IsAlive() && StringStartsWith(cmd, "switch_action_override", false)) {
 			return EventDesiredResult<CTFBot>::SuspendFor(reinterpret_cast<CTFBotTacticalMonitor *>(this)->InitialContainedActionTactical(actor), "Switch to a different action");
 		}
-		if (data != nullptr && actor->IsAlive() && StringStartsWith(cmd, "switch_action", false)) {
+		if (actor->IsAlive() && StringStartsWith(cmd, "switch_action", false)) {
 			
 			auto action = reinterpret_cast<Action<CTFBot> *>(this);
 
 			CCommand command = CCommand();
     		command.Tokenize(cmd);
-			Parse_Action(*data, command[1]);
+			actor->SetCustomVariable<"actionoverride">(Variant((int)Parse_Action(command[1])));
 			return EventDesiredResult<CTFBot>::SuspendFor(reinterpret_cast<CTFBotTacticalMonitor *>(action)->InitialContainedActionTactical(actor), "Switch to a different action");
 		}
 		

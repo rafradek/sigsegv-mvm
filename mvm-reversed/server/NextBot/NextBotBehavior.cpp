@@ -1459,7 +1459,7 @@ template<class T> char *Action<T>::BuildDecoratedName(char buf[256], const Actio
 	return buf;
 }
 
-template<class T> char *Action<T>::DebugString() const
+template<class T> const char *Action<T>::DebugString() const
 {
 	static char str[256];
 	str[0] = '\0';
