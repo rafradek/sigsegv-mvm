@@ -367,6 +367,7 @@ int GetWeaponId(const char *name);
 const char *WeaponIdToAlias(int weapon_id);
 
 float CalculateProjectileSpeed(CTFWeaponBaseGun *weapon);
+float GetWeaponFireSpeedDelay(CTFWeaponBase *weapon, float baseDelay);
 
 inline CEconEntity *GetEconEntityAtLoadoutSlot(CTFPlayer *player, int slot) {
 	if (slot < 0 || player == nullptr) return nullptr;

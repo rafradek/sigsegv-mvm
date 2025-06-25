@@ -26,7 +26,6 @@
 #include "util/value_override.h"
 #include "mod/etc/mapentity_additions.h"
 #include "mod/pop/popmgr_extensions.h"
-#include <fmt/core.h>
 #include "mod/common/commands.h"
 #include "mod/common/text_hud.h"
 #include "mod/attr/custom_attributes.h"
@@ -6142,7 +6141,7 @@ namespace Mod::Pop::PopMgr_Extensions
 
 				// Replace stock weapons with upgradeable versions. This is so the game properly replaces stock weapons with requested custom weapons in extra loadout
 				if (weapon.originalId != nullptr && FStrEq(weapon.originalId->GetKeyValues()->GetString("item_quality"), "normal")) {
-					auto upgradeable = static_cast<CTFItemDefinition *>(GetItemSchema()->GetItemDefinitionByName(fmt::format("upgradeable {}", subkey->GetString()).c_str()));
+					auto upgradeable = static_cast<CTFItemDefinition *>(GetItemSchema()->GetItemDefinitionByName(std::format("upgradeable {}", subkey->GetString()).c_str()));
 					if (upgradeable != nullptr) {
 						weapon.originalId = upgradeable;
 					}
@@ -7287,7 +7286,7 @@ namespace Mod::Pop::PopMgr_Extensions
 			// Bots use player teleporters
 			MOD_ADD_DETOUR_MEMBER(CTFBotTacticalMonitor_FindNearbyTeleporter,    "CTFBotTacticalMonitor::FindNearbyTeleporter");
 			//MOD_ADD_DETOUR_MEMBER(CCommandBuffer_Compact,                  "CCommandBuffer::Compact");
-			MOD_ADD_DETOUR_MEMBER(CObjectTeleporter_PlayerCanBeTeleported,                  "CObjectTeleporter::PlayerCanBeTeleported");
+			MOD_ADD_DETOUR_MEMBER(CObjectTeleporter_PlayerCanBeTeleported,                  "CObjectTeleporter::PlayerCanBeTeleported [clone]");
 			MOD_ADD_DETOUR_MEMBER(CTFWeaponBaseGun_FireProjectile,        "CTFWeaponBaseGun::FireProjectile");
 			MOD_ADD_DETOUR_MEMBER(CPopulationManager_JumpToWave,        "CPopulationManager::JumpToWave");
 			MOD_ADD_DETOUR_MEMBER(CTFWearable_Equip,        "CTFWearable::Equip");

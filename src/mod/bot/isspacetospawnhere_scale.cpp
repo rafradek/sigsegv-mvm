@@ -257,10 +257,9 @@ namespace Mod::Bot::IsSpaceToSpawnHere_Scale
 
 					if ( !(trace_alt.startsolid && (trace_alt.m_pEnt == nullptr || ENTINDEX(trace_alt.m_pEnt) == 0)) )
 					{
-						// The real offset of abs origin of CMoveData is 4 bytes away
-						Vector *move_ptr = (Vector *)((uintptr_t)(&stuck_player_move->GetAbsOrigin())+4);
+						Vector &move_ptr = const_cast<Vector &>(stuck_player_move->GetAbsOrigin());
 
-						*move_ptr += vTest[i];
+						move_ptr += vTest[i];
 
 						*pTrace = trace_alt;
 						return;

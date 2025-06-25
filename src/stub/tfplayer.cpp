@@ -374,6 +374,7 @@ MemberFuncThunk<      CTFPlayer *, bool                            > CTFPlayer::
 MemberFuncThunk<      CTFPlayer *, float                           > CTFPlayer::ft_GetDesiredHeadScale         ("CTFPlayer::GetDesiredHeadScale");
 MemberFuncThunk<      CTFPlayer *, float                           > CTFPlayer::ft_GetDesiredHandScale         ("CTFPlayer::GetDesiredHandScale");
 MemberFuncThunk<      CTFPlayer *, float                           > CTFPlayer::ft_GetDesiredTorsoScale        ("CTFPlayer::GetDesiredTorsoScale");
+MemberFuncThunk<      CTFPlayer *, void, CBaseEntity *, bool       > CTFPlayer::ft_SetGrapplingHookTarget      ("CTFPlayer::SetGrapplingHookTarget");
 
 
 MemberFuncThunk<      CTFPlayer *, float, const char *, float, void *, IRecipientFilter *> CTFPlayer::ft_PlayScene("CTFPlayer::PlayScene");

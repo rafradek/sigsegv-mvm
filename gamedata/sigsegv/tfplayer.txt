@@ -1110,6 +1110,12 @@
 					type "sym"
 					sym  "_ZN9CTFPlayer8DropFlagEb"
 				}
+				"CTFPlayer::SetGrapplingHookTarget"
+				{
+					type "sym"
+					sym  "_ZN9CTFPlayer22SetGrapplingHookTargetEP11CBaseEntityb"
+				}
+				
 				
 			//	"GetTFConditionName"
 			//	{

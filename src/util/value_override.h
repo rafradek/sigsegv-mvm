@@ -95,7 +95,7 @@ protected:
         MyConVar().Ref_HasMax() = old_hasmax;
     }
     
-private:
+protected:
     ConVarRef& MyConVar()
     {
         if (this->m_pConVar == nullptr) {
@@ -103,9 +103,34 @@ private:
         }
         return *(this->m_pConVar);
     }
+private:
     
     const char *m_pszConVarName;
     std::unique_ptr<ConVarRef> m_pConVar;
+};
+
+template<typename T>
+class CValueOverride_ConVar_Direct : public CValueOverride_ConVar<T>
+{
+public:
+    CValueOverride_ConVar_Direct(const char *name) :
+        CValueOverride_ConVar<T>(name) {}
+
+    CValueOverride_ConVar_Direct(IConVar *convar) :
+        CValueOverride_ConVar<T>(convar) {}
+
+    ~CValueOverride_ConVar_Direct() {
+        IValueOverride<T>::Reset();
+    }
+
+protected:
+    using CValueOverride_ConVar<T>::MyConVar;
+    virtual void SetValue(const T& val) override
+    {
+        /* Directly set convar value. Does not trigger any convar change callbacks. */
+        ConVar_SetValueDirect<float>(MyConVar(), val);
+        ConVar_SetValueDirect<int>(MyConVar(), val);
+    }
 };
 
 #define CONVAR_OVERRIDE(name, type, value) static ConVarRef name##cv(#name); CValueOverride_ConVar<type> name(name##cv.GetLinkedConVar()); name.SetValue(value);

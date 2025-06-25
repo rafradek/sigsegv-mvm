@@ -22,17 +22,16 @@
 #include "mod/pop/popmgr_extensions.h"
 #include "util/iterate.h"
 #include "util/clientmsg.h"
+#include "util/netmessages.h"
+#include "util/value_override.h"
 #include "mem/protect.h"
 #include <gamemovement.h>
-#include <boost/tokenizer.hpp>
 #include "mod/attr/custom_attributes.h"
 #include "mod/item/item_common.h"
 #include "mod/etc/mapentity_additions.h"
 #include "mod/common/weapon_shoot.h"
 #include "mod/common/commands.h"
-#include <fmt/core.h>
 #include "util/vi.h"
-
 
 class CDmgAccumulator;
 
@@ -1442,8 +1441,18 @@ namespace Mod::Attr::Custom_Attributes
 	CBasePlayer *process_movement_player = nullptr;
 	DETOUR_DECL_MEMBER(void, CTFGameMovement_ProcessMovement, CBasePlayer *player, void *data)
 	{
+		CTFPlayer *tfplayer = ToTFPlayer(player);
 		process_movement_player = player;
+		CBaseEntity *grapple_target = tfplayer->GetGrapplingHookTarget();
+		bool grapple_target_set = false;
+		if (grapple_target != nullptr && grapple_target->IsPlayer() && GetFastAttributeFloat(tfplayer, 0.0f,MULT_GRAPPLING_HOOK_PULL_TARGET) == 1) {
+			tfplayer->m_hGrapplingHookTarget = nullptr;
+			grapple_target_set = true;
+		}
 		DETOUR_MEMBER_CALL(player, data);
+		if (grapple_target_set) {
+			tfplayer->m_hGrapplingHookTarget = grapple_target;
+		}
 		process_movement_player = nullptr;
 	}
 
@@ -2483,17 +2492,17 @@ namespace Mod::Attr::Custom_Attributes
 	void ApplyAttributesFromString(CTFPlayer *player, const char *attributes) {
 		if (attributes != nullptr) {
 			std::string str(attributes);
-			boost::tokenizer<boost::char_separator<char>> tokens(str, boost::char_separator<char>("|"));
+			const auto tokens{vi::split_str(str, "|")};
 
 			auto it = tokens.begin();
 			while (it != tokens.end()) {
-				auto attribute = *it;
+				std::string attribute(*it);
 				if (++it == tokens.end())
 					break;
-				auto value = *it;
+				std::string value(*it);
 				if (++it == tokens.end())
 					break;
-				auto duration = stof(*it);
+				auto duration = vi::from_str<float>(*it).value_or(0);
 				player->AddCustomAttribute(attribute.c_str(), value, duration);
 				it++;
 			}
@@ -4282,14 +4291,14 @@ namespace Mod::Attr::Custom_Attributes
 				if (attribs != nullptr) {
 					std::string str(attribs);
 					//Msg(CFmtStr("attribs, %s\n", attribs));
-					boost::tokenizer<boost::char_separator<char>> tokens(str, boost::char_separator<char>("|"));
+					const auto tokens{vi::split_str(str, "|")};
 
 					auto it = tokens.begin();
 					while (it != tokens.end()) {
-						auto attribute = *it;
+						std::string attribute(*it);
 						if (++it == tokens.end())
 							break;
-						auto &value = *it;
+						std::string value(*it);
 						//Msg(CFmtStr("provide, %s %f %f\n", attribute.c_str(), strtof(value.c_str(),nullptr), flDuration));
 						player->AddCustomAttribute(attribute.c_str(), value, flDuration);
 						it++;
@@ -4339,14 +4348,13 @@ namespace Mod::Attr::Custom_Attributes
 				if (attribs != nullptr) {
 					std::string str(attribs);
 					//Msg("attribs, %s\n", attribs);
-					boost::tokenizer<boost::char_separator<char>> tokens(str, boost::char_separator<char>("|"));
+					const auto tokens{vi::split_str(str, "|")};
 
 					auto it = tokens.begin();
 					while (it != tokens.end()) {
-						auto attribute = *it;
+						std::string attribute(*it);
 						if (++it == tokens.end())
 							break;
-						auto &value = *it;
 						//Msg("provide, %s %f\n", attribute.c_str());
 						player->RemoveCustomAttribute(attribute.c_str());
 						it++;
@@ -4761,11 +4769,11 @@ namespace Mod::Attr::Custom_Attributes
 	void RemoveMedigunAttributes(CTFPlayer *target, const char *attribs)
 	{
 		std::string str(attribs);
-		boost::tokenizer<boost::char_separator<char>> tokens(str, boost::char_separator<char>("|"));
+		const auto tokens{vi::split_str(str, "|")};
 
 		auto it = tokens.begin();
 		while (it != tokens.end()) {
-			auto attribute = *it;
+			std::string attribute{*it};
 			if (++it == tokens.end())
 				break;
 
@@ -5017,11 +5025,11 @@ namespace Mod::Attr::Custom_Attributes
 	{
 		if (attributes != nullptr) {
 			std::string str(attributes);
-			boost::tokenizer<boost::char_separator<char>> tokens(str, boost::char_separator<char>("|"));
+			const auto tokens{vi::split_str(str, "|")};
 
 			auto it = tokens.begin();
 			while (it != tokens.end()) {
-				auto attribute = GetItemSchema()->GetAttributeDefinitionByName((*it).c_str());
+				auto attribute = GetItemSchema()->GetAttributeDefinitionByName(std::string(*it).c_str());
 				if (++it == tokens.end())
 					break;
 				auto value = *it;
@@ -5037,14 +5045,14 @@ namespace Mod::Attr::Custom_Attributes
 	{
 		if (attributes != nullptr) {
 			std::string str(attributes);
-			boost::tokenizer<boost::char_separator<char>> tokens(str, boost::char_separator<char>("|"));
+			const auto tokens{vi::split_str(str, "|")};
 
 			auto it = tokens.begin();
 			while (it != tokens.end()) {
-				auto attribute = GetItemSchema()->GetAttributeDefinitionByName(it->c_str());
+				auto attribute = GetItemSchema()->GetAttributeDefinitionByName(std::string(*it).c_str());
 				if (++it == tokens.end())
 					break;
-				auto value = *it;
+				std::string value(*it);
 				
 				if (attribute != nullptr) {
 					weapon->GetItem()->GetAttributeList().AddStringAttribute(attribute, value);
@@ -5063,6 +5071,40 @@ namespace Mod::Attr::Custom_Attributes
 		string_t attributes;
 		bool active = false;
 	};
+
+	class ConVarPlayerOverrideModule : public EntityModule
+	{
+	public:
+		ConVarPlayerOverrideModule(CBaseEntity *entity) : EntityModule(entity) {}
+
+		std::unordered_map<std::string, ConVar *> convars;
+		std::unordered_map<ConVar *, float> values;
+		std::vector<std::pair<ConVar *, float>> preValues;
+		int applyCount = 0;
+	};
+	
+	void ConvarOverrideSetPre(CTFPlayer *player) {
+		auto mod = player->GetEntityModule<ConVarPlayerOverrideModule>("convaroverride");
+		if (mod != nullptr && mod->applyCount++ == 0) {
+			for (auto &pair : mod->values) {
+				mod->preValues.emplace_back(pair.first, pair.first->GetFloat());
+				ConVarRef ref(pair.first);
+				ConVar_SetValueDirect<float>(ref, pair.second);
+				ConVar_SetValueDirect<int>(ref, pair.second);
+			} 
+		}
+	}
+	void ConvarOverrideSetPost(CTFPlayer *player) {
+		auto mod = player->GetEntityModule<ConVarPlayerOverrideModule>("convaroverride");
+		if (mod != nullptr && --mod->applyCount == 0) {
+			for (auto &pair : mod->preValues) {
+				ConVarRef ref(pair.first);
+				ConVar_SetValueDirect<float>(ref, pair.second);
+				ConVar_SetValueDirect<int>(ref, pair.second);
+			} 
+			mod->preValues.clear();
+		}
+	}
 
 	CBaseEntity *takeDamageAttacker = nullptr;
 	DETOUR_DECL_MEMBER(int, CBaseEntity_TakeDamage, CTakeDamageInfo &info)
@@ -5128,7 +5170,14 @@ namespace Mod::Attr::Custom_Attributes
 			info.SetWeapon(sentry->GetBuilder()->GetEntityForLoadoutSlot(LOADOUT_POSITION_PDA));
 		}
 
+		auto playerAttacker = ToTFPlayer(info.GetAttacker());
+		if (playerAttacker != nullptr) {
+			ConvarOverrideSetPre(playerAttacker);
+		}
 		int damage = DETOUR_MEMBER_CALL(info);
+		if (playerAttacker != nullptr) {
+			ConvarOverrideSetPost(playerAttacker);
+		}
 
 		CBaseProjectile *proj;
 		if (entity->m_takedamage == DAMAGE_YES && entity->GetCustomVariableBool<"takesdamage">() && (proj = rtti_cast<CBaseProjectile *>(entity)) != nullptr) {
@@ -6211,14 +6260,14 @@ namespace Mod::Attr::Custom_Attributes
 	void AddMedigunAttributes(CAttributeList *target, const char *attribs)
 	{
 		std::string str(attribs);
-		boost::tokenizer<boost::char_separator<char>> tokens(str, boost::char_separator<char>("|"));
+		const auto tokens{vi::split_str(str, "|")};
 
 		auto it = tokens.begin();
 		while (it != tokens.end()) {
-			auto attribute = *it;
+			std::string attribute(*it);
 			if (++it == tokens.end())
 				break;
-			auto &value = *it;
+			std::string value(*it);
 			auto attr_def = GetItemSchema()->GetAttributeDefinitionByName(attribute.c_str());
 			if (attr_def != nullptr) {
 				target->AddStringAttribute(attr_def, value);
@@ -6556,19 +6605,19 @@ namespace Mod::Attr::Custom_Attributes
         return ret;
     }
 
-	DETOUR_DECL_MEMBER(void, CTFGameMovement_ToggleParachute)
+	DETOUR_DECL_MEMBER_CALL_CONVENTION(__gcc_regcall,void, CTFGameMovement_ToggleParachute)
     {
 		CTFPlayer *player = ToTFPlayer(reinterpret_cast<CGameMovement *>(this)->player);
 		//if ((player->GetFlags() & FL_ONGROUND) || (reinterpret_cast<CGameMovement *>(this)->GetMoveData()->m_nOldButtons & IN_JUMP)) return;
 		//ClientMsg(player, "redepl\n");
-        DETOUR_MEMBER_CALL();
-		if (player->m_Shared->InCond(TF_COND_PARACHUTE_DEPLOYED)) {
-			int parachuteRedeploy = 0;
-			CALL_ATTRIB_HOOK_INT_ON_OTHER(player, parachuteRedeploy, parachute_redeploy);
-			if (parachuteRedeploy != 0) {
-				player->m_Shared->RemoveCond(TF_COND_PARACHUTE_DEPLOYED);
-			}
+		static CValueOverride_ConVar<bool> tf_parachute_deploy_toggle_allowed("tf_parachute_deploy_toggle_allowed");
+		int parachuteRedeploy = 0;
+		CALL_ATTRIB_HOOK_INT_ON_OTHER(player, parachuteRedeploy, parachute_redeploy);
+		if (parachuteRedeploy != 0) {
+			tf_parachute_deploy_toggle_allowed.Set(true);
 		}
+        DETOUR_MEMBER_CALL();
+		tf_parachute_deploy_toggle_allowed.Reset();
     }
 	
 	DETOUR_DECL_MEMBER(void, CTFGameMovement_HandleDuckingSpeedCrop)
@@ -6804,7 +6853,9 @@ namespace Mod::Attr::Custom_Attributes
 		auto shared = reinterpret_cast<CTFPlayerShared *>(this);
 		float nextFlameTime = shared->m_flFlameBurnTime;
 
+		ConvarOverrideSetPre(shared->GetOuter());
 		DETOUR_MEMBER_CALL();
+		ConvarOverrideSetPost(shared->GetOuter());
 
 		auto &bleedVec = shared->m_BleedInfo.Get();
 		FOR_EACH_VEC(bleedVec, i) {
@@ -7536,11 +7587,11 @@ namespace Mod::Attr::Custom_Attributes
 					return model;
 				}
 				if (nModel > 0) {
-					sapperModelName = fmt::format("{}_placement.mdl", model);
+					sapperModelName = std::format("{}_placement.mdl", model);
 					return sapperModelName.c_str();
 				}
 				else {
-					sapperModelName = fmt::format("{}_placed.mdl", model);
+					sapperModelName = std::format("{}_placed.mdl", model);
 					return sapperModelName.c_str();
 				}
 			}
@@ -8820,6 +8871,158 @@ namespace Mod::Attr::Custom_Attributes
 		}
 		DETOUR_STATIC_CALL(pPlayer, iRequiredBuffFlags, flDamage, fInverseRageGainScale);
 	}
+
+	RefCount rc_CTFProjectile_GrapplingHook_HookTarget_NoPull;
+	DETOUR_DECL_MEMBER(void, CTFProjectile_GrapplingHook_HookTarget, CBaseEntity *other)
+	{
+		auto proj = reinterpret_cast<CTFProjectile_GrapplingHook *>(this);
+		CTFPlayer *player = ToTFPlayer(other);
+		CTFPlayer *owner = ToTFPlayer(proj->GetOwnerEntity());
+		bool pullTarget = player != nullptr && owner != nullptr && player->GetGrapplingHookTarget() == nullptr && GetFastAttributeFloat(owner, 0.0f, MULT_GRAPPLING_HOOK_PULL_TARGET) != 0.0f;
+		if (pullTarget) {
+			player->SetGrapplingHookTarget(owner, false);
+			player->SetCustomVariable<"pulledbygrapple">(Variant(true));
+		}
+		
+		DETOUR_MEMBER_CALL(other);
+		float pullTime = 0;
+		CALL_ATTRIB_HOOK_FLOAT_ON_OTHER(proj, pullTime, grappling_hook_pull_time);
+		if (pullTime != 0) {
+			THINK_FUNC_SET(proj,ProjectileLifetime, gpGlobals->curtime + pullTime);
+		}
+	}
+
+	DETOUR_DECL_MEMBER(void, CTFPlayer_SetGrapplingHookTarget, CBaseEntity *other, bool bleed)
+	{
+		if (reinterpret_cast<CTFPlayer *>(this)->GetCustomVariableBool<"pulledbygrapple">()) {
+			reinterpret_cast<CTFPlayer *>(this)->SetCustomVariable<"pulledbygrapple">(Variant(false));
+		}
+		DETOUR_MEMBER_CALL(other, bleed);
+	}
+
+	VHOOK_DECL(void, CTFProjectile_GrapplingHook_UpdateOnRemove)
+	{
+		auto proj = reinterpret_cast<CTFProjectile_GrapplingHook *>(this);
+		auto parent = ToTFPlayer(proj->GetMoveParent());
+		if (parent != nullptr && parent->GetGrapplingHookTarget() == proj->GetOwnerEntity()) {
+			parent->SetGrapplingHookTarget(nullptr, false);
+		}
+		VHOOK_CALL();
+	}
+	THINK_FUNC_DECL(GrappleSpeedOverrideClient)
+	{
+		auto player = ToTFPlayer(this);
+		static ConVarRef tf_grapplinghook_move_speed("tf_grapplinghook_move_speed");
+		float grapplingSpeed = tf_grapplinghook_move_speed.GetFloat();
+		if (player->GetGrapplingHookTarget() != nullptr) {
+			bool pulledBy = player->GetCustomVariable<"pulledbygrapple">();
+			grapplingSpeed *= GetFastAttributeFloat(pulledBy ? player->GetGrapplingHookTarget() : player, 1.0f, MULT_GRAPPLING_HOOK_SPEED);
+
+			if (player->GetGrapplingHookTarget()->IsPlayer()) {
+				float grappling_speed_pull_target = GetFastAttributeFloat(pulledBy ? player->GetGrapplingHookTarget() : player, 0.0f, MULT_GRAPPLING_HOOK_PULL_TARGET);
+				if (grappling_speed_pull_target != 0.0f) {
+					grapplingSpeed *= (pulledBy ? grappling_speed_pull_target : (1 - grappling_speed_pull_target));
+				}
+			}
+		}
+		if (grapplingSpeed == tf_grapplinghook_move_speed.GetFloat()) {
+			grapplingSpeed = -1.0f;
+		}
+		if (grapplingSpeed != player->GetCustomVariableFloat<"grapplemovespeed">(-1.0f)) {
+			player->SetCustomVariable<"grapplemovespeed">(Variant(grapplingSpeed));
+		}
+	}
+
+    DETOUR_DECL_MEMBER(void, CBasePlayer_PhysicsSimulate)
+	{
+		auto player = reinterpret_cast<CTFPlayer *>(this);
+
+		if (player->IsHLTV()) return;
+
+		static CValueOverride_ConVar_Direct<float> tf_parachute_maxspeed_xy("tf_parachute_maxspeed_xy");
+		static CValueOverride_ConVar_Direct<float> tf_parachute_maxspeed_z("tf_parachute_maxspeed_z");
+		static CValueOverride_ConVar_Direct<float> tf_parachute_aircontrol("tf_parachute_aircontrol");
+		static CValueOverride_ConVar_Direct<float> tf_grapplinghook_move_speed("tf_grapplinghook_move_speed");
+		static CValueOverride_ConVar_Direct<float> tf_max_charge_speed("tf_max_charge_speed");
+		if (player->m_Shared->InCond(TF_COND_PARACHUTE_DEPLOYED)) {
+			float parachute_xy = GetFastAttributeFloat(player, 1.0f, MULT_PARACHUTE_XY_SPEED);
+			float parachute_z = GetFastAttributeFloat(player, 1.0f, MULT_PARACHUTE_Z_SPEED);
+			float parachute_air_control = GetFastAttributeFloat(player, 1.0f, MULT_PARACHUTE_AIR_CONTROL);
+			if (parachute_xy != 1) {
+				tf_parachute_maxspeed_xy.Set(tf_parachute_maxspeed_xy.Get() * parachute_xy);
+			}
+			if (parachute_z != 1) {
+				tf_parachute_maxspeed_z.Set(tf_parachute_maxspeed_z.Get() * parachute_z);
+			}
+			if (parachute_air_control != 1) {
+				tf_parachute_aircontrol.Set(tf_parachute_aircontrol.Get() * parachute_air_control);
+			}
+		}
+		if (player->GetGrapplingHookTarget() != nullptr) {
+			float grappleSpeedPre = tf_grapplinghook_move_speed.Get();
+			bool pulledBy = player->GetCustomVariable<"pulledbygrapple">();
+			float grappling_speed = GetFastAttributeFloat(pulledBy ? player->GetGrapplingHookTarget() : player, 1.0f, MULT_GRAPPLING_HOOK_SPEED);
+			if (grappling_speed != 1.0f) {
+				tf_grapplinghook_move_speed.Set(tf_grapplinghook_move_speed.Get() * grappling_speed);
+			}
+			if (player->GetGrapplingHookTarget()->IsPlayer()) {
+				float grappling_speed_pull_target = GetFastAttributeFloat(pulledBy ? player->GetGrapplingHookTarget() : player, 0.0f, MULT_GRAPPLING_HOOK_PULL_TARGET);
+				if (grappling_speed_pull_target != 0.0f) {
+					tf_grapplinghook_move_speed.Set(tf_grapplinghook_move_speed.Get() * (pulledBy ? grappling_speed_pull_target : (1 - grappling_speed_pull_target)));
+				}
+			}
+			if (player->IsRealPlayer()) {
+				SetConVarMessage message;
+				message.values["tf_grapplinghook_move_speed"] = std::to_string(tf_grapplinghook_move_speed.Get());
+				sv->GetClient(player->entindex() - 1)->SendNetMsg(message, true);
+			}
+		}
+
+		float charging_speed = GetFastAttributeFloat(player, 1.0f, MULT_CHARGING_MOVE_SPEED);
+		if (charging_speed != 1) {
+			tf_max_charge_speed.Set(tf_max_charge_speed.Get() * charging_speed);
+		}
+
+		ConvarOverrideSetPre(player);
+		DETOUR_MEMBER_CALL();
+		ConvarOverrideSetPost(player);
+		tf_parachute_maxspeed_xy.Reset();
+		tf_parachute_maxspeed_z.Reset();
+		tf_parachute_aircontrol.Reset();
+		tf_grapplinghook_move_speed.Reset();
+		tf_max_charge_speed.Reset();
+            
+		DETOUR_MEMBER_CALL();
+	}
+	
+    DETOUR_DECL_MEMBER(void, CTFBot_PhysicsSimulate)
+	{
+		ConvarOverrideSetPre(reinterpret_cast<CTFBot *>(this));
+		DETOUR_MEMBER_CALL();
+		ConvarOverrideSetPost(reinterpret_cast<CTFBot *>(this));
+	}
+
+    DETOUR_DECL_MEMBER(void, CTFGrapplingHook_ItemPostFrame)
+	{
+		auto weapon = reinterpret_cast<CTFGrapplingHook *>(this);
+		static CValueOverride_ConVar_Direct<float> tf_grapplinghook_fire_delay("tf_grapplinghook_fire_delay");
+		CTFPlayer *owner = weapon->GetTFPlayerOwner();
+		bool setHookTarget = false;
+		if (owner != nullptr && owner->GetGrapplingHookTarget() == nullptr && weapon->m_hProjectile != nullptr && weapon->m_hProjectile->GetMoveParent() != nullptr) {
+			if (GetFastAttributeFloat(owner, 0.0f, MULT_GRAPPLING_HOOK_PULL_TARGET) == 1) {
+				owner->m_hGrapplingHookTarget = weapon->m_hProjectile->GetMoveParent();
+				setHookTarget = true;
+			}
+		}
+		DETOUR_MEMBER_CALL();
+		if (setHookTarget) {
+			owner->m_hGrapplingHookTarget = nullptr;
+		}
+		if (weapon->m_flNextPrimaryAttack == gpGlobals->curtime + tf_grapplinghook_fire_delay.Get()) {
+			weapon->m_flNextPrimaryAttack = gpGlobals->curtime + GetWeaponFireSpeedDelay(weapon, tf_grapplinghook_fire_delay.Get());
+		}
+	}
+
 	/*void OnAttributesChange(CAttributeManager *mgr)
 	{
 		CBaseEntity *outer = mgr->m_hOuter;
@@ -9305,11 +9508,11 @@ namespace Mod::Attr::Custom_Attributes
 				CopyStringAttributeValueToCharPointerOutput(old_value.m_String, &oldValue);
 				if (oldValue != nullptr && oldValue[0] != '\0') {
 					std::string str(oldValue);
-					boost::tokenizer<boost::char_separator<char>> tokens(str, boost::char_separator<char>("|"));
+					const auto tokens{vi::split_str(str, "|")};
 
 					auto it = tokens.begin();
 					while (it != tokens.end()) {
-						auto attr = GetItemSchema()->GetAttributeDefinitionByName(it->c_str());
+						auto attr = GetItemSchema()->GetAttributeDefinitionByName(std::string(*it).c_str());
 						if (attr != nullptr) {
 							auto find = std::find(mod->attributes.begin(), mod->attributes.end(), attr);
 							if (find != mod->attributes.end())
@@ -9325,11 +9528,11 @@ namespace Mod::Attr::Custom_Attributes
 				CopyStringAttributeValueToCharPointerOutput(new_value.m_String, &newValue);
 				if (newValue != nullptr && newValue[0] != '\0') {
 					std::string str(newValue);
-					boost::tokenizer<boost::char_separator<char>> tokens(str, boost::char_separator<char>("|"));
+					const auto tokens{vi::split_str(str, "|")};
 
 					auto it = tokens.begin();
 					while (it != tokens.end()) {
-						auto attr = GetItemSchema()->GetAttributeDefinitionByName(it->c_str());
+						auto attr = GetItemSchema()->GetAttributeDefinitionByName(std::string(*it).c_str());
 						if (attr != nullptr) {
 							player->GetAttributeList()->RemoveAttribute(attr);
 							mod->attributes.push_back(attr);
@@ -9465,6 +9668,92 @@ namespace Mod::Attr::Custom_Attributes
 				if (econentity != nullptr) {
 					econentity->ReapplyProvision();
 				}
+			}
+		}
+	}
+	// For propagating convar changes to clientside
+	void OnParachuteAttribute(ConVarRef &cvar,CAttributeList *list, const CEconItemAttributeDefinition *pAttrDef, attribute_data_union_t old_value, attribute_data_union_t new_value, AttributeChangeType changeType)
+	{
+		auto player = GetPlayerOwnerOfAttributeList(list);
+		if (player != nullptr && !player->IsBot()) {
+			SetConVarMessage message;
+			message.values[cvar.GetLinkedConVar()->GetName()] = std::to_string(changeType != AttributeChangeType::REMOVE? cvar.GetFloat() * new_value.m_Float: cvar.GetFloat());
+			sv->GetClient(player->entindex() - 1)->SendNetMsg(message, true);
+		}
+	}
+#define ON_CLIENT_CONVAR_ATTRIBUTE(convar, attribute) \
+	void attribute(CAttributeList *list, const CEconItemAttributeDefinition *pAttrDef, attribute_data_union_t old_value, attribute_data_union_t new_value, AttributeChangeType changeType) \
+	{ \
+		static ConVarRef convar(#convar); \
+		OnParachuteAttribute(convar, list, pAttrDef, old_value, new_value, changeType); \
+	}
+	ON_CLIENT_CONVAR_ATTRIBUTE(tf_parachute_maxspeed_xy, OnParachuteAttributeXYSpeed);
+	ON_CLIENT_CONVAR_ATTRIBUTE(tf_parachute_maxspeed_z, OnParachuteAttributeZSpeed);
+	ON_CLIENT_CONVAR_ATTRIBUTE(tf_parachute_aircontrol, OnParachuteAttributeAirControl);
+	ON_CLIENT_CONVAR_ATTRIBUTE(tf_grapplinghook_move_speed, OnGrapplingHookPullSpeed);
+	ON_CLIENT_CONVAR_ATTRIBUTE(tf_max_charge_speed, OnChargeMaxSpeed);
+
+	void OnSetPlayerConvar(CAttributeList *list, const CEconItemAttributeDefinition *pAttrDef, attribute_data_union_t old_value, attribute_data_union_t new_value, AttributeChangeType changeType)
+	{
+		auto player = GetPlayerOwnerOfAttributeList(list);
+		if (player != nullptr) {
+			auto mod = player->GetOrCreateEntityModule<ConVarPlayerOverrideModule>("convaroverride");
+			SetConVarMessage message;
+
+			if (changeType == AttributeChangeType::REMOVE || changeType == AttributeChangeType::UPDATE) {
+				const char *oldValue = nullptr;
+				CopyStringAttributeValueToCharPointerOutput(old_value.m_String, &oldValue);
+				if (oldValue != nullptr && oldValue[0] != '\0') {
+					std::string str(oldValue);
+					const auto tokens{vi::split_str_delim_chars(str, "|:;")};
+
+					auto it = tokens.begin();
+					while (it != tokens.end()) {
+						std::string name(*it);
+						auto cvar = mod->convars[name];
+						if (cvar == nullptr) {
+							mod->convars[name] = cvar = icvar->FindVar(name.c_str());
+						}
+						if (++it == tokens.end())
+							break;
+						if (cvar != nullptr && cvar->IsFlagSet(FCVAR_GAMEDLL)) {
+							if (cvar->IsFlagSet(FCVAR_REPLICATED)) {
+								message.values[name] = std::to_string(cvar->GetFloat());
+							}
+							mod->values.erase(cvar);
+						}
+					}
+				}
+			}
+
+			if (changeType == AttributeChangeType::ADD || changeType == AttributeChangeType::UPDATE) {
+				const char *newValue = nullptr;
+				CopyStringAttributeValueToCharPointerOutput(new_value.m_String, &newValue);
+				if (newValue != nullptr && newValue[0] != '\0') {
+					std::string str(newValue);
+					const auto tokens{vi::split_str_delim_chars(str, "|:;")};
+
+					auto it = tokens.begin();
+					while (it != tokens.end()) {
+						std::string name(*it);
+						auto cvar = mod->convars[name];
+						if (cvar == nullptr) {
+							mod->convars[name] = cvar = icvar->FindVar(name.c_str());
+						}
+						if (++it == tokens.end())
+							break;
+						auto value = vi::from_str<float>(*it).value_or(0);
+						if (cvar != nullptr && cvar->IsFlagSet(FCVAR_GAMEDLL)) {
+							if (cvar->IsFlagSet(FCVAR_REPLICATED)) {
+								message.values[name] = *it;
+							}
+							mod->values[cvar] = value;
+						}
+					}
+				}
+			}
+			if (!message.values.empty()) {
+				sv->GetClient(player->entindex() - 1)->SendNetMsg(message, true);
 			}
 		}
 	}
@@ -9689,7 +9978,7 @@ namespace Mod::Attr::Custom_Attributes
 
             MOD_ADD_DETOUR_MEMBER(CTFPlayer_ForceRespawn, "CTFPlayer::ForceRespawn");	
 			
-            MOD_ADD_DETOUR_MEMBER(CTFGameMovement_ToggleParachute, "CTFGameMovement::ToggleParachute");	
+            MOD_ADD_DETOUR_MEMBER(CTFGameMovement_ToggleParachute, "CTFGameMovement::ToggleParachute [clone]");	
             MOD_ADD_DETOUR_MEMBER(CTFGameMovement_HandleDuckingSpeedCrop, "CTFGameMovement::HandleDuckingSpeedCrop");	
             MOD_ADD_DETOUR_MEMBER(CTFPlayer_HandleAnimEvent, "CTFPlayer::HandleAnimEvent");
             MOD_ADD_DETOUR_MEMBER(CAttributeManager_ProvideTo, "CAttributeManager::ProvideTo");
@@ -9805,6 +10094,13 @@ namespace Mod::Attr::Custom_Attributes
 			MOD_ADD_DETOUR_STATIC(TE_TFParticleEffect, "TE_TFParticleEffect [No attachment]");
 			MOD_ADD_DETOUR_STATIC(UTIL_EntitiesInSphere, "UTIL_EntitiesInSphere");
 			MOD_ADD_DETOUR_MEMBER(CTFGrenadePipebombProjectile_DetonateStickies, "CTFGrenadePipebombProjectile::DetonateStickies");
+			MOD_ADD_DETOUR_MEMBER(CTFProjectile_GrapplingHook_HookTarget, "CTFProjectile_GrapplingHook::HookTarget");
+			MOD_ADD_DETOUR_MEMBER(CTFPlayer_SetGrapplingHookTarget, "CTFPlayer::SetGrapplingHookTarget");
+            MOD_ADD_VHOOK2(CTFProjectile_GrapplingHook_UpdateOnRemove, TypeName<CTFProjectile_GrapplingHook>(), TypeName<CBaseEntity>(), "CBaseEntity::UpdateOnRemove");
+			MOD_ADD_DETOUR_MEMBER(CBasePlayer_PhysicsSimulate, "CBasePlayer::PhysicsSimulate");
+			MOD_ADD_DETOUR_MEMBER(CTFBot_PhysicsSimulate, "CTFBot::PhysicsSimulate");
+			MOD_ADD_DETOUR_MEMBER(CTFGrapplingHook_ItemPostFrame, "CTFGrapplingHook::ItemPostFrame");
+			
 			
             //MOD_ADD_VHOOK_INHERIT(CBaseProjectile_ShouldCollide, TypeName<CBaseProjectile>(), "CBaseEntity::ShouldCollide");
 			
@@ -9932,6 +10228,12 @@ namespace Mod::Attr::Custom_Attributes
 				RegisterCallback("custom_item_model_attachment_viewmodel", OnCustomItemModelAttachment);
 				RegisterCallback("arrow_ignite", OnArrowIgnite);
 				RegisterCallback("provide_on_active", OnProvideOnActive);
+				RegisterCallback("mult_parachute_xy_speed", OnParachuteAttributeXYSpeed);
+				RegisterCallback("mult_parachute_z_speed", OnParachuteAttributeZSpeed);
+				RegisterCallback("mult_parachute_air_control", OnParachuteAttributeAirControl);
+				RegisterCallback("mult_grappling_hook_speed", OnGrapplingHookPullSpeed);
+				RegisterCallback("mult_charging_move_speed", OnChargeMaxSpeed);
+				RegisterCallback("player_convar_override", OnSetPlayerConvar);
 				
 			}
 		}

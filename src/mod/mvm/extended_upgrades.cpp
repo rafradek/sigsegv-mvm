@@ -13,9 +13,7 @@
 #include "stub/strings.h"
 #include "stub/tf_objective_resource.h"
 #include "stub/populators.h"
-#include <fmt/core.h>
 #include <boost/algorithm/string.hpp>
-#include <boost/tokenizer.hpp>
 #include "tier1/strtools.h"
 #include "stub/extraentitydata.h"
 
@@ -453,18 +451,18 @@ namespace Mod::MvM::Extended_Upgrades
 
     void GetIncrementStringForAttribute(CEconItemAttributeDefinition *attr, float value, std::string &string) {
         if (attr->GetDescriptionFormat() == ATTDESCFORM_VALUE_IS_PERCENTAGE) {
-            string = fmt::format("{:+.2f}% {}", value, attr->GetName());
+            string = std::format("{:+.2f}% {}", value, attr->GetName());
         }
         else if (attr->GetDescriptionFormat() == ATTDESCFORM_VALUE_IS_INVERTED_PERCENTAGE) {
             value *= -1.0f;
-            string = fmt::format("{:+.2f}% {}", value, attr->GetName());
+            string = std::format("{:+.2f}% {}", value, attr->GetName());
         }
         else if (attr->GetDescriptionFormat() == ATTDESCFORM_VALUE_IS_ADDITIVE) {
-            string = fmt::format("{:.2f} {}", value, attr->GetName());
+            string = std::format("{:.2f} {}", value, attr->GetName());
         }
         else if (attr->GetDescriptionFormat() == ATTDESCFORM_VALUE_IS_ADDITIVE_PERCENTAGE) {
             value *= 100.0f;
-            string = fmt::format("{:.2f}% {}", value, attr->GetName());
+            string = std::format("{:.2f}% {}", value, attr->GetName());
         }
     }
 
@@ -1239,7 +1237,7 @@ namespace Mod::MvM::Extended_Upgrades
                     attribute_data_union_t value;
                     value.m_Float = upgrade.m_flIncrement + attrDef->GetDefaultValue();
                     FormatAttributeString(name, attrDef, value, player, true);
-                    std::string line = fmt::format("{} ({}/{}) ${}", name.c_str(), cur_step, max_step, TFGameRules()->GetCostForUpgrade(&upgrade, slot, player->GetPlayerClass()->GetClassIndex(), player));
+                    std::string line = std::format("{} ({}/{}) ${}", name.c_str(), cur_step, max_step, TFGameRules()->GetCostForUpgrade(&upgrade, slot, player->GetPlayerClass()->GetClassIndex(), player));
                     ItemDrawInfo info1(line.c_str(), 
                         cur_step >= max_step || player->GetCurrency() < upgrade.m_nCost ? ITEMDRAW_DISABLED : ITEMDRAW_DEFAULT);
                     

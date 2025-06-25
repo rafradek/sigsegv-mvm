@@ -18,7 +18,6 @@
 #include "util/misc.h"
 #include "util/clientmsg.h"
 #include <boost/algorithm/string.hpp>
-#include <boost/tokenizer.hpp>
 #include <regex>
 #include <string_view>
 #include <optional>
@@ -164,10 +163,10 @@ namespace Mod::Etc::Mapentity_Additions
 
         if (FStrEq(name, "modules")) {
             std::string str(value);
-            boost::tokenizer<boost::char_separator<char>> tokens(str, boost::char_separator<char>(","));
+			const auto tokens{vi::split_str(str, ",")};
 
             for (auto &token : tokens) {
-                AddModuleByName(entity,token.c_str());
+                AddModuleByName(entity,std::string(token).c_str());
             }
         }
         if (entity->GetClassname() == PStr<"$entity_spawn_detector">() && FStrEq(name, "name")) {
@@ -1725,10 +1724,10 @@ namespace Mod::Etc::Mapentity_Additions
             auto filesVar = entity->GetCustomVariable<"scriptfile">();
             if (filesVar != nullptr) {
                 std::string files(filesVar);
-                boost::tokenizer<boost::char_separator<char>> tokens(files, boost::char_separator<char>(","));
+			    const auto tokens{vi::split_str_terminate(files, ",")};
 
                 for (auto &token : tokens) {
-                    mod->DoFile(token.c_str(), true);
+                    mod->DoFile(token.data(), true);
                 }
             }
 

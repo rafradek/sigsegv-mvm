@@ -1,5 +1,6 @@
 #include "mod.h"
 #include "util/misc.h"
+#include "util/vi.h"
 
 #include <boost/algorithm/string/classification.hpp>
 #include <boost/algorithm/string/split.hpp>
@@ -13,7 +14,9 @@ namespace Mod::Etc::RateLimit_Exclude
 		"Mod: space-delimited list of commands to exclude from ratelimiting",
 		[](IConVar *pConVar, const char *pOldValue, float flOldValue){
 			std::string cvar_str(static_cast<ConVar *>(pConVar)->GetString());
-			boost::split(cmd_strs, cvar_str, boost::is_any_of(" "), boost::token_compress_on);
+			vi::for_each_split_str(cvar_str, " ", [](auto str){
+				cmd_strs.insert(std::string(str));
+			});
 			cmd_strs.erase(""s);
 			
 		//	DevMsg("RATELIMIT EXCLUSION COMMAND STRINGS [%zu]:\n", cmd_strs.size());

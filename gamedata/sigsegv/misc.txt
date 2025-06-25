@@ -2250,6 +2250,16 @@
 					type "sym"
 					sym  "_ZN15CTFGameMovement22HandleDuckingSpeedCropEv"
 				}
+				"CTFGameMovement::FullWalkMove"
+				{
+					type "sym"
+					sym  "_ZN15CTFGameMovement12FullWalkMoveEv"
+				}
+				"CTFGameMovement::GetAirSpeedCap"
+				{
+					type "sym"
+					sym  "_ZN15CTFGameMovement14GetAirSpeedCapEv"
+				}
 				
 				"CAttributeManager::ProvideTo"
 				{
@@ -3475,12 +3485,12 @@
 				// Those functions are not worth using in detours over the original functions as of 24.04.2024
 				// "CBaseTrigger::StartTouch [clone]" "_ZN12CBaseTrigger10StartTouchEP11CBaseEntity\\.part\\..*"
 				// "UTIL_PlayerByIndex [clone]" "_Z18UTIL_PlayerByIndexi\\.part\\..*"
-				// "CEconItemSchema::GetItemDefinitionByName [clone]" "_ZN15CEconItemSchema23GetItemDefinitionByNameEPKc\\.part\\..*"
 				// "CTFPlayerShared::Burn [clone]" "_ZN15CTFPlayerShared4BurnEP9CTFPlayerP13CTFWeaponBasef\\.part\\..*"
 				// "CTFGameRules::PlayerReadyStatus_UpdatePlayerState [clone]" "_ZN12CTFGameRules35PlayerReadyStatus_UpdatePlayerStateEP9CTFPlayerb\\.part\\..*"
 				// "CTFGameRules::CanUpgradeWithAttrib [clone]" "_ZN12CTFGameRules20CanUpgradeWithAttribEP9CTFPlayeritP22CMannVsMachineUpgrades\\.part\\..*"
 				// "Script_StringToFile [clone]" "_ZL19Script_StringToFilePKcS0_\\.part\\..*"
 				// "GetNextCommandEntity [clone]" "_Z20GetNextCommandEntityP11CBasePlayerPKcP11CBaseEntity\\.part\\..*"
+				// "VScriptRunScript [clone]" _Z16VScriptRunScriptPKcP9HSCRIPT__b
 
 				"CTFGameRules::DropSpellPickup [clone]" "_ZNK12CTFGameRules15DropSpellPickupERK6Vectori\\.part\\..*"
 				"CBaseObject::FindBuildPointOnPlayer [clone]" "_ZN11CBaseObject22FindBuildPointOnPlayerEP9CTFPlayerP11CBasePlayerRfR6Vector\\.part\\..*"
@@ -3512,8 +3522,10 @@
 				"CTFPlayer::ItemsMatch [clone]" "_ZN9CTFPlayer10ItemsMatchEP19TFPlayerClassData_tP13CEconItemViewS3_P13CTFWeaponBase\\.part\\..*"
 				"CTFRadiusDamageInfo::ApplyToEntity [clone]" "_ZN19CTFRadiusDamageInfo13ApplyToEntityEP11CBaseEntity\\.part\\..*"
 				"CFuncNavCost::IsApplicableTo [clone]" "_ZNK12CFuncNavCost14IsApplicableToEP20CBaseCombatCharacter\\.part\\..*"
+				"CEconItemSchema::GetItemDefinitionByName [clone]" "_ZN15CEconItemSchema23GetItemDefinitionByNameEPKc\\.part\\..*"
 				
 				"CBasePlayer::GetInVehicle [clone]" "_ZN11CBasePlayer12GetInVehicleEP14IServerVehiclei\\.part\\..*"
+				"CTFGameMovement::ToggleParachute [clone]" "_ZN15CTFGameMovement15ToggleParachuteEv\\.part\\..*"
 			}
 			"addrs_group"
 			{
@@ -3572,6 +3584,8 @@
 					type "sym regex"
 					lib  "engine"
 				}
+				// "CDownloadListGenerator::OnResourcePrecachedFullPath [clone]" "_ZN22CDownloadListGenerator27OnResourcePrecachedFullPathEPcPKc\\.part\\..*"
+
 				"Host_ShowIPCCallCount [clone]" "_Z21Host_ShowIPCCallCountv\\.part\\..*"
 				"CHLTVDemoRecorder::StopRecording [clone]" "_ZN17CHLTVDemoRecorder13StopRecordingEv\\.part\\..*"
 				

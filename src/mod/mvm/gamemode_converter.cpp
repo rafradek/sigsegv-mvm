@@ -4,7 +4,6 @@
 #include "stub/tfplayer.h"
 #include "stub/tf_shareddefs.h"
 #include <boost/algorithm/string.hpp>
-#include <boost/tokenizer.hpp>
 #include "util/misc.h"
 #include "stub/nav.h"
 

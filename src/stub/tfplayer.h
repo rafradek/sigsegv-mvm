@@ -534,6 +534,8 @@ public:
 	float GetDesiredHandScale() { return ft_GetDesiredHandScale(this); }
 	float GetDesiredTorsoScale() { return ft_GetDesiredTorsoScale(this); }
 
+	void SetGrapplingHookTarget(CBaseEntity *target, bool bleed) {        ft_SetGrapplingHookTarget   (this, target, bleed); }
+
 	CEconEntity *GetEconEntityByName(const char *name);
 	CEconEntity *GetEconEntityById(int id);
 
@@ -649,6 +651,7 @@ private:
 	static MemberFuncThunk<      CTFPlayer *, float                           > ft_GetDesiredHeadScale;
 	static MemberFuncThunk<      CTFPlayer *, float                           > ft_GetDesiredHandScale;
 	static MemberFuncThunk<      CTFPlayer *, float                           > ft_GetDesiredTorsoScale;
+	static MemberFuncThunk<      CTFPlayer *, void, CBaseEntity *, bool       > ft_SetGrapplingHookTarget;
 	
 	
 	static MemberFuncThunk<CTFPlayer *, CBaseEntity *, const char *, int, CEconItemView *, bool> vt_GiveNamedItem;

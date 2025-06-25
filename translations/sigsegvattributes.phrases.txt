@@ -1408,4 +1408,100 @@
 	{
 		"en" "%d"
 	}
+	"chain explosion"
+	{
+		"en" "Can be detonated by another explosive"
+	}
+	"proximity bomb"
+	{
+		"en" "Detonates on proximity with enemies"
+	}
+	"projectile radius damage"
+	{
+		"en" "Deals %d damage to enemies in radius"
+	}
+	"projectile radius damage time"
+	{
+		"en" ""
+	}
+	"projectile radius damage radius"
+	{
+		"en" ""
+	}
+	"projectile radius damage hit limit"
+	{
+		"en" ""
+	}
+	"projectile radius knockback"
+	{
+		"en" ""
+	}
+	"projectile radius knockback time"
+	{
+		"en" ""
+	}
+	"projectile radius knockback radius"
+	{
+		"en" ""
+	}
+	"projectile radius knockback up"
+	{
+		"en" ""
+	}
+	"projectile radius knockback side"
+	{
+		"en" ""
+	}
+	"projectile radius knockback forward"
+	{
+		"en" ""
+	}
+	"projectile radius knockback hit limit"
+	{
+		"en" ""
+	}
+	"mult parachute xy speed"
+	{
+		"en" "(+-)%p% move speed while parachute is deployed"
+	}
+	"mult parachute z speed"
+	{
+		"en" "(+-)%p% fall speed while parachute is deployed"
+	}
+	"mult parachute air control"
+	{
+		"en" "(+-)%p% air control while parachute is deployed"
+	}
+	"mult grappling hook speed"
+	{
+		"en" "(+-)%p% grappling hook pull speed"
+	}
+	"mult grappling hook pull target"
+	{
+		"en" "Grappled enemies are pulled towards the player"
+	}
+	"grappling hook pull time"
+	{
+		"en" "Grappling hook pulls for %ds"
+	}
+	"mult charging move speed"
+	{
+		"en" "(+-)%p% move speed while charging"
+	}
+	"player convar override"
+	{
+		"en" ""
+	}
+	"player convar override 2"
+	{
+		"en" ""
+	}
+	"player convar override 3"
+	{
+		"en" ""
+	}
+	"player convar override 4"
+	{
+		"en" ""
+	}
 }

@@ -973,6 +973,11 @@ template<> inline std::string ConVar_GetValue<std::string>(const ConVarRef& cvar
 template<typename T> void ConVar_SetValue(ConVarRef& cvar, const T& val) { cvar.SetValue(val); }
 template<> inline void ConVar_SetValue(ConVarRef& cvar, const std::string& val) { cvar.SetValue(val.c_str()); }
 
+template<typename T> void ConVar_SetValueDirect(ConVarRef& cvar, T val);
+template<> inline void ConVar_SetValueDirect<bool>(ConVarRef& cvar, bool val) { cvar.Ref_IntVal() = val; }
+template<> inline void ConVar_SetValueDirect<int>(ConVarRef& cvar, int val) { cvar.Ref_IntVal() = val; }
+template<> inline void ConVar_SetValueDirect<float>(ConVarRef& cvar, float val) { cvar.Ref_FloatVal() = val; }
+
 void SendConVarValue(int playernum, const char *convar, const char *value);
 
 // static const char *nexttoken(char *token, size_t nMaxTokenLen, const char *str, char sep)

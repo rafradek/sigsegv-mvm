@@ -1,10 +1,6 @@
 #ifndef VI_H
 #define VI_H
 
-#if (defined(__GNUC__) && (__GNUC__ < 11)) || !defined(__cpp_concepts)
-#define OLD_GCC
-#endif
-
 #include <vector>
 #include <charconv>
 #include <string_view>
@@ -12,9 +8,7 @@
 #include <system_error>
 #include <optional>
 
-#ifndef OLD_GCC
 #include <concepts>
-#endif
 
 namespace vi {
 
@@ -30,56 +24,82 @@ constexpr auto find_str_in_str(
     return str.begin() + ans;
 }
 
-#ifdef OLD_GCC
-template<typename T>
-constexpr std::string_view make_sv_it(T begin, T end){
-    // not doing &*begin seems to work
-    return std::string_view{begin, std::size_t(std::distance(begin, end))};
-}
-#endif
-
-
-#ifdef OLD_GCC
-template<typename T>
-#endif
 constexpr void for_each_split_str(
         std::string_view str,
         const std::string_view delim,
-#ifdef OLD_GCC
-        const T& func)
-#else
         const std::invocable<std::string_view> auto& func)
-#endif
 {
     if(delim == ""){
-#ifdef OLD_GCC
-        func(make_sv_it(str.begin(), str.end()));
-#else
         func(std::string_view{str.begin(), str.end()});
-#endif
         return;
     }
     auto i{str.begin()};
     auto j{find_str_in_str(str, delim)};
     while(j != str.end()){
-#ifdef OLD_GCC
-        func(make_sv_it(i, j));
-#else
         func(std::string_view{i, j});
-#endif
         i = j + delim.size();
-#ifdef OLD_GCC
-        str = {make_sv_it(i, str.end())};
-#else
         str = {i, str.end()};
-#endif
         j = {find_str_in_str(str, delim)};
     }
-#ifdef OLD_GCC
-    func(make_sv_it(i, str.end()));
-#else
     func(std::string_view{i, str.end()});
-#endif
+}
+
+constexpr void for_each_split_str_terminate(
+        std::string str,
+        const std::string_view delim_chars,
+        const std::invocable<std::string_view> auto& func)
+{
+    if(delim_chars == ""){
+        func(std::string_view{str.begin(), str.end()});
+        return;
+    }
+    auto i{str.begin()};
+    auto j{str.begin()};
+    while(i != str.end()){
+        bool split_str_now = false;
+        for (char delim_char : delim_chars) {
+            if (delim_char == *i) {
+                split_str_now = true;
+                break;
+            }
+        }
+        if (split_str_now) {
+            *i = '\0';
+            func(std::string_view{j, i});
+            j = i+1;
+        }
+        i++;
+    }
+    func(std::string_view{j, str.end()});
+}
+
+// Same as for_each_split_str but delim_chars is a list of char delimeters
+constexpr void for_each_split_str_delim_chars(
+        std::string_view str,
+        const std::string_view delim_chars,
+        const std::invocable<std::string_view> auto& func)
+{
+    if(delim_chars == ""){
+        func(std::string_view{str.begin(), str.end()});
+        return;
+    }
+    auto i{str.begin()};
+    auto j{str.begin()};
+    while(i != str.end()){
+        bool split_str_now = false;
+        for (char delim_char : delim_chars) {
+            if (delim_char == *i) {
+                split_str_now = true;
+                break;
+            }
+        }
+        if (split_str_now) {
+            func(std::string_view{j, i});
+            j = i+1;
+        }
+        i++;
+    }
+    func(std::string_view{j, str.end()});
 }
 
 // returns 0 for empty delimiter
@@ -107,9 +127,34 @@ inline auto split_str(
     return v;
 }
 
+// Same as split_str but delim_chars is a list of char delimeters
+[[nodiscard]]
+inline auto split_str_delim_chars(
+        const std::string_view str,
+        const std::string_view delim_chars)
+{
+    std::vector<std::string_view> v;
+    for_each_split_str_delim_chars(str, delim_chars, [&v](auto s){
+        v.push_back(s);
+    });
+    return v;
+}
+
+// Same as split_str_delim_chars but null terminates substrings so they are valid c strings. str argument is modified.
+[[nodiscard]]
+inline auto split_str_terminate(
+        std::string str,
+        const std::string_view delim)
+{
+    std::vector<std::string_view> v;
+    for_each_split_str_terminate(str, delim, [&v](auto s){
+        v.push_back(s);
+    });
+    return v;
+}
+
 // only fundamental types compatible with std::from_chars
 template<typename T>
-#ifndef OLD_GCC
 concept from_chars_type =
     std::same_as<T, char> ||
     std::same_as<T, short> ||
@@ -124,7 +169,6 @@ concept from_chars_type =
     std::same_as<T, double> ||
     std::same_as<T, long double>;
 template<from_chars_type T>
-#endif
 [[nodiscard]]
 inline std::optional<T> from_str(std::string_view str){
     T result;
@@ -139,21 +183,12 @@ inline std::optional<T> from_str(std::string_view str){
     return result;
 }
 
-#ifdef OLD_GCC
-template<>
-[[nodiscard]]
-inline std::optional<float> from_str<float>(std::string_view str){
-   return std::optional<float>(std::stof(std::string(str)));
-}
-#endif
-
 struct unexpected_type { // because posix reserves _t suffix for some reason
     explicit constexpr unexpected_type(int) {}
 };
 
 inline constexpr unexpected_type unexpected{0};
 
-#ifndef OLD_GCC
 template<typename T, typename U>
 concept expected_value_or_type = 
     std::copy_constructible<T> &&
@@ -166,9 +201,6 @@ concept valid_optional = requires (T x) {
 };
 
 template<valid_optional T, std::default_initializable E>
-#else
-template<typename T, typename E>
-#endif
 class expected {
     
     std::optional<T> opt{};
@@ -206,15 +238,8 @@ class expected {
     constexpr const T&& value() const&& { return opt.value(); }
     constexpr T&& value() && { return opt.value(); }
 
-    #ifndef OLD_GCC
     constexpr T value_or(expected_value_or_type<T> auto&& default_value) const& { return opt.value_or(default_value); }
     constexpr T value_or(expected_value_or_type<T> auto&& default_value) && { return opt.value_or(default_value); }
-    #else
-    template<typename U>
-    constexpr T value_or(U&& default_value) const& { return opt.value_or(default_value); }
-    template<typename U>
-    constexpr T value_or(U&& default_value) && { return opt.value_or(default_value); }
-    #endif
 
     constexpr const E& error() const& { return err; }
     constexpr E& error() & { return err; }

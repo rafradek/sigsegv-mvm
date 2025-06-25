@@ -3777,3 +3777,68 @@ WaveSchedule
 
 // Fire input on hit allied players. May require allow friendly fire to work. The player is the activator. The format is <target>^<input>^<param>. If omitted, default param is damage received. !projectile is the projectile entity
 // "fire input on hit ally" "!self^SetHealth^0"
+
+// Detonates after being hit by an explosion
+// "chain explosion" 1
+
+// Detonates if an enemy is in explosion radius. Value determines how close the enemy needs to be (multiplied by explosion radius)
+// "proximity bomb" 1
+
+// Deals this much damage to enemies close to projectile. "projectile radius damage radius" determines range
+// "projectile radius damage" 12
+
+// Time between radius damage being applied
+// "projectile radius damage time" 0.1
+
+// Radius of projectile damage
+// "projectile radius damage radius" 100
+
+// Limits amount of how many times a single enemy can be hit
+// "projectile radius damage hit limit" 1
+
+// Knocks backs enemies close to projectile away from it. "projectile radius knockback radius" determines range
+// "projectile radius knockback" 100
+
+// Time between knockbacks being applied
+// "projectile radius knockback time" 0.1
+
+// Radius of projectile knockback
+// "projectile radius knockback radius" 100
+
+// Amount of upward knockback
+// "projectile radius knockback up" 50
+
+// Amount of sideway knockback
+// "projectile radius knockback side" 50
+
+// Amount of knockback applied in forward direction
+// "projectile radius knockback forward" 50
+
+// Limits amount of how many times a single enemy can be hit
+// "projectile radius knockback hit limit" 1
+
+// Parachute speed multiplier
+// "mult parachute xy speed" 2
+
+// Parachute fall speed multiplier
+// "mult parachute z speed" 2
+
+// Parachute air control multiplier
+// "mult parachute air control" 3
+
+// Determines how much the player target is being pulled. 1 - only target is being pulled. 0.5 - both target and the player is being pulled. 0 - only player is being pulled
+// "mult grappling hook pull target" 1
+
+// Determines how long the grappling hook can pull
+// "grappling hook pull time" 0.5
+
+// Charging speed multiplier. Charging speed cannot be lower than 300 hu. (0.401 with no move speed multipliers) 
+// "mult charging move speed" 0.5
+
+// Overrides convars only for the user. Various movement related convars and tf_* convars can be changed this way. Convars can be delimeted by ; : |
+// "player convar override" "sv_accelerate;0.01;tf_spy_invis_time;1"
+
+// Same as above. A convar should only be put into a single attribute at a time
+// "player convar override 2" "tf_spy_invis_unstealth_time;2"
+// "player convar override 3" ""
+// "player convar override 4" ""

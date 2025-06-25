@@ -9,7 +9,6 @@
 #include "util/backtrace.h"
 #include "stub/misc.h"
 #include "stub/tfweaponbase.h"
-#include <fmt/core.h>
 int Template_Increment;
 
 
@@ -111,7 +110,7 @@ void FixupTriggers(const std::vector<InputInfoTemplate> &triggers, PointTemplate
 		std::string target = inputinfo.target;
 		std::string param = inputinfo.param;
 		if (!inst->templ->no_fixup) {
-			auto parentname = inst->parent != nullptr ? fmt::format("@h@{}", inst->parent->GetRefEHandle().ToInt()) : "";
+			auto parentname = inst->parent != nullptr ? std::format("@h@{}", inst->parent->GetRefEHandle().ToInt()) : "";
 			FixupKeyvalue(target,inst->id,parentname.c_str(), names);
 			FixupKeyvalue(param,inst->id,parentname.c_str(), names);
 		}
@@ -188,7 +187,7 @@ std::shared_ptr<PointTemplateInstance> PointTemplate::SpawnTemplate(CBaseEntity 
 			templ_inst->parent_helper = parent_helper;
 		}
 
-		parentname = fmt::format("@h@{}", parent->GetRefEHandle().ToInt());
+		parentname = std::format("@h@{}", parent->GetRefEHandle().ToInt());
 		parent->AddEntityModule("parenttemplatemodule", new TemplateParentModule());
 	}
 	else

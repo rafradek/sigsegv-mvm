@@ -105,7 +105,7 @@ namespace Mod::Etc::Extra_Player_Slots
         bool changeLevel = slotsEnabled != slotsAdded;
 
         if (changeLevel) {
-            Msg("extra slots changed, change level\n");
+            ConColorMsg(Color(0xff,0xff,0x00),"Extra player slots %s, change level\n", ExtraSlotsEnabled() ? "enabled" : "disabled");
             if (g_pPopulationManager != nullptr) {
                 std::filesystem::path filename = g_pPopulationManager->GetPopulationFilename();
                 nextMissionAfterMapChange = filename.stem();
@@ -1037,7 +1037,7 @@ namespace Mod::Etc::Extra_Player_Slots
     DETOUR_DECL_MEMBER(void, CPopulationManager_SetPopulationFilename, const char *filename)
     {
         DETOUR_MEMBER_CALL(filename);
-        if (MissionHasExtraSlots(filename)) {
+        if (sig_etc_extra_player_slots_allow_bots.GetInt() == 0 && MissionHasExtraSlots(filename)) {
             sig_etc_extra_player_slots_allow_bots.SetValue(2);
         }
     }

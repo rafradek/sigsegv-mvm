@@ -13,10 +13,10 @@
 #include "util/clientmsg.h"
 #include "util/misc.h"
 #include "util/iterate.h"
+#include "util/netmessages.h"
 #include "tier1/CommandBuffer.h"
 #include <steam/steam_gameserver.h>
 #include <steam/isteamgameserver.h>
-#include <fmt/format.h>
 
 namespace Mod::Etc::Server_Redirects
 {
@@ -41,36 +41,6 @@ namespace Mod::Etc::Server_Redirects
 				tf_mm_strict.SetValue("2");
 			}
 		});
-
-	class CmdMessage : public INetMessage
-	{
-	public:
-		
-
-		virtual void	SetNetChannel(INetChannel * netchan) {}; // netchannel this message is from/for
-		virtual void	SetReliable( bool state ) {};	// set to true if it's a reliable message
-		
-		virtual bool	Process( void ) { return true; }; // calles the recently set handler to process this message
-		
-		virtual	bool	ReadFromBuffer( bf_read &buffer ) { return true; } // returns true if parsing was OK
-		virtual	bool WriteToBuffer(bf_write &buffer) {
-			buffer.WriteUBitLong(4, 6);
-			return buffer.WriteString(dest.c_str());
-		}
-			
-		virtual bool	IsReliable( void ) const { return true; }  // true, if message needs reliable handling
-		
-		virtual int				GetType( void ) const { return 4; }; // returns module specific header tag eg svc_serverinfo
-		virtual int				GetGroup( void ) const {return 0;};	// returns net message group of this message
-		virtual const char		*GetName( void ) const { return "net_Message"; }	// returns network message name, eg "svc_serverinfo"
-		virtual INetChannel		*GetNetChannel( void ) const { return nullptr;}
-		virtual const char		*ToString( void ) const { return ""; } // returns a human readable string about message content
-		virtual bool	BIncomingMessageForProcessing( double dblNetTime, int numBytes ) { return true; }
-
-		virtual size_t GetSize() const { return 0; }
-
-		std::string dest;
-	};
 
 	bool clientWasRedirected[ABSOLUTE_PLAYER_LIMIT];
 
@@ -100,7 +70,7 @@ namespace Mod::Etc::Server_Redirects
 			size_t start = message.dest.find_first_of('=')+1;
 			size_t end = message.dest.find_first_of('&');
 			message.dest = message.dest.substr(start, end-start);
-			if (message.dest == fmt::format("{}.{}.{}.{}:{}", (address.m_unIPv4 >> 24) & 255, (address.m_unIPv4 >> 16) & 255, (address.m_unIPv4 >> 8) & 255, address.m_unIPv4 & 255, port)) {
+			if (message.dest == std::format("{}.{}.{}.{}:{}", (address.m_unIPv4 >> 24) & 255, (address.m_unIPv4 >> 16) & 255, (address.m_unIPv4 >> 8) & 255, address.m_unIPv4 & 255, port)) {
 				clientWasRedirected[client->GetPlayerSlot()] = false;
 			}
 			else {

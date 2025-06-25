@@ -6,7 +6,7 @@
 #include "stub/gamerules.h"
 #include "stub/misc.h"
 #include "stub/server.h"
-#include "sdk2013/mempool.h"
+#include <mempool.h>
 #include "mem/protect.h"
 #include "mod/common/commands.h"
 

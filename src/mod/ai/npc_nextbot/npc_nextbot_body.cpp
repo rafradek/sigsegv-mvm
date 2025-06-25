@@ -537,15 +537,8 @@ namespace Mod::AI::NPC_Nextbot
                     startReload = false;
                     auto proj = Mod::Common::Weapon_Shoot::FireWeapon(me, gun, me->EyePosition(), me->EyeAngles(), mod->m_bCrit, true);
                     auto delay = gun->GetTFWpnData().m_flTimeFireDelay;
-				    CALL_ATTRIB_HOOK_FLOAT_ON_OTHER(gun, delay, mult_postfiredelay);
-				    CALL_ATTRIB_HOOK_FLOAT_ON_OTHER(gun, delay, hwn_mult_postfiredelay);
-                    float flReducedHealthBonus = 1.0f;
-                    CALL_ATTRIB_HOOK_FLOAT_ON_OTHER(gun, flReducedHealthBonus, mult_postfiredelay_with_reduced_health );
-                    if (flReducedHealthBonus != 1.0f) {
-                        flReducedHealthBonus = RemapValClamped(me->GetHealth() / me->GetMaxHealth(), 0.2f, 0.9f, flReducedHealthBonus, 1.0f);
-                        delay *= flReducedHealthBonus;
-                    }
-                    gun->m_flNextPrimaryAttack = gpGlobals->curtime + delay;
+
+                    gun->m_flNextPrimaryAttack = gpGlobals->curtime + GetWeaponFireSpeedDelay(gun, delay);
                     ResetFiringReloadGestures(me, mod, TranslateActivity(body, me, mod, body->GetActualPosture() == IBody::PostureType::STAND ? ACT_MP_ATTACK_STAND_PRIMARYFIRE : ACT_MP_ATTACK_CROUCH_PRIMARYFIRE), 1.0f);
                 }
             }

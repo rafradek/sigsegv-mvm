@@ -9,7 +9,6 @@
 #include "util/misc.h"
 #include "mod/etc/sendprop_override.h"
 #include <bitset>
-#include <fmt/core.h>
 
 extern IExtensionManager *smexts;
 
@@ -313,7 +312,7 @@ namespace Mod::Etc::SendProp_Override_Extension
         char *namePtr;
         pContext->LocalToString(params[2], &namePtr);
         int element = params[3];
-        std::string name = fmt::format("{}${}", namePtr, element);
+        std::string name = std::format("{}${}", namePtr, element);
         
         IPluginFunction *callback = pContext->GetFunctionById(params[5]);
 

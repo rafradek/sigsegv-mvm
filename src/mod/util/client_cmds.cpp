@@ -18,7 +18,6 @@
 #include "util/expression_eval.h"
 #include "mod/pop/popmgr_extensions.h"
 #include <sys/resource.h>
-#include <fmt/core.h>
 #include "mod/common/commands.h"
 #include "mod/common/text_hud.h"
 
@@ -1854,16 +1853,16 @@ namespace Mod::Util::Client_Cmds
 						if (player != nullptr && !player->IsBot() && cpu_show_player[i] != 3 && PlayerIsSMAdmin(player) && (highCpu || highEdict || highEnt || alwaysShow)) {
 							std::string str;
 							if (highCpu || alwaysShow) {
-								str += fmt::format("Frame Time: {:.1f}%\n", timespentShow.GetSeconds() * 100);
+								str += std::format("Frame Time: {:.1f}%\n", timespentShow.GetSeconds() * 100);
 							}
 							if (cpu_show_player[i] == 2) {
-								str += fmt::format("CPU Usage: {:.1f}%\n", (float)(cpu_usage * 100));
+								str += std::format("CPU Usage: {:.1f}%\n", (float)(cpu_usage * 100));
 							}
 							if (highEdict || alwaysShow) {
-								str += fmt::format("Networked Entities: {}/2048\n", engine->GetEntityCount()/*gEntList->m_iNumEdicts*/);
+								str += std::format("Networked Entities: {}/2048\n", engine->GetEntityCount()/*gEntList->m_iNumEdicts*/);
 							}
 							if (highEnt || alwaysShow) {
-								str += fmt::format("Logic Entities: {}/6143\n", gEntList->m_iNumEnts - gEntList->m_iNumEdicts);
+								str += std::format("Logic Entities: {}/6143\n", gEntList->m_iNumEnts - gEntList->m_iNumEdicts);
 							}
 							DisplayHudMessageAutoChannel(player, textparam, str.c_str(), 2);
 						}

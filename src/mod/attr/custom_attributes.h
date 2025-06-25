@@ -25,6 +25,12 @@ namespace Mod::Attr::Custom_Attributes
 		NO_CLIP,
 		DISPLACE_TOUCHED_ENEMIES,
 		ALLOW_FRIENDLY_FIRE_PLAYER,
+		MULT_PARACHUTE_XY_SPEED,
+		MULT_PARACHUTE_Z_SPEED,
+		MULT_PARACHUTE_AIR_CONTROL,
+		MULT_GRAPPLING_HOOK_SPEED,
+		MULT_GRAPPLING_HOOK_PULL_TARGET,
+		MULT_CHARGING_MOVE_SPEED,
 
 		// Add new entries above this line
 		ATTRIB_COUNT_PLAYER,
@@ -75,7 +81,13 @@ namespace Mod::Attr::Custom_Attributes
 		"move_speed_as_health_decreases",
 		"no_clip",
 		"displace_touched_enemies",
-		"allow_friendly_fire"
+		"allow_friendly_fire",
+		"mult_parachute_xy_speed",
+		"mult_parachute_z_speed",
+		"mult_parachute_air_control",
+		"mult_grappling_hook_speed",
+		"mult_grappling_hook_pull_target",
+		"mult_charging_move_speed"
 	};
 
 	static const char *fast_attribute_classes_item[ATTRIB_COUNT_ITEM] = {

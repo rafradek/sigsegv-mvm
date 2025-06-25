@@ -1,7 +1,7 @@
 #ifndef _INCLUDE_SIGSEGV_STUB_SENDPROP_H_
 #define _INCLUDE_SIGSEGV_STUB_SENDPROP_H_
 
-#include "sdk2013/mempool.h"
+#include <mempool.h>
 
 #define PROP_INDEX_VECTOR_ELEM_MARKER 0x8000
 #define PROP_INDEX_VECTORXY_ELEM_MARKER 0x4000

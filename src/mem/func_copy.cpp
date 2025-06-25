@@ -15,7 +15,6 @@ static unsigned int UD86_num_operands(struct ud *ud)
 	return 4;
 }
 
-/* get number of instruction operands */
 static void UD86_init_buffer(struct ud *ud, const uint8_t *input, size_t size)
 {
 	ud_init(ud);
@@ -216,7 +215,6 @@ static bool UD86_insn_is_call_to_get_pc_thunk(struct ud *ud, Reg *dest_reg = nul
 	return true;
 }
 
-/* analogous to asm.c copy_bytes() when dest != nullptr */
 size_t CopyAndFixUpFuncBytes(size_t len_min, size_t len_max, const uint8_t *source, const uint8_t *destination_address, uint8_t *buffer, bool stop_at_nop)
 {
 	auto dest = destination_address;

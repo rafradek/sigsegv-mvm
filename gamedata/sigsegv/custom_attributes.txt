@@ -3868,4 +3868,114 @@
         "effect_type"	"positive"
         "stored_as_integer"	"0"
     }
+    "4707"
+    {
+        "name"	"mult parachute xy speed"
+        "attribute_class"	"mult_parachute_xy_speed"
+        "description_string"	"(+-)%p% move speed while parachute is deployed"
+        "description_format"	"value_is_percentage"
+        "hidden"	"0"
+        "effect_type"	"positive"
+        "stored_as_integer"	"0"
+    }
+    "4708"
+    {
+        "name"	"mult parachute z speed"
+        "attribute_class"	"mult_parachute_z_speed"
+        "description_string"	"(+-)%p% fall speed while parachute is deployed"
+        "description_format"	"value_is_percentage"
+        "hidden"	"0"
+        "effect_type"	"positive"
+        "stored_as_integer"	"0"
+    }
+    "4709"
+    {
+        "name"	"mult parachute air control"
+        "attribute_class"	"mult_parachute_air_control"
+        "description_string"	"(+-)%p% air control while parachute is deployed"
+        "description_format"	"value_is_percentage"
+        "hidden"	"0"
+        "effect_type"	"positive"
+        "stored_as_integer"	"0"
+    }
+    "4710"
+    {
+        "name"	"mult grappling hook speed"
+        "attribute_class"	"mult_grappling_hook_speed"
+        "description_string"	"(+-)%p% grappling hook pull speed"
+        "description_format"	"value_is_percentage"
+        "hidden"	"0"
+        "effect_type"	"positive"
+        "stored_as_integer"	"0"
+    }
+    "4711"
+    {
+        "name"	"mult grappling hook pull target"
+        "attribute_class"	"mult_grappling_hook_pull_target"
+        "description_string"	"Grappled enemies are pulled towards the player"
+        "description_format"	"value_is_additive"
+        "hidden"	"0"
+        "effect_type"	"positive"
+        "stored_as_integer"	"0"
+    }
+    "4712"
+    {
+        "name"	"grappling hook pull time"
+        "attribute_class"	"grappling_hook_pull_time"
+        "description_string"	"Grappling hook pulls for %ds"
+        "description_format"	"value_is_additive"
+        "hidden"	"0"
+        "effect_type"	"positive"
+        "stored_as_integer"	"0"
+    }
+    "4713"
+    {
+        "name"	"mult charging move speed"
+        "attribute_class"	"mult_charging_move_speed"
+        "description_string"	"(+-)%p% move speed while charging"
+        "description_format"	"value_is_percentage"
+        "hidden"	"0"
+        "effect_type"	"positive"
+        "stored_as_integer"	"0"
+    }
+    "4714"
+    {
+        "name"	"player convar override"
+        "attribute_class"	"player_convar_override"
+        "attribute_type"    "string"
+        "description_string"	""
+        "hidden"	"1"
+        "effect_type"	"positive"
+        "stored_as_integer"	"0"
+    }
+    "4715"
+    {
+        "name"	"player convar override 2"
+        "attribute_class"	"player_convar_override"
+        "attribute_type"    "string"
+        "description_string"	""
+        "hidden"	"1"
+        "effect_type"	"positive"
+        "stored_as_integer"	"0"
+    }
+    "4716"
+    {
+        "name"	"player convar override 3"
+        "attribute_class"	"player_convar_override"
+        "attribute_type"    "string"
+        "description_string"	""
+        "hidden"	"1"
+        "effect_type"	"positive"
+        "stored_as_integer"	"0"
+    }
+    "4717"
+    {
+        "name"	"player convar override 4"
+        "attribute_class"	"player_convar_override"
+        "attribute_type"    "string"
+        "description_string"	""
+        "hidden"	"1"
+        "effect_type"	"positive"
+        "stored_as_integer"	"0"
+    }
 }

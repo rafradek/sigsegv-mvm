@@ -13,6 +13,7 @@
 #include "mod/common/commands.h"
 #include "mod/pop/popmgr_extensions.h"
 #include "util/translation.h"
+#include "util/vi.h"
 
 #include <regex>
 //#include <filesystem>
@@ -21,8 +22,6 @@
 #include <sys/stat.h>
 #include <sys/inotify.h>
 #include <boost/algorithm/string.hpp>
-#include <boost/tokenizer.hpp>
-#include <fmt/core.h>
 #include <utime.h>
 #include <sys/time.h>
 #include <filesystem>
@@ -137,10 +136,10 @@ namespace Mod::Util::Download_Manager
 		[](IConVar *pConVar, const char *pOldValue, float fOldValue) {
 			banned_maps.clear();
 			std::string str(cvar_banned_maps.GetString());
-            boost::tokenizer<boost::char_separator<char>> tokens(str, boost::char_separator<char>(","));
+			const auto tokens{vi::split_str(str, ",")};
 
             for (auto &token : tokens) {
-                banned_maps.insert(token);
+                banned_maps.insert(std::string(token));
             }
 			if (server_activated)
 				ResetVoteMapList();
@@ -550,16 +549,16 @@ namespace Mod::Util::Download_Manager
 						const char *name = kv->GetName();
 						//Msg("%s %s\n", name, kv->GetString());
 						if ((loadIconsForLateDl || !cvar_late_download.GetBool()) && FStrEq(name, "ClassIcon")) {
-							AddFileIfCustom(fmt::format("{}{}{}", "materials/hud/leaderboard_class_",kv->GetString(),".vmt"));
+							AddFileIfCustom(std::format("{}{}{}", "materials/hud/leaderboard_class_",kv->GetString(),".vmt"));
 						}
 						else if (loadIconsForLateDl && !loadOtherForLateDl) {
 
 						}
 						else if(FStrEq(name, "CustomUpgradesFile")) {
-							AddFileIfCustom(fmt::format("{}{}","scripts/items/",kv->GetString()));
+							AddFileIfCustom(std::format("{}{}","scripts/items/",kv->GetString()));
 						}
 						else if(StringEndsWith(name, "Decal", false)) {
-							AddFileIfCustom(fmt::format("{}{}",kv->GetString(),".vmt"));
+							AddFileIfCustom(std::format("{}{}",kv->GetString(),".vmt"));
 						}
 						else if(StringEndsWith(name,"Generic", false)){
 							AddFileIfCustom(kv->GetString());
@@ -600,7 +599,7 @@ namespace Mod::Util::Download_Manager
 							}
 							
 							if (StringEndsWith(value,".mp3") || StringEndsWith(value,".wav") ) {
-								AddFileIfCustom(fmt::format("{}{}","sound/", value));
+								AddFileIfCustom(std::format("{}{}","sound/", value));
 							}
 						}
 					}
@@ -990,7 +989,7 @@ namespace Mod::Util::Download_Manager
 		}
 		// Find maps in the specified directory
 		else {
-			std::string path = fmt::format("{}/{}", game_path, cvar_mappath.GetString());
+			std::string path = std::format("{}/{}", game_path, cvar_mappath.GetString());
 			DIR *dir;
 			dirent *ent;
 
@@ -1022,14 +1021,14 @@ namespace Mod::Util::Download_Manager
 		tf_mvm_missioncyclefile.SetValue("empty");
 		tf_mvm_missioncyclefile.SetValue(prevMissionCycleFile.c_str());
 
-		std::string resourceFileWrite = fmt::format("{}/{}wr", game_path, cvar_mapcycle_file.GetString());
+		std::string resourceFileWrite = std::format("{}/{}wr", game_path, cvar_mapcycle_file.GetString());
 		FILE *mapcycle = fopen(resourceFileWrite.c_str(), "w");
 		if (mapcycle != nullptr) {
 			fputs(maplistStr.c_str(), mapcycle);
 			fflush(mapcycle);
 			fclose(mapcycle);
 		}
-		rename(resourceFileWrite.c_str(), fmt::format("{}/{}", game_path, cvar_mapcycle_file.GetString()).c_str());
+		rename(resourceFileWrite.c_str(), std::format("{}/{}", game_path, cvar_mapcycle_file.GetString()).c_str());
 		timer3.End();
 		CFastTimer timer2;
 		timer2.Start();
@@ -1927,7 +1926,7 @@ namespace Mod::Util::Download_Manager
 
 	void AddPathToTail(const char *path, const char *pathID)
 	{
-		std::string fullPath = fmt::format("{}/{}", game_path, path);
+		std::string fullPath = std::format("{}/{}", game_path, path);
 		filesystem->RemoveSearchPath(fullPath.c_str(), pathID);
 		filesystem->AddSearchPath(fullPath.c_str(), pathID);
 	}
@@ -1937,7 +1936,7 @@ namespace Mod::Util::Download_Manager
 		[](IConVar *pConVar, const char *pOldValue, float fOldValue) {
 			
 			if (pOldValue != nullptr && pOldValue[0] != '\0') {
-				std::string oldFullPath = fmt::format("{}/{}", game_path, pOldValue);
+				std::string oldFullPath = std::format("{}/{}", game_path, pOldValue);
 				filesystem->RemoveSearchPath(oldFullPath.c_str(), "game");
 				filesystem->RemoveSearchPath(oldFullPath.c_str(), "mod");
 				filesystem->RemoveSearchPath(oldFullPath.c_str(), "custom");

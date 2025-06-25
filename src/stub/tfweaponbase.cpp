@@ -289,6 +289,19 @@ float CalculateProjectileSpeed(CTFWeaponBaseGun *weapon) {
 	return speed;
 }
 
+float GetWeaponFireSpeedDelay(CTFWeaponBase *weapon, float baseDelay) {
+	float delay = 1.0f;
+	CALL_ATTRIB_HOOK_FLOAT_ON_OTHER(weapon, delay, mult_postfiredelay);
+	CALL_ATTRIB_HOOK_FLOAT_ON_OTHER(weapon, delay, hwn_mult_postfiredelay);
+	float flReducedHealthBonus = 1.0f;
+	CALL_ATTRIB_HOOK_FLOAT_ON_OTHER(weapon, flReducedHealthBonus, mult_postfiredelay_with_reduced_health );
+	if (flReducedHealthBonus != 1.0f) {
+		flReducedHealthBonus = RemapValClamped(weapon->GetOwnerEntity()->GetHealth() / weapon->GetOwnerEntity()->GetMaxHealth(), 0.2f, 0.9f, flReducedHealthBonus, 1.0f);
+		delay *= flReducedHealthBonus;
+	}
+	return delay * baseDelay;
+}
+
 const char *TranslateWeaponEntForClass_improved(const char *name, int classnum)
 {
 	if (strncasecmp(name, "tf_weapon_", 10) == 0)

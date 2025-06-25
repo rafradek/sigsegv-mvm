@@ -1,7 +1,7 @@
 #include "convar_restore.h"
 #include "mem/detour.h"
-#include <boost/tokenizer.hpp>
 #include "CommandBuffer.h"
+#include "util/vi.h"
 
 class CEmptyConVar : public ConVar {};
 
@@ -83,7 +83,8 @@ namespace ConVar_Restore
 			if (var->GetHelpText() != nullptr && *(var->GetHelpText())) {
 				
 				std::string help(var->GetHelpText());
-				boost::tokenizer<boost::char_separator<char>> tokens(help, boost::char_separator<char>("\n"));
+				
+				const auto tokens{vi::split_str(help, "\n")};
 
 				bool first = true;
 				for (auto &token : tokens) {
@@ -92,7 +93,7 @@ namespace ConVar_Restore
 					}
 					first = false;
 					file.PutString("		// ");
-					file.PutString(token.c_str());
+					file.PutString(std::string(token).c_str());
 				}
 			}
 

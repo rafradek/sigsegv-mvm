@@ -16,7 +16,6 @@
 #include "stub/tempent.h"
 #include "mod.h"
 #include "mod/common/commands.h"
-#include <fmt/core.h>
 
 class CStaticProp {};
 
@@ -5134,29 +5133,29 @@ namespace Util::Lua
         bool summary = FStrEq(args[1], "all") || FStrEq(args[1], "summary");
         bool all = FStrEq(args[1], "all");
         if (summary || FStrEq(args[1], "events")) {
-            response += fmt::format("Event Callback Count: {}\n", event_callbacks.size());
+            response += std::format("Event Callback Count: {}\n", event_callbacks.size());
         }
         if (all || FStrEq(args[1], "events")) {
             for (auto &callback : event_callbacks) {
-                response += fmt::format("Event callback ID: {}; Name: {}\n", callback.func, callback.name.c_str());
+                response += std::format("Event callback ID: {}; Name: {}\n", callback.func, callback.name.c_str());
             }
         }
         response += '\n';
         if (summary || FStrEq(args[1], "entcreate")) {
-            response += fmt::format("Entity Create Callback Count: {}\n", entity_create_callbacks.size());
+            response += std::format("Entity Create Callback Count: {}\n", entity_create_callbacks.size());
         }
         if (all || FStrEq(args[1], "entcreate")) {
             for (auto &callback : entity_create_callbacks) {
-                response += fmt::format("Entity create callback ID: {}; Classname: {}{}\n", callback.func, STRING(callback.classname), callback.wildcard ? "*" : "");
+                response += std::format("Entity create callback ID: {}; Classname: {}{}\n", callback.func, STRING(callback.classname), callback.wildcard ? "*" : "");
             }
         }
         response += '\n';
         if (summary || FStrEq(args[1], "tempents")) {
-            response += fmt::format("TempEnt Callback Count: {}\n", tempent_callbacks.size());
+            response += std::format("TempEnt Callback Count: {}\n", tempent_callbacks.size());
         }
         if (all || FStrEq(args[1], "tempents")) {
             for (auto &callback : tempent_callbacks) {
-                response += fmt::format("TempEnt callback ID: {}; Name: {}\n", callback.func, callback.name.c_str());
+                response += std::format("TempEnt callback ID: {}; Name: {}\n", callback.func, callback.name.c_str());
             }
         }
         response += '\n';
@@ -5165,29 +5164,29 @@ namespace Util::Lua
             for(auto state : LuaState::List()) {
                 response += "-----------------\n"s;
                 if (summary) {
-                    response += fmt::format("Lua state memory usage: {} Bytes\n", state->GetMemoryUsageBytes());
+                    response += std::format("Lua state memory usage: {} Bytes\n", state->GetMemoryUsageBytes());
                 }
                 auto &timers = state->GetTimers();
                 if (summary || FStrEq(args[1], "timers")) {
-                    response += fmt::format("Timer Count: {}\n", timers.size());
+                    response += std::format("Timer Count: {}\n", timers.size());
                 }
                 if (all || FStrEq(args[1], "timers")) {
                     for (auto &timer : timers) {
-                        response += fmt::format("Timer ID: {}; Delay: {}s; Repeats left: {}; Next call in: {}s\n", timer.m_iID, timer.m_flDelay, timer.m_iRepeats, timer.m_flNextCallTime - gpGlobals->curtime);
+                        response += std::format("Timer ID: {}; Delay: {}s; Repeats left: {}; Next call in: {}s\n", timer.m_iID, timer.m_flDelay, timer.m_iRepeats, timer.m_flNextCallTime - gpGlobals->curtime);
                     }
                 }
                 auto &convars = state->GetOverriddenConvars();
                 if (summary || FStrEq(args[1], "convars")) {
-                    response += fmt::format("Convar Override Count: {}\n", convars.size());
+                    response += std::format("Convar Override Count: {}\n", convars.size());
                 }
                 if (all || FStrEq(args[1], "convars")) {
                     for (auto &convar : convars) {
-                        response += fmt::format("Convar name: {}; value now: {}; value pre: {}\n", convar.first->GetName(), convar.first->GetString(), convar.second.c_str());
+                        response += std::format("Convar name: {}; value now: {}; value pre: {}\n", convar.first->GetName(), convar.first->GetString(), convar.second.c_str());
                     }
                 }
                 auto &entities = state->GetCallbackEntities();
                 if (summary || FStrEq(args[1], "entcallbacks")) {
-                    response += fmt::format("Entities with callbacks count: {}\n", entities.size());
+                    response += std::format("Entities with callbacks count: {}\n", entities.size());
                 }
                 int entityCallbackCount = 0;
                 for (auto entity : entities) {
@@ -5198,14 +5197,14 @@ namespace Util::Lua
                             if (callback.state == state && !callback.deleted) {
                                 entityCallbackCount++;
                                 if (all || FStrEq(args[1], "entcallbacks")) {
-                                    response += fmt::format("Entity callback ID: {}; Type: {}; Entity class: {}; Entity name: {}; Entity handle: {}; func: {}\n", callback.id, type, entity->GetClassname(), STRING(entity->GetEntityName()), entity->GetRefEHandle().ToInt(), callback.func);
+                                    response += std::format("Entity callback ID: {}; Type: {}; Entity class: {}; Entity name: {}; Entity handle: {}; func: {}\n", callback.id, type, entity->GetClassname(), STRING(entity->GetEntityName()), entity->GetRefEHandle().ToInt(), callback.func);
                                 }
                             }
                         }
                     }
                 }
                 if (summary || FStrEq(args[1], "entcallbacks")) {
-                    response += fmt::format("Total entity callback count: {}\n", entityCallbackCount);
+                    response += std::format("Total entity callback count: {}\n", entityCallbackCount);
                 }
                 response += "-----------------\n"s;
             }

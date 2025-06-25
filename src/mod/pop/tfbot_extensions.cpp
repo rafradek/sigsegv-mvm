@@ -22,7 +22,6 @@
 #include "stub/team.h"
 #include <ctime>
 #include <boost/algorithm/string.hpp>
-#include <boost/tokenizer.hpp>
 #include "mod/etc/mapentity_additions.h"
 #include "mod/etc/entity_limit_manager.h"
 #include "mod/mvm/player_limit.h"
@@ -1079,6 +1078,10 @@ namespace Mod::Pop::TFBot_Extensions
 		bool typeOverride = type != ACTION_NoOverride;
 		if (data != nullptr && type == ACTION_NoOverride) {
 			type = data->action;
+		}
+		// Restore action override variable immediately after setting the action
+		if (typeOverride) {
+			actor->SetCustomVariable<"actionoverride">(Variant((int)ACTION_NoOverride));
 		}
 		switch (type) {
 		

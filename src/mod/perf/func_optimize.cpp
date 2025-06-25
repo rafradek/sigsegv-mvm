@@ -16,7 +16,7 @@
 #endif
 #include "stub/extraentitydata.h"
 #include "stub/nav.h"
-#include "sdk2013/mempool.h"
+#include <mempool.h>
 #include "mem/protect.h"
 #include "util/prop_helper.h"
 #include <utlsymbol.h>

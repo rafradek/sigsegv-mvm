@@ -8,7 +8,6 @@
 #include "mod/pop/popmgr_extensions.h"
 #include "util/iterate.h"
 #include "stub/misc.h"
-#include <fmt/format.h>
 #include "mod/item/item_common.h"
 #include "stub/gamerules.h"
 #include "mod/common/text_hud.h"
@@ -940,7 +939,7 @@ namespace Mod::Etc::Unintended_Class_Weapon_Improvements
 					auto weapon = rtti_cast<CTFWeaponBase *>(item);
 					if (weapon == nullptr) {
 						if (classIndex != TF_CLASS_DEMOMAN && rtti_cast<CTFWearableDemoShield *>(item) != nullptr) {
-							message += fmt::format("{}: {:.0f}%\n", TranslateText(player, "Charge"), player->m_Shared->m_flChargeMeter.Get());
+							message += std::format("{}: {:.0f}%\n", TranslateText(player, "Charge"), player->m_Shared->m_flChargeMeter.Get());
 						}
 					}
 					auto weaponid = 0;
@@ -948,88 +947,88 @@ namespace Mod::Etc::Unintended_Class_Weapon_Improvements
 						const char *itemClass = item->GetClassname();
 						weaponid = weapon->GetWeaponID();
 						if (classIndex != TF_CLASS_DEMOMAN && weaponid == TF_WEAPON_PIPEBOMBLAUNCHER) {
-							message += fmt::format("{}: {}\n", TranslateText(player, "Stickies"), rtti_cast<CTFPipebombLauncher *>(item)->m_iPipebombCount.Get());
+							message += std::format("{}: {}\n", TranslateText(player, "Stickies"), rtti_cast<CTFPipebombLauncher *>(item)->m_iPipebombCount.Get());
 						}
 						else if (classIndex != TF_CLASS_MEDIC && weaponid == TF_WEAPON_MEDIGUN) {
-							message += fmt::format("{}: {}%\n", TranslateText(player, "Ubercharge"), (int)(rtti_cast<CWeaponMedigun *>(item)->GetCharge() * 100));
+							message += std::format("{}: {}%\n", TranslateText(player, "Ubercharge"), (int)(rtti_cast<CWeaponMedigun *>(item)->GetCharge() * 100));
 							int generate = 0;
 							CALL_ATTRIB_HOOK_INT_ON_OTHER(item, generate, generate_rage_on_heal);
 							if (generate != 0) {
-								message += fmt::format("{}: {:.0f}%\n", TranslateText(player, "Shield"), player->m_Shared->m_flRageMeter.Get());
+								message += std::format("{}: {:.0f}%\n", TranslateText(player, "Shield"), player->m_Shared->m_flRageMeter.Get());
 							}
 						}
 						else if (classIndex != TF_CLASS_PYRO && weaponid == TF_WEAPON_FLAMETHROWER) {
 							int buff = 0;
 							CALL_ATTRIB_HOOK_INT_ON_OTHER(item, buff, set_buff_type);
 							if (buff != 0) {
-								message += fmt::format("{}: {:.0f}%\n", TranslateText(player, "MMMPH"), player->m_Shared->m_flRageMeter.Get());
+								message += std::format("{}: {:.0f}%\n", TranslateText(player, "MMMPH"), player->m_Shared->m_flRageMeter.Get());
 							}
 						}
 						else if (classIndex != TF_CLASS_SOLDIER && weaponid == TF_WEAPON_BUFF_ITEM) {
 							int buff = 0;
 							CALL_ATTRIB_HOOK_INT_ON_OTHER(item, buff, set_buff_type);
 							if (buff != 4 && buff != 0) {
-								message += fmt::format("{}: {:.0f}%\n", TranslateText(player, "Rage"), player->m_Shared->m_flRageMeter.Get());
+								message += std::format("{}: {:.0f}%\n", TranslateText(player, "Rage"), player->m_Shared->m_flRageMeter.Get());
 							}
 						}
 						else if (classIndex != TF_CLASS_HEAVYWEAPONS && weaponid == TF_WEAPON_MINIGUN) {
 							int buff = 0;
 							CALL_ATTRIB_HOOK_INT_ON_OTHER(item, buff, generate_rage_on_dmg);
 							if (buff != 0) {
-								message += fmt::format("{}: {:.0f}%\n", TranslateText(player, "Rage"), player->m_Shared->m_flRageMeter.Get());
+								message += std::format("{}: {:.0f}%\n", TranslateText(player, "Rage"), player->m_Shared->m_flRageMeter.Get());
 							}
 						}
 						// else if (classIndex != TF_CLASS_SCOUT && weaponid == TF_WEAPON_LUNCHBOX) {
-						// 	message += fmt::format("Drink: {:.0f}%\n", player->m_Shared->m_flEnergyDrinkMeter.Get());
+						// 	message += std::format("Drink: {:.0f}%\n", player->m_Shared->m_flEnergyDrinkMeter.Get());
 						// }
 						// else if (classIndex != TF_CLASS_SCOUT && rtti_cast<CTFLunchBox_Drink *>(item) != nullptr) {
-						// 	message += fmt::format("Drink: {:.0f}%\n", player->m_Shared->m_flEnergyDrinkMeter.Get());
+						// 	message += std::format("Drink: {:.0f}%\n", player->m_Shared->m_flEnergyDrinkMeter.Get());
 						// }
 						else if (classIndex != TF_CLASS_SCOUT && (weaponid == TF_WEAPON_SODA_POPPER || weaponid == TF_WEAPON_PEP_BRAWLER_BLASTER)) {
-							message += fmt::format("{}: {:.0f}%\n", TranslateText(player, "Hype"), round(player->m_Shared->m_flHypeMeter.Get()));
+							message += std::format("{}: {:.0f}%\n", TranslateText(player, "Hype"), round(player->m_Shared->m_flHypeMeter.Get()));
 						}
 						else if (classIndex != TF_CLASS_SOLDIER && weaponid == TF_WEAPON_ROCKETLAUNCHER && rtti_cast<CTFRocketLauncher_AirStrike *>(weapon) != nullptr) {
-							message += fmt::format("{}: {}\n", TranslateText(player, "Kills"), player->m_Shared->m_iDecapitations.Get());
+							message += std::format("{}: {}\n", TranslateText(player, "Kills"), player->m_Shared->m_iDecapitations.Get());
 						}
 						else if (classIndex != TF_CLASS_DEMOMAN && weaponid == TF_WEAPON_SWORD && rtti_cast<CTFSword *>(weapon) != nullptr) {
-							message += fmt::format("{}: {}\n", TranslateText(player, "Heads"), player->m_Shared->m_iDecapitations.Get());
+							message += std::format("{}: {}\n", TranslateText(player, "Heads"), player->m_Shared->m_iDecapitations.Get());
 						}
 						else if (classIndex != TF_CLASS_SNIPER && weaponid == TF_WEAPON_SNIPERRIFLE_DECAP) {
-							message += fmt::format("{}: {}\n", TranslateText(player, "Heads"), player->m_Shared->m_iDecapitations.Get());
+							message += std::format("{}: {}\n", TranslateText(player, "Heads"), player->m_Shared->m_iDecapitations.Get());
 						}
 						else if (classIndex != TF_CLASS_SNIPER && weaponid == TF_WEAPON_SNIPERRIFLE) {
 							float buff = 0;
 							CALL_ATTRIB_HOOK_FLOAT_ON_OTHER(weapon, buff, set_buff_type);
 							if (buff != 0) {
-								message += fmt::format("{}: {:.0f}%\n", TranslateText(player, "Focus"), player->m_Shared->m_flRageMeter.Get());
+								message += std::format("{}: {:.0f}%\n", TranslateText(player, "Focus"), player->m_Shared->m_flRageMeter.Get());
 							}
 						}
 						else if (classIndex != TF_CLASS_SNIPER && weaponid == TF_WEAPON_CHARGED_SMG) {
 							float buff = 0;
 							CALL_ATTRIB_HOOK_FLOAT_ON_OTHER(weapon, buff, minicrit_boost_charge_rate);
 							if (buff != 0) {
-								message += fmt::format("{}: {:.0f}%\n", TranslateText(player, "Crikey"), rtti_cast<CTFChargedSMG *>(item)->m_flMinicritCharge.Get());
+								message += std::format("{}: {:.0f}%\n", TranslateText(player, "Crikey"), rtti_cast<CTFChargedSMG *>(item)->m_flMinicritCharge.Get());
 							}
 						}
 						else if (classIndex != TF_CLASS_ENGINEER && weaponid == TF_WEAPON_SENTRY_REVENGE) {
 							int buff = 0;
 							CALL_ATTRIB_HOOK_INT_ON_OTHER(weapon, buff, sentry_killed_revenge);
 							if (buff != 0) {
-								message += fmt::format("{}: {}\n", TranslateText(player, "Crits"), player->m_Shared->m_iRevengeCrits.Get());
+								message += std::format("{}: {}\n", TranslateText(player, "Crits"), player->m_Shared->m_iRevengeCrits.Get());
 							}
 						}
 						else if ((classIndex != TF_CLASS_PYRO && weaponid == TF_WEAPON_FLAREGUN_REVENGE)) {
 							int buff = 0;
 							CALL_ATTRIB_HOOK_INT_ON_OTHER(weapon, buff, extinguish_revenge);
 							if (buff != 0) {
-								message += fmt::format("{}: {}\n", TranslateText(player, "Crits"), player->m_Shared->m_iRevengeCrits.Get());
+								message += std::format("{}: {}\n", TranslateText(player, "Crits"), player->m_Shared->m_iRevengeCrits.Get());
 							}
 						}
 						else if (classIndex != TF_CLASS_SPY && weaponid == TF_WEAPON_REVOLVER) {
 							int buff = 0;
 							CALL_ATTRIB_HOOK_INT_ON_OTHER(item, buff, sapper_kills_collect_crits);
 							if (buff != 0) {
-								message += fmt::format("{}: {}\n", TranslateText(player, "Crits"), player->m_Shared->m_iRevengeCrits.Get());
+								message += std::format("{}: {}\n", TranslateText(player, "Crits"), player->m_Shared->m_iRevengeCrits.Get());
 							}
 							
 						}
@@ -1044,10 +1043,10 @@ namespace Mod::Etc::Unintended_Class_Weapon_Improvements
 							if (regen != 0.0f) {
 								float progress = weapon->GetEffectBarProgress();
 								if (progress <= 1) {
-									message += fmt::format("{}: {:.0f}%\n", GetItemNameForDisplay(item->GetItem(), player), round(weapon->GetEffectBarProgress() * 100));
+									message += std::format("{}: {:.0f}%\n", GetItemNameForDisplay(item->GetItem(), player), round(weapon->GetEffectBarProgress() * 100));
 								}
 								else {
-									message += fmt::format("{}: -%\n", GetItemNameForDisplay(item->GetItem(), player));
+									message += std::format("{}: -%\n", GetItemNameForDisplay(item->GetItem(), player));
 								}
 							}
 						}
@@ -1057,7 +1056,7 @@ namespace Mod::Etc::Unintended_Class_Weapon_Improvements
 						int type = 0;
 						CALL_ATTRIB_HOOK_INT_ON_OTHER(item, type, item_meter_charge_type);
 						if (type != 0) {
-							message += fmt::format("{}: {:.0f}%\n", GetItemNameForDisplay(item->GetItem(), player), round(player->m_Shared->m_flItemChargeMeter[item->GetItem()->GetItemDefinition()->GetLoadoutSlot(TF_CLASS_UNDEFINED)]));
+							message += std::format("{}: {:.0f}%\n", GetItemNameForDisplay(item->GetItem(), player), round(player->m_Shared->m_flItemChargeMeter[item->GetItem()->GetItemDefinition()->GetLoadoutSlot(TF_CLASS_UNDEFINED)]));
 						}
 					}
 				});
@@ -1065,7 +1064,7 @@ namespace Mod::Etc::Unintended_Class_Weapon_Improvements
 				auto activeWeapon = player->GetActiveTFWeapon();
 				if (activeWeapon != nullptr) {
 					if (activeWeapon->IsEnergyWeapon() && activeWeapon->GetItem()->GetItemDefinition()->GetLoadoutSlot(classIndex) == -1) {
-						message += fmt::format("{}: {:.0f}%\n", TranslateText(player, "Energy"), round(activeWeapon->m_flEnergy / activeWeapon->Energy_GetMaxEnergy() * 100));
+						message += std::format("{}: {:.0f}%\n", TranslateText(player, "Energy"), round(activeWeapon->m_flEnergy / activeWeapon->Energy_GetMaxEnergy() * 100));
 					}
 				}
 				
