@@ -5687,22 +5687,41 @@ namespace Mod::Attr::Custom_Attributes
 		}
 		return result;
 	}
-
-	DETOUR_DECL_MEMBER(float, CBaseProjectile_GetCollideWithTeammatesDelay)
+	
+	bool ProjectileCanCollideWithTeammates(CBaseProjectile *proj, bool &result)
 	{
 		int penetrate = 0;
-		auto launcher = reinterpret_cast<CBaseProjectile *>(this)->GetOriginalLauncher();
+		auto launcher = proj->GetOriginalLauncher();
 		CALL_ATTRIB_HOOK_INT_ON_OTHER(launcher, penetrate, penetrate_teammates);
 		if (penetrate) {
-			return 9999.0f;
+			result = false;
+			return true;
 		}
 
-		int friendlyfire = HasAllowFriendlyFire(launcher, reinterpret_cast<CBaseProjectile *>(this)->GetOwnerEntity());
+		int friendlyfire = HasAllowFriendlyFire(launcher, proj->GetOwnerEntity());
 		if (friendlyfire) {
-			return 0.0f;
+			result = true;
+			return true;
 		}
+		return false;
+	}
 
+	DETOUR_DECL_MEMBER(bool, CBaseProjectile_CanCollideWithTeammates)
+	{
+		bool result = false;
+		if (ProjectileCanCollideWithTeammates(reinterpret_cast<CBaseProjectile *>(this), result)) {
+			return result;
+		}
 		return DETOUR_MEMBER_CALL();
+	}
+
+	VHOOK_DECL(bool, CTFProjectile_GrapplingHook_CanCollideWithTeammates)
+	{
+		bool result = false;
+		if (ProjectileCanCollideWithTeammates(reinterpret_cast<CBaseProjectile *>(this), result)) {
+			return result;
+		}
+		return VHOOK_CALL();
 	}
 
 	DETOUR_DECL_MEMBER(void, CTFPlayer_TFPlayerThink)
@@ -9023,6 +9042,26 @@ namespace Mod::Attr::Custom_Attributes
 		}
 	}
 
+    DETOUR_DECL_MEMBER(bool, CTFGameMovement_GrapplingHookMove)
+	{
+		// Remove the "stop movement if close to hook target" if moving in reverse
+		auto movement = reinterpret_cast<CGameMovement *>(this);
+		CBaseEntity *target = ToTFPlayer(movement->player)->GetGrapplingHookTarget();
+		static ConVarRef tf_grapplinghook_move_speed("tf_grapplinghook_move_speed");
+		Vector move;
+		bool reverseDir = target != nullptr && tf_grapplinghook_move_speed.GetFloat() < 0;
+		if (reverseDir) {
+			move = (target->WorldSpaceCenter() - movement->player->WorldSpaceCenter()).Normalized() * 1000;
+			target->SetAbsOrigin(target->GetAbsOrigin() + move);
+		}
+		auto ret = DETOUR_MEMBER_CALL();
+		if (reverseDir) {
+			target->SetAbsOrigin(target->GetAbsOrigin() - move);
+		}
+		return ret;
+	}
+	
+
 	/*void OnAttributesChange(CAttributeManager *mgr)
 	{
 		CBaseEntity *outer = mgr->m_hOuter;
@@ -9943,7 +9982,8 @@ namespace Mod::Attr::Custom_Attributes
 			MOD_ADD_DETOUR_MEMBER(CTFProjectile_Arrow_CheckSkyboxImpact, "CTFProjectile_Arrow::CheckSkyboxImpact");
 			MOD_ADD_DETOUR_MEMBER(CTFPlayerShared_CalculateObjectCost, "CTFPlayerShared::CalculateObjectCost");
 			MOD_ADD_DETOUR_MEMBER(CTFWeaponBase_GetPenetrateType, "CTFWeaponBase::GetPenetrateType");
-			MOD_ADD_DETOUR_MEMBER(CBaseProjectile_GetCollideWithTeammatesDelay, "CBaseProjectile::GetCollideWithTeammatesDelay");
+			MOD_ADD_DETOUR_MEMBER(CBaseProjectile_CanCollideWithTeammates, "CBaseProjectile::CanCollideWithTeammates");
+			MOD_ADD_VHOOK2(CTFProjectile_GrapplingHook_CanCollideWithTeammates, TypeName<CTFProjectile_GrapplingHook>(), TypeName<CBaseProjectile>(), "CBaseProjectile::CanCollideWithTeammates");
 			MOD_ADD_DETOUR_MEMBER(CTFPlayer_TFPlayerThink,           "CTFPlayer::TFPlayerThink");
 			MOD_ADD_DETOUR_MEMBER(CTFGameMovement_PlayerSolidMask, "CTFGameMovement::PlayerSolidMask");
 			MOD_ADD_DETOUR_MEMBER(CTFPlayer_PlayerRunCommand,					 "CTFPlayer::PlayerRunCommand");
@@ -10100,6 +10140,7 @@ namespace Mod::Attr::Custom_Attributes
 			MOD_ADD_DETOUR_MEMBER(CBasePlayer_PhysicsSimulate, "CBasePlayer::PhysicsSimulate");
 			MOD_ADD_DETOUR_MEMBER(CTFBot_PhysicsSimulate, "CTFBot::PhysicsSimulate");
 			MOD_ADD_DETOUR_MEMBER(CTFGrapplingHook_ItemPostFrame, "CTFGrapplingHook::ItemPostFrame");
+			MOD_ADD_DETOUR_MEMBER(CTFGameMovement_GrapplingHookMove, "CTFGameMovement::GrapplingHookMove");
 			
 			
             //MOD_ADD_VHOOK_INHERIT(CBaseProjectile_ShouldCollide, TypeName<CBaseProjectile>(), "CBaseEntity::ShouldCollide");

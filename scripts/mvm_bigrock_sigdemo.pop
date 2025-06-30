@@ -3826,6 +3826,9 @@ WaveSchedule
 // Parachute air control multiplier
 // "mult parachute air control" 3
 
+// Grappling hook pull speed multiplier
+// "mult grappling hook speed" 2
+
 // Determines how much the player target is being pulled. 1 - only target is being pulled. 0.5 - both target and the player is being pulled. 0 - only player is being pulled
 // "mult grappling hook pull target" 1
 

@@ -2670,6 +2670,12 @@
 					type "sym"
 					sym  "_ZN13CGameMovement12CheckFallingEv"
 				}
+				"CTFGameMovement::GrapplingHookMove"
+				{
+					type "sym"
+					sym  "_ZN15CTFGameMovement17GrapplingHookMoveEv"
+				}
+				
 				"CTFGameRules::CanPlayerUseRespec"
 				{
 					type "sym"
