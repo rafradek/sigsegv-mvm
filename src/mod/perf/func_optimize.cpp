@@ -674,7 +674,7 @@ namespace Mod::Perf::Func_Optimize
         if (whoFired != nullptr) {
             // Do not trigger onweaponfired too often
             auto data = GetExtraCombatCharacterData(whoFired);
-            if (gpGlobals->curtime - data->lastShootTime >= 0.6f) {
+            if (gpGlobals->curtime - data->lastShootTime <= 0.6f) {
                 return;
             }
             data->lastShootTime = gpGlobals->curtime;

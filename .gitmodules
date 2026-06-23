@@ -36,3 +36,33 @@
 [submodule "hl2sdk-manifests"]
 	path = hl2sdk-manifests
 	url = https://github.com/alliedmodders/hl2sdk-manifests.git
+
+[submodule "alliedmodders/ambuild"]
+	path = alliedmodders/ambuild
+	url = https://github.com/alliedmodders/ambuild.git
+
+[submodule "alliedmodders/sourcemod"]
+	path = alliedmodders/sourcemod
+	url = https://github.com/alliedmodders/sourcemod.git
+	branch = 1.11-dev
+	fetchRecurseSubmodules = true
+
+[submodule "alliedmodders/hl2sdk-sdk2013"]
+	path = alliedmodders/hl2sdk-sdk2013
+	url = https://github.com/alliedmodders/hl2sdk.git
+	branch = sdk2013
+
+[submodule "alliedmodders/hl2sdk-tf2"]
+	path = alliedmodders/hl2sdk-tf2
+	url = https://github.com/alliedmodders/hl2sdk.git
+	branch = tf2
+
+[submodule "alliedmodders/hl2sdk-css"]
+	path = alliedmodders/hl2sdk-css
+	url = https://github.com/alliedmodders/hl2sdk.git
+	branch = css
+
+[submodule "alliedmodders/metamod-source"]
+	path = alliedmodders/metamod-source
+	url = https://github.com/alliedmodders/metamod-source.git
+	branch = 1.11-dev
