@@ -1,7 +1,9 @@
-#include "mem/alloc.h"
-#include "mem/protect.h"
+#include <algorithm>
+#include <cassert>
+#include <cstdint>
+#include <cstring>
+
 #include "mem/opcode.h"
-#include "mem/wrapper.h"
 #include "mem/func_copy.h"
 
 #include <udis86.h>
@@ -165,6 +167,9 @@ static bool UD86_insn_is_mov_r32_rtnval(struct ud *ud, Reg *dest_reg = nullptr)
 	case UD_R_ECX: reg = REG_CX; break;
 	case UD_R_EDX: reg = REG_DX; break;
 	case UD_R_EBX: reg = REG_BX; break;
+	case UD_R_EBP: reg = REG_BP; break;
+	case UD_R_ESI: reg = REG_SI; break;
+	case UD_R_EDI: reg = REG_DI; break;
 	default: return false;
 	}
 	
@@ -257,6 +262,19 @@ size_t CopyAndFixUpFuncBytes(size_t len_min, size_t len_max, const uint8_t *sour
 		// They typically determine end of function
 		if (stop_at_nop && (ud_insn_mnemonic(&ud) == UD_Inop || ud_insn_mnemonic(&ud) == UD_Iint3)) break;
 		
+        // A relocated PIC thunk must load the ORIGINAL return address.
+        // Keeping the call would instead derive a GOT base relative to the
+        // destination and turn indirect function/data accesses into garbage.
+#ifndef PLATFORM_64BITS
+        Reg pc_reg;
+        if (UD86_insn_is_call_to_get_pc_thunk(&ud, &pc_reg)) {
+            buffer[0] = OPCODE_MOV_REG32_IMM32 + pc_reg;
+            uint32_t original_pc = static_cast<uint32_t>(
+                ud_insn_off(&ud) + ud_insn_len(&ud));
+            memcpy(buffer + 1, &original_pc, sizeof(original_pc));
+        }
+        else
+#endif
         // fixup jmp and call relative offsets
         if (UD86_insn_fix_jmpcall_rel_imm32(&ud, len_decoded, source + len_actual, dest, buffer, len_min - len_actual - len_decoded, -len_actual - len_decoded)) {
         }

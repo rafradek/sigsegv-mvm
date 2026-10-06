@@ -620,25 +620,7 @@ public:
     PackedEntityHandle_t	m_pPackedData;
 };
 
-class CFrameSnapshot
-{
-	DECLARE_FIXEDSIZE_ALLOCATOR( CFrameSnapshot );
-public:
-	CFrameSnapshot();
-	~CFrameSnapshot();
-
-    CInterlockedInt			m_ListIndex;	// Index info CFrameSnapshotManager::m_FrameSnapshots.
-
-    // Associated frame. 
-    int						m_nTickCount; // = sv.tickcount
-    
-    // State information
-    CFrameSnapshotEntry		*m_pEntities;	
-	int						m_nNumEntities; // = sv.num_edicts
-	
-	unsigned short			*m_pValidEntities; 
-	int						m_nValidEntities;
-};
+#include "stub/framesnapshot.h"
 
 struct PackWork_t
 {

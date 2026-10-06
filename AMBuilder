@@ -616,4 +616,10 @@ for sdk_name in Extension.sdks:
       binary.compiler.linkflags  += [os.path.join('..', wrapper_obj)]
 
 
+    if cxx.target.platform == 'linux':
+      # Debian's default --as-needed can discard vstdlib before the SDK's
+      # tier1 archive introduces KeyValuesSystem references. Resolve it after
+      # those archives too, using the SDK-selected architecture's symlink.
+      binary.compiler.postlink += ['libvstdlib_srv.so']
+
 Extension.extensions += builder.Add(project)
